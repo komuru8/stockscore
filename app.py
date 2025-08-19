@@ -33,24 +33,24 @@ def create_stock_logo():
         <svg width="40" height="40" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
             <!-- Background gradient -->
             <defs>
-                <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                <linearGradient id="bgGrad1" x1="0%" y1="0%" x2="100%" y2="100%">
                     <stop offset="0%" style="stop-color:#2563eb;stop-opacity:1" />
                     <stop offset="100%" style="stop-color:#0f172a;stop-opacity:1" />
                 </linearGradient>
-                <linearGradient id="chartGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                <linearGradient id="chartGrad1" x1="0%" y1="0%" x2="100%" y2="100%">
                     <stop offset="0%" style="stop-color:#10b981;stop-opacity:1" />
                     <stop offset="100%" style="stop-color:#22d3ee;stop-opacity:1" />
                 </linearGradient>
             </defs>
             
             <!-- Rounded background -->
-            <rect x="5" y="5" width="90" height="90" rx="20" ry="20" fill="url(#bgGrad)" />
+            <rect x="5" y="5" width="90" height="90" rx="20" ry="20" fill="url(#bgGrad1)" />
             
             <!-- Chart bars -->
-            <rect x="20" y="65" width="12" height="20" rx="2" fill="url(#chartGrad)" opacity="0.9"/>
-            <rect x="35" y="55" width="12" height="30" rx="2" fill="url(#chartGrad)" opacity="0.9"/>
-            <rect x="50" y="45" width="12" height="40" rx="2" fill="url(#chartGrad)" opacity="0.9"/>
-            <rect x="65" y="35" width="12" height="50" rx="2" fill="url(#chartGrad)" opacity="0.9"/>
+            <rect x="20" y="65" width="12" height="20" rx="2" fill="url(#chartGrad1)" opacity="0.9"/>
+            <rect x="35" y="55" width="12" height="30" rx="2" fill="url(#chartGrad1)" opacity="0.9"/>
+            <rect x="50" y="45" width="12" height="40" rx="2" fill="url(#chartGrad1)" opacity="0.9"/>
+            <rect x="65" y="35" width="12" height="50" rx="2" fill="url(#chartGrad1)" opacity="0.9"/>
             
             <!-- Trend line -->
             <path d="M 20 70 Q 35 60 50 50 Q 65 40 80 30" stroke="#10b981" stroke-width="3" fill="none" opacity="0.8"/>
@@ -403,58 +403,30 @@ def main():
     if selected_method:
         symbols = selected_method
     else:
-        # Manual stock symbol input (fallback)
-        st.markdown("---")
-        st.subheader("手動銘柄入力" if st.session_state.language == 'ja' else "Manual Stock Input")
+        # Show message to select an action button
+        st.info("上記のアクションボタンから検索方法を選択してください。\nPlease select a discovery method from the action buttons above.")
+        symbols = []
+    
+    # Update data button - only show if symbols are selected
+    if symbols:
+        if st.button(get_text('update_data'), type="primary"):
+            update_stock_data(symbols, per_threshold, pbr_threshold, roe_threshold, dividend_multiplier)
         
-        col1, col2 = st.columns([3, 1])
+        # Auto-update data if it's been more than 30 minutes (only for smaller datasets)
+        if len(symbols) <= 20 and (st.session_state.last_update is None or \
+           (datetime.now() - st.session_state.last_update).seconds > 1800):  # 30 minutes
+            st.info(f"自動更新中... / Auto-updating {len(symbols)} stocks...")
+            update_stock_data(symbols, per_threshold, pbr_threshold, roe_threshold, dividend_multiplier)
         
-        with col1:
-            if market == get_text('japanese_stocks'):
-                default_symbols = ["7203.T", "6758.T", "9984.T", "8306.T", "6861.T", "9434.T", "4063.T", "6098.T"]
-                symbol_input = st.text_input(
-                    "銘柄コード入力 (例: 7203.T) / Stock Symbol Input (e.g., 7203.T)",
-                    placeholder="7203.T, 6758.T, 9984.T"
-                )
-            elif market == get_text('us_stocks'):
-                default_symbols = ["AAPL", "MSFT", "GOOGL", "AMZN", "NVDA", "TSLA", "META", "BRK-B"]
-                symbol_input = st.text_input(
-                    "銘柄シンボル入力 (例: AAPL) / Stock Symbol Input (e.g., AAPL)",
-                    placeholder="AAPL, MSFT, GOOGL"
-                )
-            else:
-                default_symbols = ["2330.TW", "005930.KS", "TSM", "BABA", "JD", "PDD", "BIDU", "ASML"]
-                symbol_input = st.text_input(
-                    "銘柄シンボル入力 / Stock Symbol Input",
-                    placeholder="2330.TW, 005930.KS"
-                )
-        
-        with col2:
-            use_default = st.button("デフォルト銘柄使用 / Use Default Stocks")
-        
-        # Set symbols based on user input
-        if use_default:
-            symbols = default_symbols
-        elif symbol_input:
-            symbols = [s.strip().upper() for s in symbol_input.split(",") if s.strip()]
+        # Display results
+        if st.session_state.stock_data:
+            display_results(view_mode, market)
         else:
-            symbols = default_symbols
-    
-    # Update data button
-    if st.button(get_text('update_data'), type="primary"):
-        update_stock_data(symbols, per_threshold, pbr_threshold, roe_threshold, dividend_multiplier)
-    
-    # Auto-update data if it's been more than 30 minutes (only for smaller datasets)
-    if len(symbols) <= 20 and (st.session_state.last_update is None or \
-       (datetime.now() - st.session_state.last_update).seconds > 1800):  # 30 minutes
-        st.info(f"自動更新中... / Auto-updating {len(symbols)} stocks...")
-        update_stock_data(symbols, per_threshold, pbr_threshold, roe_threshold, dividend_multiplier)
-    
-    # Display results
-    if st.session_state.stock_data:
-        display_results(view_mode, market)
+            st.info("データを取得するには「データ更新」ボタンをクリックしてください。\nClick 'Update Data' button to fetch stock data.")
     else:
-        st.info("データを取得するには「データ更新」ボタンをクリックしてください。\nClick 'Update Data' button to fetch stock data.")
+        # Show placeholder when no action is selected
+        st.markdown("---")
+        st.markdown("**" + ("アクションボタンを選択すると、ここに分析結果が表示されます。" if st.session_state.language == 'ja' else "Select an action button above to see analysis results here.") + "**")
 
 def update_stock_data(symbols, per_threshold, pbr_threshold, roe_threshold, dividend_multiplier):
     """Update stock data and scores"""
