@@ -278,11 +278,23 @@ def get_theme_options(market):
         }
 
 def main():
-    # Language toggle in top right
+    # Language selection and terms button in top right
     col1, col2, col3 = st.columns([6, 2, 2])
     with col2:
-        if st.button(get_text('language_toggle'), help="Switch language"):
-            st.session_state.language = 'en' if st.session_state.language == 'ja' else 'ja'
+        # Language dropdown
+        language_options = {
+            '🌐 日本語': 'ja',
+            '🌐 English': 'en'
+        }
+        current_lang_display = '🌐 日本語' if st.session_state.language == 'ja' else '🌐 English'
+        selected_lang = st.selectbox(
+            "Language",
+            options=list(language_options.keys()),
+            index=list(language_options.keys()).index(current_lang_display),
+            label_visibility="collapsed"
+        )
+        if language_options[selected_lang] != st.session_state.language:
+            st.session_state.language = language_options[selected_lang]
             st.rerun()
     with col3:
         if st.button(get_text('terms'), help=get_text('terms_help')):

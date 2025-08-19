@@ -7,9 +7,10 @@ This is a Japanese stock analysis application built with Streamlit that provides
 ## User Preferences
 
 Preferred communication style: Simple, everyday language.
-UI Preferences: Clean, simple main page with legal disclaimers moved to separate terms page.
-Visual Design: Circular score indicators similar to progress rings for clear score visualization.
-Language Support: Full Japanese/English bilingual interface with language toggle.
+UI Preferences: Clean, simple main page with legal disclaimers moved to separate terms page. Action-oriented homepage with discovery methods (popularity, dividend yield, thematic search, random). No view mode selection - simple view only.
+Visual Design: Circular score indicators for featured recommendations, table format for complete listings. Custom logo with emoji instead of SVG.
+Language Support: Full Japanese/English bilingual interface with dropdown language selector. Japanese company names displayed when Japanese language selected.
+Navigation: Simplified top navigation with only language selector and terms button. No page menu navigation.
 
 ## System Architecture
 
