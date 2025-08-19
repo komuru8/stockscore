@@ -10,7 +10,7 @@ import os
 
 # Set page configuration
 st.set_page_config(
-    page_title="StockScore - Advanced Stock Analysis",
+    page_title="TOP - StockScore",
     page_icon="🎯",
     layout="wide",
     initial_sidebar_state="expanded"
@@ -300,9 +300,9 @@ def main():
         if st.button(get_text('terms'), help=get_text('terms_help')):
             st.switch_page("pages/terms.py")
     
-    # Display title with emoji icon instead of SVG
+    # Display title with emoji icon instead of SVG - reduced top spacing
     st.markdown(f"""
-    <div style="display: flex; align-items: center; margin-bottom: 20px;">
+    <div style="display: flex; align-items: center; margin-top: -20px; margin-bottom: 15px;">
         <div style="font-size: 3rem; margin-right: 15px;">🎯</div>
         <h1 style="margin: 0; font-size: 2.5rem; font-weight: 700; background: linear-gradient(135deg, #2563eb 0%, #10b981 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">
             {get_text('title')}

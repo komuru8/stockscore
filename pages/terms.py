@@ -2,7 +2,7 @@ import streamlit as st
 
 # Set page configuration
 st.set_page_config(
-    page_title="利用規約 - Terms of Service",
+    page_title="利用規約 - StockScore",
     page_icon="📋",
     layout="wide"
 )
