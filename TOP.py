@@ -869,17 +869,7 @@ def display_results(view_mode, market):
             with cols[col_idx]:
                 # Create card-like container
                 with st.container():
-                    st.markdown(f"""
-                    <div style="
-                        border: 2px solid {'#28a745' if stock['Score'] >= 80 else '#fd7e14' if stock['Score'] >= 60 else '#ffc107'};
-                        border-radius: 15px;
-                        padding: 20px;
-                        margin-bottom: 15px;
-                        background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
-                        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-                        text-align: center;
-                    ">
-                    """, unsafe_allow_html=True)
+                    # Remove the bordered container - use simple layout instead
                     
                     # Stock header
                     st.markdown(f"**{stock['Symbol']}**")
@@ -893,15 +883,11 @@ def display_results(view_mode, market):
                     st.markdown(f"**{stock['Current Price']}**")
                     st.markdown(f"<div style='font-size: 0.9em; font-weight: bold;'>{stock['Recommendation']}</div>", unsafe_allow_html=True)
                     
-                    # Stock analysis explanation
+                    # Stock analysis explanation - only show in expander
                     analysis = generate_stock_analysis(stock)
-                    preview_text = analysis[:80] + "..." if len(analysis) > 80 else analysis
-                    st.markdown(f"<div style='font-size: 0.8em; color: #555; margin-top: 10px;'>{preview_text}</div>", unsafe_allow_html=True)
-                    
                     with st.expander("詳細分析を見る" if st.session_state.language == 'ja' else "See Detailed Analysis"):
                         st.write(analysis)
-                    
-                    st.markdown("</div>", unsafe_allow_html=True)
+
     
     # Results table
     if view_mode == get_text('simple_view'):
