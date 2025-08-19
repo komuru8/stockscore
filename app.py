@@ -23,37 +23,127 @@ if 'last_update' not in st.session_state:
     st.session_state.last_update = None
 if 'stock_data' not in st.session_state:
     st.session_state.stock_data = {}
+if 'language' not in st.session_state:
+    st.session_state.language = 'ja'  # Default to Japanese
+
+def get_text(key, lang=None):
+    """Get localized text"""
+    if lang is None:
+        lang = st.session_state.language
+    
+    texts = {
+        'title': {
+            'ja': '📈 株予想アプリ - Japanese Stock Analysis Tool',
+            'en': '📈 Stock Analysis Tool - Japanese Stock Prediction App'
+        },
+        'terms': {
+            'ja': '📋 利用規約',
+            'en': '📋 Terms'
+        },
+        'terms_help': {
+            'ja': '利用規約・免責事項を確認',
+            'en': 'Terms of Service & Disclaimer'
+        },
+        'language_toggle': {
+            'ja': '🌐 Language: 日本語',
+            'en': '🌐 Language: English'
+        },
+        'market_selection': {
+            'ja': '市場選択 / Market Selection',
+            'en': 'Market Selection / 市場選択'
+        },
+        'japanese_stocks': {
+            'ja': '日本株 (Japanese Stocks)',
+            'en': 'Japanese Stocks (日本株)'
+        },
+        'us_stocks': {
+            'ja': '米国株 (US Stocks)',
+            'en': 'US Stocks (米国株)'
+        },
+        'emerging_stocks': {
+            'ja': '新興国株 (Emerging Markets)',
+            'en': 'Emerging Markets (新興国株)'
+        },
+        'view_mode': {
+            'ja': '表示モード / View Mode',
+            'en': 'View Mode / 表示モード'
+        },
+        'simple_view': {
+            'ja': 'シンプル表示 / Simple View',
+            'en': 'Simple View / シンプル表示'
+        },
+        'detailed_view': {
+            'ja': '詳細表示 / Detailed View',
+            'en': 'Detailed View / 詳細表示'
+        },
+        'scoring_criteria': {
+            'ja': 'スコア基準調整 / Scoring Criteria',
+            'en': 'Scoring Criteria / スコア基準調整'
+        },
+        'portfolio_overview': {
+            'ja': 'ポートフォリオ概要 / Portfolio Overview',
+            'en': 'Portfolio Overview / ポートフォリオ概要'
+        },
+        'analyzed_stocks': {
+            'ja': '分析銘柄数 / Analyzed Stocks',
+            'en': 'Analyzed Stocks / 分析銘柄数'
+        },
+        'buy_recommendations': {
+            'ja': '購入推奨 / Buy Recommendations',
+            'en': 'Buy Recommendations / 購入推奨'
+        },
+        'average_score': {
+            'ja': '平均スコア / Average Score',
+            'en': 'Average Score / 平均スコア'
+        },
+        'last_update': {
+            'ja': '最終更新 / Last Update',
+            'en': 'Last Update / 最終更新'
+        },
+        'update_data': {
+            'ja': 'データ更新 / Update Data',
+            'en': 'Update Data / データ更新'
+        }
+    }
+    
+    return texts.get(key, {}).get(lang, key)
 
 def main():
-    st.title("📈 株予想アプリ - Japanese Stock Analysis Tool")
-    
-    # Add link to terms page
-    col1, col2, col3 = st.columns([1, 1, 8])
-    with col1:
-        if st.button("📋 利用規約", help="利用規約・免責事項を確認"):
-            st.switch_page("pages/terms.py")
+    # Language toggle in top right
+    col1, col2, col3 = st.columns([6, 2, 2])
     with col2:
-        if st.button("📋 Terms", help="Terms of Service & Disclaimer"):
+        if st.button(get_text('language_toggle'), help="Switch language"):
+            st.session_state.language = 'en' if st.session_state.language == 'ja' else 'ja'
+            st.rerun()
+    with col3:
+        if st.button(get_text('terms'), help=get_text('terms_help')):
             st.switch_page("pages/terms.py")
+    
+    st.title(get_text('title'))
     
     # Sidebar configuration
-    st.sidebar.header("設定 / Settings")
+    st.sidebar.header("設定" if st.session_state.language == 'ja' else "Settings")
     
     # Market selection
+    market_options = [
+        get_text('japanese_stocks'),
+        get_text('us_stocks'),
+        get_text('emerging_stocks')
+    ]
     market = st.sidebar.selectbox(
-        "市場選択 / Market Selection",
-        ["日本株 (Japanese Stocks)", "米国株 (US Stocks)", "新興国株 (Emerging Markets)"],
+        get_text('market_selection'),
+        market_options,
         index=0
     )
     
     # View mode selection
     view_mode = st.sidebar.radio(
-        "表示モード / View Mode",
-        ["シンプル表示 / Simple View", "詳細表示 / Detailed View"]
+        get_text('view_mode'),
+        [get_text('simple_view'), get_text('detailed_view')]
     )
     
     # Scoring criteria adjustment
-    st.sidebar.subheader("スコア基準調整 / Scoring Criteria")
+    st.sidebar.subheader(get_text('scoring_criteria'))
     
     per_threshold = st.sidebar.slider(
         "PER閾値 (業界平均からの乖離%) / PER Threshold (% deviation from industry avg)",
@@ -110,7 +200,7 @@ def main():
         symbols = default_symbols
     
     # Update data button
-    if st.button("データ更新 / Update Data", type="primary"):
+    if st.button(get_text('update_data'), type="primary"):
         update_stock_data(symbols, per_threshold, pbr_threshold, roe_threshold, dividend_multiplier)
     
     # Auto-update data if it's been more than 30 minutes
@@ -182,11 +272,12 @@ def display_results(view_mode, market):
     df = df.sort_values('Score', ascending=False)
     
     # Display summary metrics
+    st.subheader(get_text('portfolio_overview'))
     col1, col2, col3, col4 = st.columns(4)
     
     with col1:
         st.metric(
-            "分析銘柄数 / Analyzed Stocks",
+            get_text('analyzed_stocks'),
             len(df),
             delta=None
         )
@@ -194,7 +285,7 @@ def display_results(view_mode, market):
     with col2:
         buy_count = len(df[df['Score'] >= 80])
         st.metric(
-            "購入推奨 / Buy Recommendations",
+            get_text('buy_recommendations'),
             buy_count,
             delta=f"{buy_count/len(df)*100:.1f}%" if len(df) > 0 else "0%"
         )
@@ -202,31 +293,47 @@ def display_results(view_mode, market):
     with col3:
         avg_score = df['Score'].mean()
         st.metric(
-            "平均スコア / Average Score",
+            get_text('average_score'),
             f"{avg_score:.1f}",
             delta=None
         )
     
     with col4:
         st.metric(
-            "最終更新 / Last Update",
+            get_text('last_update'),
             st.session_state.last_update.strftime("%H:%M") if st.session_state.last_update else "N/A",
             delta=None
         )
     
-    # Score distribution chart
-    st.subheader("スコア分布 / Score Distribution")
+    # Investment recommendations overview
+    st.subheader("投資推奨レベル別銘柄数" if st.session_state.language == 'ja' else "Stock Count by Recommendation Level")
     
-    fig = px.histogram(
-        df, 
-        x='Score', 
-        nbins=20,
-        title="Stock Score Distribution",
-        labels={'Score': 'スコア / Score', 'count': '銘柄数 / Count'}
+    recommendation_counts = {
+        "🚀 強い買い" if st.session_state.language == 'ja' else "🚀 Strong Buy": len(df[df['Score'] >= 80]),
+        "👀 ウォッチ" if st.session_state.language == 'ja' else "👀 Watch": len(df[(df['Score'] >= 60) & (df['Score'] < 80)]),
+        "➖ 中立" if st.session_state.language == 'ja' else "➖ Neutral": len(df[(df['Score'] >= 40) & (df['Score'] < 60)]),
+        "❌ 非推奨" if st.session_state.language == 'ja' else "❌ Not Recommended": len(df[df['Score'] < 40])
+    }
+    
+    # Create horizontal bar chart for recommendation levels
+    rec_data = []
+    for level, count in recommendation_counts.items():
+        rec_data.append({'Level': level, 'Count': count})
+    rec_df = pd.DataFrame(rec_data)
+    
+    fig = px.bar(
+        rec_df,
+        x='Count',
+        y='Level',
+        orientation='h',
+        color='Count',
+        color_continuous_scale=['#ff4444', '#ff8800', '#ffaa00', '#00aa00'],
+        title="投資推奨レベル別分析" if st.session_state.language == 'ja' else "Investment Recommendation Analysis"
     )
-    fig.add_vline(x=80, line_dash="dash", line_color="green", annotation_text="Buy (80+)")
-    fig.add_vline(x=60, line_dash="dash", line_color="orange", annotation_text="Watch (60+)")
-    fig.add_vline(x=40, line_dash="dash", line_color="red", annotation_text="Neutral (40+)")
+    fig.update_layout(
+        showlegend=False,
+        yaxis={'categoryorder': 'array', 'categoryarray': list(recommendation_counts.keys())[::-1]}
+    )
     
     st.plotly_chart(fig, use_container_width=True)
     
@@ -236,75 +343,190 @@ def display_results(view_mode, market):
     else:
         display_detailed_view(df, data)
 
+def create_circular_score(score, size=100):
+    """Create circular score visualization using SVG"""
+    # Determine color based on score
+    if score >= 80:
+        color = "#28a745"  # Green
+        stroke_color = "#28a745"
+    elif score >= 60:
+        color = "#fd7e14"  # Orange
+        stroke_color = "#fd7e14"
+    elif score >= 40:
+        color = "#ffc107"  # Yellow
+        stroke_color = "#ffc107"
+    else:
+        color = "#dc3545"  # Red
+        stroke_color = "#dc3545"
+    
+    # Calculate circle parameters
+    radius = size // 3
+    circumference = 2 * 3.14159 * radius
+    stroke_dasharray = circumference
+    stroke_dashoffset = circumference - (circumference * score / 100)
+    
+    svg = f"""
+    <div style="display: flex; justify-content: center; align-items: center; width: {size}px; height: {size}px;">
+        <svg width="{size}" height="{size}" viewBox="0 0 {size} {size}">
+            <!-- Background circle -->
+            <circle 
+                cx="{size//2}" 
+                cy="{size//2}" 
+                r="{radius}" 
+                stroke="#e9ecef" 
+                stroke-width="8" 
+                fill="none"
+            />
+            <!-- Progress circle -->
+            <circle 
+                cx="{size//2}" 
+                cy="{size//2}" 
+                r="{radius}" 
+                stroke="{stroke_color}" 
+                stroke-width="8" 
+                fill="none"
+                stroke-dasharray="{stroke_dasharray}"
+                stroke-dashoffset="{stroke_dashoffset}"
+                stroke-linecap="round"
+                transform="rotate(-90 {size//2} {size//2})"
+                style="transition: stroke-dashoffset 0.3s ease-in-out;"
+            />
+            <!-- Score text -->
+            <text 
+                x="{size//2}" 
+                y="{size//2 + 5}" 
+                text-anchor="middle" 
+                font-family="Arial, sans-serif"
+                font-size="{size//4}" 
+                font-weight="bold" 
+                fill="{color}"
+            >
+                {int(score)}
+            </text>
+        </svg>
+    </div>
+    """
+    return svg
+
 def display_simple_view(df):
     """Display simple view of results"""
-    st.subheader("銘柄一覧 / Stock List")
+    st.subheader("銘柄一覧" if st.session_state.language == 'ja' else "Stock List")
     
-    # Color code the dataframe
-    def color_score(val):
-        if val >= 80:
-            return 'background-color: #d4edda'  # Light green
-        elif val >= 60:
-            return 'background-color: #fff3cd'  # Light yellow
-        elif val >= 40:
-            return 'background-color: #f8d7da'  # Light red
-        else:
-            return 'background-color: #f8f9fa'  # Light gray
-    
-    # Display formatted table
-    display_df = df[['Symbol', 'Company', 'Score', 'Recommendation', 'Current Price']].copy()
-    styled_df = display_df.style.map(color_score, subset=['Score'])
-    
-    st.dataframe(styled_df, use_container_width=True, height=400)
+    # Display stocks in a grid format with circular scores
+    for i in range(0, len(df), 2):
+        cols = st.columns(2)
+        
+        for j, col in enumerate(cols):
+            if i + j < len(df):
+                stock = df.iloc[i + j]
+                with col:
+                    with st.container():
+                        # Create card-like container
+                        st.markdown(f"""
+                        <div style="
+                            border: 1px solid #ddd;
+                            border-radius: 10px;
+                            padding: 20px;
+                            margin-bottom: 20px;
+                            background-color: white;
+                            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                        ">
+                        """, unsafe_allow_html=True)
+                        
+                        # Stock header
+                        col1, col2 = st.columns([2, 1])
+                        with col1:
+                            st.markdown(f"**{stock['Symbol']}**")
+                            st.markdown(f"<small>{stock['Company']}</small>", unsafe_allow_html=True)
+                            st.markdown(f"価格: {stock['Current Price']}" if st.session_state.language == 'ja' else f"Price: {stock['Current Price']}")
+                        
+                        with col2:
+                            # Display circular score
+                            circular_svg = create_circular_score(stock['Score'], 80)
+                            st.markdown(circular_svg, unsafe_allow_html=True)
+                        
+                        # Recommendation
+                        st.markdown(f"**{stock['Recommendation']}**")
+                        
+                        st.markdown("</div>", unsafe_allow_html=True)
 
 def display_detailed_view(df, data):
     """Display detailed view of results"""
-    st.subheader("詳細分析 / Detailed Analysis")
+    st.subheader("詳細分析" if st.session_state.language == 'ja' else "Detailed Analysis")
     
     # Top performers
-    st.write("### 🚀 トップパフォーマー / Top Performers")
+    st.write("### 🚀 " + ("トップパフォーマー" if st.session_state.language == 'ja' else "Top Performers"))
     top_stocks = df.head(3)
     
     for _, stock in top_stocks.iterrows():
         with st.expander(f"{stock['Symbol']} - {stock['Company']} (Score: {stock['Score']:.1f})"):
-            col1, col2 = st.columns(2)
+            # Main stock info with circular score
+            col1, col2, col3 = st.columns([2, 2, 1])
             
             with col1:
-                st.write("**基本情報 / Basic Info**")
-                st.write(f"現在価格 / Current Price: {stock['Current Price']}")
-                st.write(f"推奨 / Recommendation: {stock['Recommendation']}")
+                st.write("**" + ("基本情報" if st.session_state.language == 'ja' else "Basic Info") + "**")
+                st.write(("現在価格" if st.session_state.language == 'ja' else "Current Price") + f": {stock['Current Price']}")
+                st.write(("推奨" if st.session_state.language == 'ja' else "Recommendation") + f": {stock['Recommendation']}")
                 
             with col2:
-                st.write("**財務指標 / Financial Metrics**")
+                st.write("**" + ("財務指標" if st.session_state.language == 'ja' else "Financial Metrics") + "**")
                 st.write(f"PER: {stock['PER']}")
                 st.write(f"PBR: {stock['PBR']}")
                 st.write(f"ROE: {stock['ROE']}%")
-                st.write(f"配当利回り / Dividend Yield: {stock['Dividend Yield']}%")
+                st.write(("配当利回り" if st.session_state.language == 'ja' else "Dividend Yield") + f": {stock['Dividend Yield']}%")
             
-            # Individual score breakdown
+            with col3:
+                st.write("**" + ("スコア" if st.session_state.language == 'ja' else "Score") + "**")
+                circular_svg = create_circular_score(stock['Score'], 100)
+                st.markdown(circular_svg, unsafe_allow_html=True)
+            
+            # Individual score breakdown with circular indicators
             symbol = stock['Symbol']
             if symbol in data and 'score_breakdown' in data[symbol]:
                 breakdown = data[symbol]['score_breakdown']
-                st.write("**スコア内訳 / Score Breakdown**")
+                st.write("**" + ("スコア内訳" if st.session_state.language == 'ja' else "Score Breakdown") + "**")
                 
-                breakdown_df = pd.DataFrame([
-                    {'Metric': 'PER Score', 'Points': breakdown.get('per_score', 0)},
-                    {'Metric': 'PBR Score', 'Points': breakdown.get('pbr_score', 0)},
-                    {'Metric': 'ROE Score', 'Points': breakdown.get('roe_score', 0)},
-                    {'Metric': 'Dividend Score', 'Points': breakdown.get('dividend_score', 0)}
-                ])
+                # Display breakdown scores with mini circular indicators
+                col1, col2, col3, col4 = st.columns(4)
                 
-                fig = px.bar(
-                    breakdown_df, 
-                    x='Metric', 
-                    y='Points',
-                    title=f"Score Breakdown for {symbol}"
-                )
-                st.plotly_chart(fig, use_container_width=True)
+                scores_data = [
+                    ('PER', breakdown.get('per_score', 0)),
+                    ('PBR', breakdown.get('pbr_score', 0)),
+                    ('ROE', breakdown.get('roe_score', 0)),
+                    (('配当' if st.session_state.language == 'ja' else 'Dividend'), breakdown.get('dividend_score', 0))
+                ]
+                
+                for i, (metric, score) in enumerate(scores_data):
+                    with [col1, col2, col3, col4][i]:
+                        st.markdown(f"**{metric}**")
+                        mini_circular_svg = create_circular_score(score, 60)
+                        st.markdown(mini_circular_svg, unsafe_allow_html=True)
     
     # Full detailed table
-    st.write("### 📊 全銘柄詳細 / All Stocks Detail")
-    st.dataframe(df, use_container_width=True, height=600)
+    st.write("### 📊 " + ("全銘柄詳細" if st.session_state.language == 'ja' else "All Stocks Detail"))
+    
+    # Enhanced table with better formatting
+    display_columns = ['Symbol', 'Company', 'Score', 'Recommendation', 'Current Price', 'PER', 'PBR', 'ROE', 'Dividend Yield']
+    enhanced_df = df[display_columns].copy()
+    
+    # Format numerical columns
+    for col in ['PER', 'PBR', 'ROE', 'Dividend Yield']:
+        enhanced_df[col] = pd.to_numeric(enhanced_df[col], errors='coerce')
+        enhanced_df[col] = enhanced_df[col].apply(lambda x: f"{x:.2f}" if pd.notna(x) else "N/A")
+    
+    st.dataframe(
+        enhanced_df,
+        use_container_width=True,
+        height=600,
+        column_config={
+            "Score": st.column_config.ProgressColumn(
+                "Score",
+                help="Investment score (0-100)",
+                min_value=0,
+                max_value=100,
+            ),
+        }
+    )
 
 def get_recommendation(score):
     """Get recommendation based on score"""

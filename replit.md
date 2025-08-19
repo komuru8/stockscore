@@ -2,11 +2,14 @@
 
 ## Overview
 
-This is a Japanese stock analysis application built with Streamlit that provides fundamental analysis and scoring for stocks across multiple markets (Japanese, US, and Emerging Markets). The application fetches real-time stock data, calculates fundamental metrics like P/E ratio, P/B ratio, ROE, and dividend yield, then generates investment scores based on configurable criteria. It features a web-based interface with interactive charts and visualizations, data caching for performance optimization, and comprehensive risk disclaimers for investment decisions.
+This is a Japanese stock analysis application built with Streamlit that provides fundamental analysis and scoring for stocks across multiple markets (Japanese, US, and Emerging Markets). The application fetches real-time stock data, calculates fundamental metrics like P/E ratio, P/B ratio, ROE, and dividend yield, then generates investment scores based on configurable criteria. It features a web-based interface with circular score visualizations, multilingual support (Japanese/English), data caching for performance optimization, and comprehensive risk disclaimers separated into a dedicated terms page.
 
 ## User Preferences
 
 Preferred communication style: Simple, everyday language.
+UI Preferences: Clean, simple main page with legal disclaimers moved to separate terms page.
+Visual Design: Circular score indicators similar to progress rings for clear score visualization.
+Language Support: Full Japanese/English bilingual interface with language toggle.
 
 ## System Architecture
 
