@@ -268,10 +268,16 @@ def handle_action_buttons(popularity_button, dividend_button, theme_button, rand
             ]
             selected_symbols = all_dividend_us[:stock_count]
         else:
-            selected_symbols = [
+            # Expanded high dividend emerging market stocks
+            all_dividend_emerging = [
                 "PBR", "VALE", "ITUB", "BBD", "ABEV", "SID", "UGP", "EWZ", "FMX", "CIG",
-                "ERJ", "GOL", "AZUL", "BRFS", "JBS", "CACC", "PAC", "TV", "WIT", "005930.KS"
-            ][:stock_count]  # High dividend emerging market stocks
+                "ERJ", "GOL", "AZUL", "BRFS", "JBS", "CACC", "PAC", "TV", "WIT", "005930.KS",
+                "PETR4.SA", "WEGE3.SA", "MGLU3.SA", "B3SA3.SA", "RENT3.SA", "FLRY3.SA", "HAPV3.SA",
+                "LREN3.SA", "NTCO3.SA", "RADL3.SA", "GGBR4.SA", "USIM5.SA", "CSNA3.SA", "GOAU4.SA",
+                "SUZB3.SA", "CMIG4.SA", "ELET3.SA", "TAEE11.SA", "VIVT3.SA", "TIMS3.SA", "TOTS3.SA",
+                "BRDT3.SA", "KLBN11.SA", "CIEL3.SA", "COGN3.SA", "YDUQ3.SA", "ARZZ3.SA", "MRFG3.SA"
+            ]
+            selected_symbols = all_dividend_emerging[:stock_count]
             
         st.success("高配当利回り銘柄を選択しました" if st.session_state.language == 'ja' else "Selected high dividend yield stocks")
         
@@ -290,38 +296,71 @@ def handle_action_buttons(popularity_button, dividend_button, theme_button, rand
                 st.success(f"テーマ「{selected_theme}」の銘柄を選択しました" if st.session_state.language == 'ja' else f"Selected stocks for theme: {selected_theme}")
                 
     elif random_button:
-        # Random selection from all available stocks
+        # Random selection from all available stocks using the expanded lists
         if market == get_text('all_markets'):
-            # Combine stocks from all markets for random selection
-            japanese_all = ["7203.T", "6758.T", "9984.T", "8306.T", "6861.T", "9434.T", "4063.T", "6098.T"][:8]
-            us_all = ["AAPL", "MSFT", "GOOGL", "AMZN", "NVDA", "TSLA", "META", "BRK-B"][:8]
-            emerging_all = ["2330.TW", "005930.KS", "TSM", "BABA", "JD", "PDD", "BIDU", "ASML"][:8]
+            # Use the same expanded lists from popularity search
+            japanese_all = [
+                "7203.T", "6758.T", "9984.T", "8306.T", "6861.T", "9434.T", "4063.T", "6098.T", "8035.T", "9432.T", 
+                "4519.T", "6367.T", "7267.T", "8031.T", "4568.T", "9020.T", "6954.T", "8028.T", "6902.T", "7974.T",
+                "4507.T", "9022.T", "6326.T", "6971.T", "8766.T", "4502.T", "7751.T", "6981.T", "8802.T", "4503.T",
+                "9301.T", "7269.T", "6178.T", "8001.T", "4661.T", "3382.T", "4755.T", "7762.T", "6273.T", "8309.T",
+                "8058.T", "4523.T", "6869.T", "7735.T", "4543.T", "6503.T", "9613.T", "9962.T", "9983.T", "8411.T",
+                "8316.T", "8591.T", "8604.T", "8630.T", "8725.T", "8732.T", "4385.T", "6501.T", "7013.T", "9101.T"
+            ]
+            us_all = [
+                "AAPL", "MSFT", "GOOGL", "AMZN", "NVDA", "TSLA", "META", "BRK-B", "UNH", "XOM", "JNJ", "JPM", 
+                "V", "PG", "HD", "CVX", "MA", "BAC", "ABBV", "PFE", "KO", "MRK", "TMO", "COST", "WMT", "DHR", 
+                "LIN", "ABT", "ACN", "VZ", "MCD", "ADBE", "CRM", "TXN", "NEE", "PM", "NFLX", "BMY", "T", "CMCSA", 
+                "NKE", "HON", "UPS", "SBUX", "LOW", "QCOM", "AMD", "IBM", "GS", "MS", "BLK", "CAT", "RTX", "GE", 
+                "INTC", "ORCL", "CSCO", "DIS", "F", "GM", "PYPL", "UBER", "ABNB", "ROKU", "ZM", "SNOW"
+            ]
+            emerging_all = [
+                "2330.TW", "005930.KS", "TSM", "BABA", "JD", "PDD", "BIDU", "ASML", "NIO", "XPEV", "LI", "SHOP", 
+                "SE", "GRAB", "VALE", "PBR", "ITUB", "BBD", "PETR4.SA", "WEGE3.SA", "MGLU3.SA", "B3SA3.SA", 
+                "RENT3.SA", "FLRY3.SA", "HAPV3.SA", "LREN3.SA", "NTCO3.SA", "RADL3.SA", "GGBR4.SA", "USIM5.SA",
+                "CSNA3.SA", "GOAU4.SA", "SUZB3.SA", "CMIG4.SA", "ELET3.SA", "TAEE11.SA", "VIVT3.SA", "TIMS3.SA"
+            ]
             all_symbols = japanese_all + us_all + emerging_all
             selected_symbols = random.sample(all_symbols, min(stock_count, len(all_symbols)))
         elif market == get_text('japanese_stocks'):
+            # Use the expanded Japanese stock list
             all_symbols = [
                 "7203.T", "6758.T", "9984.T", "8306.T", "6861.T", "9434.T", "4063.T", "6098.T",
                 "8035.T", "9432.T", "4519.T", "6367.T", "7267.T", "8031.T", "4568.T", "9020.T",
                 "6954.T", "8028.T", "6902.T", "7974.T", "4507.T", "9022.T", "6326.T", "6971.T",
-                "6504.T", "8766.T", "4502.T", "7751.T", "6981.T", "8802.T", "4503.T", "9301.T",
-                "7269.T", "6178.T", "8001.T", "4661.T", "3382.T", "4755.T", "7762.T", "6273.T",
-                "8309.T", "6758.T", "8058.T", "4523.T", "6869.T", "7735.T", "4543.T", "6503.T"
+                "8766.T", "4502.T", "7751.T", "6981.T", "8802.T", "4503.T", "9301.T", "7269.T",
+                "6178.T", "8001.T", "4661.T", "3382.T", "4755.T", "7762.T", "6273.T", "8309.T",
+                "8058.T", "4523.T", "6869.T", "7735.T", "4543.T", "6503.T", "9613.T", "9962.T",
+                "9983.T", "8411.T", "8316.T", "8591.T", "8604.T", "8630.T", "8725.T", "8732.T",
+                "4385.T", "6501.T", "7013.T", "9101.T", "2914.T", "1605.T", "3659.T", "4021.T",
+                "4042.T", "4183.T", "4188.T", "4324.T", "4689.T", "4704.T", "4708.T", "4751.T",
+                "4768.T", "4812.T", "4816.T", "4901.T", "4911.T", "4912.T", "4967.T", "4968.T"
             ]
+            selected_symbols = random.sample(all_symbols, min(stock_count, len(all_symbols)))
         elif market == get_text('us_stocks'):
+            # Use the expanded US stock list
             all_symbols = [
-                "AAPL", "MSFT", "GOOGL", "GOOG", "AMZN", "NVDA", "TSLA", "META", "BRK-B", "UNH",
-                "XOM", "JNJ", "JPM", "V", "PG", "HD", "CVX", "MA", "BAC", "ABBV",
-                "PFE", "AVGO", "KO", "MRK", "PEP", "TMO", "COST", "WMT", "DHR", "LIN",
-                "ABT", "ACN", "VZ", "MCD", "ADBE", "CRM", "TXN", "NEE", "PM", "NFLX"
+                "AAPL", "MSFT", "GOOGL", "AMZN", "NVDA", "TSLA", "META", "BRK-B", "UNH", "XOM",
+                "JNJ", "JPM", "V", "PG", "HD", "CVX", "MA", "BAC", "ABBV", "PFE", "KO", "MRK",
+                "TMO", "COST", "WMT", "DHR", "LIN", "ABT", "ACN", "VZ", "MCD", "ADBE", "CRM",
+                "TXN", "NEE", "PM", "NFLX", "BMY", "T", "CMCSA", "NKE", "HON", "UPS", "SBUX",
+                "LOW", "QCOM", "AMD", "IBM", "GS", "MS", "BLK", "CAT", "RTX", "GE", "INTC",
+                "ORCL", "CSCO", "DIS", "F", "GM", "PYPL", "UBER", "ABNB", "ROKU", "ZM", "SNOW",
+                "DDOG", "PLTR", "SQ", "TWTR", "SNAP", "PINS", "DOCU", "OKTA", "CRWD", "ZS"
             ]
+            selected_symbols = random.sample(all_symbols, min(stock_count, len(all_symbols)))
         else:
+            # Use the expanded emerging market list
             all_symbols = [
                 "2330.TW", "005930.KS", "TSM", "BABA", "JD", "PDD", "BIDU", "ASML", "NIO", "XPEV",
-                "LI", "SHOP", "SE", "GRAB", "VALE", "PBR", "ITUB", "BBD", "EWZ", "FMX",
-                "WIT", "ABEV", "SID", "UGP", "CIG", "ERJ", "GOL", "AZUL", "BRFS", "JBS"
+                "LI", "SHOP", "SE", "GRAB", "VALE", "PBR", "ITUB", "BBD", "EWZ", "FMX", "ABEV",
+                "SID", "UGP", "CIG", "ERJ", "GOL", "AZUL", "BRFS", "JBS", "CACC", "PAC", "TV",
+                "WIT", "000001.SS", "000002.SS", "600036.SS", "600519.SS", "000858.SZ", "002594.SZ",
+                "600887.SS", "601318.SS", "000725.SZ", "002415.SZ", "600276.SS", "601166.SS",
+                "PETR4.SA", "WEGE3.SA", "MGLU3.SA", "B3SA3.SA", "RENT3.SA", "FLRY3.SA", "HAPV3.SA"
             ]
+            selected_symbols = random.sample(all_symbols, min(stock_count, len(all_symbols)))
             
-        selected_symbols = random.sample(all_symbols, min(stock_count, len(all_symbols)))
         st.success("ランダムに銘柄を選択しました" if st.session_state.language == 'ja' else "Randomly selected stocks")
         
     return selected_symbols
