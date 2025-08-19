@@ -2,15 +2,16 @@
 
 ## Overview
 
-This is a Japanese stock analysis application built with Streamlit that provides fundamental analysis and scoring for stocks across multiple markets (Japanese, US, and Emerging Markets). The application fetches real-time stock data, calculates fundamental metrics like P/E ratio, P/B ratio, ROE, and dividend yield, then generates investment scores based on configurable criteria. It features a web-based interface with circular score visualizations, multilingual support (Japanese/English), data caching for performance optimization, and comprehensive risk disclaimers separated into a dedicated terms page.
+This is a Japanese stock analysis application built with Streamlit that provides fundamental analysis and scoring for stocks across multiple markets (Japanese, US, and Emerging Markets). The application features three user modes (beginner, intermediate, advanced) to accommodate different investment experience levels. It fetches real-time stock data, calculates fundamental metrics, and generates investment scores based on configurable criteria. The app includes a web-based interface with circular score visualizations, multilingual support (Japanese/English), data caching for performance optimization, and comprehensive risk disclaimers separated into a dedicated terms page.
 
 ## User Preferences
 
 Preferred communication style: Simple, everyday language.
-UI Preferences: Clean, simple main page with legal disclaimers moved to separate terms page. Action-oriented homepage with discovery methods (popularity, dividend yield, thematic search, random). No view mode selection - simple view only.
+UI Preferences: Clean, simple main page with legal disclaimers moved to separate terms page. Action-oriented homepage with discovery methods (popularity, dividend yield, thematic search, random). Three-tier user mode system (beginner/intermediate/advanced).
 Visual Design: Circular score indicators for featured recommendations, table format for complete listings. Custom logo with emoji instead of SVG.
 Language Support: Full Japanese/English bilingual interface with dropdown language selector. Japanese company names displayed when Japanese language selected.
 Navigation: Simplified top navigation with only language selector and terms button. No page menu navigation.
+User Modes: 👶 Beginner (simplified AI scoring), 🧑‍💼 Intermediate (10-metric analysis), 🧑‍🔬 Advanced (planned advanced filtering).
 
 ## System Architecture
 

@@ -25,6 +25,8 @@ if 'stock_data' not in st.session_state:
     st.session_state.stock_data = {}
 if 'language' not in st.session_state:
     st.session_state.language = 'ja'  # Default to Japanese
+if 'user_mode' not in st.session_state:
+    st.session_state.user_mode = 'beginner'  # Default to beginner mode
 
 
 
@@ -105,6 +107,34 @@ def get_text(key, lang=None):
         'update_data': {
             'ja': 'データ更新 / Update Data',
             'en': 'Update Data / データ更新'
+        },
+        'user_mode_selection': {
+            'ja': 'ユーザーモード / User Mode',
+            'en': 'User Mode / ユーザーモード'
+        },
+        'beginner_mode': {
+            'ja': '👶 初級者',
+            'en': '👶 Beginner'
+        },
+        'intermediate_mode': {
+            'ja': '🧑‍💼 中級者',
+            'en': '🧑‍💼 Intermediate'
+        },
+        'advanced_mode': {
+            'ja': '🧑‍🔬 上級者',
+            'en': '🧑‍🔬 Advanced'
+        },
+        'beginner_description': {
+            'ja': 'AI推奨スコア中心、直感的な「買い/見送り」判定',
+            'en': 'AI-focused scoring with intuitive buy/hold decisions'
+        },
+        'intermediate_description': {
+            'ja': '10指標によるスクリーニング、重み付け調整可能',
+            'en': '10-metric screening with customizable weightings'
+        },
+        'advanced_description': {
+            'ja': '高度なフィルタリング・カスタム条件設定（開発中）',
+            'en': 'Advanced filtering & custom conditions (in development)'
         }
     }
     
@@ -325,31 +355,123 @@ def main():
         index=0
     )
     
+    # User mode selection
+    st.sidebar.subheader(get_text('user_mode_selection'))
+    mode_options = {
+        get_text('beginner_mode'): 'beginner',
+        get_text('intermediate_mode'): 'intermediate',
+        get_text('advanced_mode'): 'advanced'
+    }
+    
+    current_mode_display = next(k for k, v in mode_options.items() if v == st.session_state.user_mode)
+    selected_mode = st.sidebar.selectbox(
+        "モード選択 / Mode Selection",
+        options=list(mode_options.keys()),
+        index=list(mode_options.keys()).index(current_mode_display),
+        help="投資経験に応じてモードを選択してください"
+    )
+    
+    if mode_options[selected_mode] != st.session_state.user_mode:
+        st.session_state.user_mode = mode_options[selected_mode]
+        st.rerun()
+    
+    # Mode description
+    if st.session_state.user_mode == 'beginner':
+        st.sidebar.info(get_text('beginner_description'))
+    elif st.session_state.user_mode == 'intermediate':
+        st.sidebar.info(get_text('intermediate_description'))
+    else:
+        st.sidebar.warning(get_text('advanced_description'))
+    
     # Always use simple view
     view_mode = get_text('simple_view')
     
-    # Scoring criteria adjustment
-    st.sidebar.subheader(get_text('scoring_criteria'))
-    
-    per_threshold = st.sidebar.slider(
-        "PER閾値 (業界平均からの乖離%) / PER Threshold (% deviation from industry avg)",
-        min_value=10, max_value=50, value=20, step=5
-    )
-    
-    pbr_threshold = st.sidebar.slider(
-        "PBR閾値 / PBR Threshold",
-        min_value=0.5, max_value=2.0, value=1.0, step=0.1
-    )
-    
-    roe_threshold = st.sidebar.slider(
-        "ROE閾値 (%) / ROE Threshold (%)",
-        min_value=5, max_value=20, value=10, step=1
-    )
-    
-    dividend_multiplier = st.sidebar.slider(
-        "配当利回り倍率 / Dividend Yield Multiplier",
-        min_value=1.0, max_value=2.0, value=1.2, step=0.1
-    )
+    # Conditional scoring criteria adjustment based on user mode
+    if st.session_state.user_mode == 'beginner':
+        # Simplified criteria for beginners
+        st.sidebar.subheader("🎯 簡易設定 / Simple Settings")
+        
+        per_threshold = st.sidebar.slider(
+            "PER基準 / PER Standard",
+            min_value=10, max_value=30, value=15, step=5,
+            help="低いほど割安 / Lower is better value"
+        )
+        
+        dividend_multiplier = st.sidebar.slider(
+            "配当重視度 / Dividend Focus",
+            min_value=1.0, max_value=2.0, value=1.5, step=0.1,
+            help="高いほど配当重視 / Higher prioritizes dividends"
+        )
+        
+        # Set default values for other criteria in beginner mode
+        pbr_threshold = 1.0
+        roe_threshold = 10
+        
+    elif st.session_state.user_mode == 'intermediate':
+        # Full 10 indicators for intermediate users
+        st.sidebar.subheader(get_text('scoring_criteria'))
+        
+        # Core valuation metrics
+        per_threshold = st.sidebar.slider(
+            "PER閾値 / PER Threshold",
+            min_value=5, max_value=50, value=15, step=5
+        )
+        
+        pbr_threshold = st.sidebar.slider(
+            "PBR閾値 / PBR Threshold",
+            min_value=0.5, max_value=3.0, value=1.0, step=0.1
+        )
+        
+        roe_threshold = st.sidebar.slider(
+            "ROE閾値 (%) / ROE Threshold (%)",
+            min_value=5, max_value=25, value=10, step=1
+        )
+        
+        roa_threshold = st.sidebar.slider(
+            "ROA閾値 (%) / ROA Threshold (%)",
+            min_value=2, max_value=15, value=5, step=1
+        )
+        
+        dividend_multiplier = st.sidebar.slider(
+            "配当利回り重要度 / Dividend Yield Weight",
+            min_value=0.5, max_value=2.0, value=1.2, step=0.1
+        )
+        
+        # Growth metrics
+        sales_growth_threshold = st.sidebar.slider(
+            "売上成長率閾値 (%) / Sales Growth Threshold (%)",
+            min_value=0, max_value=20, value=5, step=1
+        )
+        
+        eps_growth_threshold = st.sidebar.slider(
+            "EPS成長率閾値 (%) / EPS Growth Threshold (%)",
+            min_value=0, max_value=25, value=10, step=1
+        )
+        
+        # Profitability metrics
+        operating_margin_threshold = st.sidebar.slider(
+            "営業利益率閾値 (%) / Operating Margin Threshold (%)",
+            min_value=5, max_value=30, value=10, step=1
+        )
+        
+        # Financial health metrics
+        equity_ratio_threshold = st.sidebar.slider(
+            "自己資本比率閾値 (%) / Equity Ratio Threshold (%)",
+            min_value=20, max_value=80, value=40, step=5
+        )
+        
+        payout_ratio_threshold = st.sidebar.slider(
+            "配当性向閾値 (%) / Payout Ratio Threshold (%)",
+            min_value=10, max_value=80, value=30, step=5
+        )
+        
+    else:  # Advanced mode - placeholder
+        st.sidebar.warning("上級者モードは開発中です / Advanced mode is in development")
+        # Use intermediate defaults
+        per_threshold = 15
+        pbr_threshold = 1.0
+        roe_threshold = 10
+        dividend_multiplier = 1.2
     
     # Action buttons section with enhanced styling
     st.markdown("---")
@@ -496,14 +618,14 @@ def update_stock_data(symbols, per_threshold, pbr_threshold, roe_threshold, divi
             status_text.empty()
 
 def display_results(view_mode, market):
-    """Display analysis results"""
+    """Display analysis results based on user mode"""
     data = st.session_state.stock_data
     
     if not data:
         st.warning("表示するデータがありません / No data to display")
         return
     
-    # Convert to DataFrame for easier manipulation
+    # Convert to DataFrame for easier manipulation - columns depend on user mode
     df_data = []
     for symbol, info in data.items():
         if info and 'total_score' in info:
@@ -512,17 +634,36 @@ def display_results(view_mode, market):
             if st.session_state.language == 'ja' and symbol.endswith('.T'):
                 company_name = get_japanese_company_name(symbol, company_name)
             
-            df_data.append({
-                'Symbol': symbol,
-                'Company': company_name,
-                'Score': info.get('total_score', 0),
-                'Recommendation': get_recommendation(info.get('total_score', 0)),
-                'PER': info.get('per', 'N/A'),
-                'PBR': info.get('pbr', 'N/A'),
-                'ROE': info.get('roe', 'N/A'),
-                'Dividend Yield': info.get('dividend_yield', 'N/A'),
-                'Current Price': info.get('current_price', 'N/A')
-            })
+            if st.session_state.user_mode == 'beginner':
+                # Simplified data for beginners
+                df_data.append({
+                    'Symbol': symbol,
+                    'Company': company_name,
+                    'Score': info.get('total_score', 0),
+                    'Recommendation': get_simple_recommendation(info.get('total_score', 0)),
+                    'PER': info.get('per', 'N/A'),
+                    'Dividend Yield': info.get('dividend_yield', 'N/A'),
+                    'Current Price': info.get('current_price', 'N/A')
+                })
+            else:
+                # Full data for intermediate/advanced users
+                df_data.append({
+                    'Symbol': symbol,
+                    'Company': company_name,
+                    'Score': info.get('total_score', 0),
+                    'Recommendation': get_recommendation(info.get('total_score', 0)),
+                    'PER': info.get('per', 'N/A'),
+                    'PBR': info.get('pbr', 'N/A'),
+                    'ROE': info.get('roe', 'N/A'),
+                    'ROA': info.get('roa', 'N/A'),
+                    'Dividend Yield': info.get('dividend_yield', 'N/A'),
+                    'Sales Growth': info.get('sales_growth', 'N/A'),
+                    'EPS Growth': info.get('eps_growth', 'N/A'),
+                    'Operating Margin': info.get('operating_margin', 'N/A'),
+                    'Equity Ratio': info.get('equity_ratio', 'N/A'),
+                    'Payout Ratio': info.get('payout_ratio', 'N/A'),
+                    'Current Price': info.get('current_price', 'N/A')
+                })
     
     if not df_data:
         st.warning("有効なデータがありません / No valid data available")
@@ -565,15 +706,22 @@ def display_results(view_mode, market):
             delta=None
         )
     
-    # Investment recommendations overview
-    st.subheader("投資推奨レベル別銘柄数" if st.session_state.language == 'ja' else "Stock Count by Recommendation Level")
-    
-    recommendation_counts = {
-        "🚀 強い買い" if st.session_state.language == 'ja' else "🚀 Strong Buy": len(df[df['Score'] >= 80]),
-        "👀 ウォッチ" if st.session_state.language == 'ja' else "👀 Watch": len(df[(df['Score'] >= 60) & (df['Score'] < 80)]),
-        "➖ 中立" if st.session_state.language == 'ja' else "➖ Neutral": len(df[(df['Score'] >= 40) & (df['Score'] < 60)]),
-        "❌ 非推奨" if st.session_state.language == 'ja' else "❌ Not Recommended": len(df[df['Score'] < 40])
-    }
+    # Investment recommendations overview - adjust for user mode
+    if st.session_state.user_mode == 'beginner':
+        st.subheader("💡 " + ("投資判定結果" if st.session_state.language == 'ja' else "Investment Decision Results"))
+        recommendation_counts = {
+            "🟢 おすすめ" if st.session_state.language == 'ja' else "🟢 Recommended": len(df[df['Score'] >= 80]),
+            "🟡 様子見" if st.session_state.language == 'ja' else "🟡 Wait & See": len(df[(df['Score'] >= 60) & (df['Score'] < 80)]),
+            "🔴 見送り" if st.session_state.language == 'ja' else "🔴 Skip": len(df[df['Score'] < 60])
+        }
+    else:
+        st.subheader("投資推奨レベル別銘柄数" if st.session_state.language == 'ja' else "Stock Count by Recommendation Level")
+        recommendation_counts = {
+            "🚀 強い買い" if st.session_state.language == 'ja' else "🚀 Strong Buy": len(df[df['Score'] >= 80]),
+            "👀 ウォッチ" if st.session_state.language == 'ja' else "👀 Watch": len(df[(df['Score'] >= 60) & (df['Score'] < 80)]),
+            "➖ 中立" if st.session_state.language == 'ja' else "➖ Neutral": len(df[(df['Score'] >= 40) & (df['Score'] < 60)]),
+            "❌ 非推奨" if st.session_state.language == 'ja' else "❌ Not Recommended": len(df[df['Score'] < 40])
+        }
     
     # Create horizontal bar chart for recommendation levels
     rec_data = []
@@ -861,6 +1009,15 @@ def get_recommendation(score):
         return "➖ 中立 / Neutral"
     else:
         return "❌ 非推奨 / Not Recommended"
+
+def get_simple_recommendation(score):
+    """Get simplified recommendation for beginners"""
+    if score >= 80:
+        return "🟢 おすすめ / Recommended" if st.session_state.language == 'ja' else "🟢 Recommended"
+    elif score >= 60:
+        return "🟡 様子見 / Wait & See" if st.session_state.language == 'ja' else "🟡 Wait & See"
+    else:
+        return "🔴 見送り / Skip" if st.session_state.language == 'ja' else "🔴 Skip"
 
 if __name__ == "__main__":
     main()
