@@ -328,6 +328,18 @@ def generate_stock_analysis(stock):
     else:
         return generic_analysis['ja' if is_japanese else 'en']
 
+def get_market_type(symbol):
+    """Determine market type based on symbol pattern"""
+    if symbol.endswith('.T'):
+        return "日本株" if st.session_state.language == 'ja' else "Japanese"
+    elif any(symbol.endswith(suffix) for suffix in ['.SS', '.SZ', '.HK', '.TW', '.KS']):
+        return "新興国株" if st.session_state.language == 'ja' else "Emerging"
+    elif symbol in ['TSM', 'BABA', 'JD', 'PDD', 'BIDU', 'NIO', 'XPEV', 'LI', 'SHOP', 'SE', 'GRAB', 
+                   'VALE', 'PBR', 'ITUB', 'BBD', 'EWZ', 'FMX', 'ABEV', 'SID', 'ASML']:
+        return "新興国株" if st.session_state.language == 'ja' else "Emerging"
+    else:
+        return "米国株" if st.session_state.language == 'ja' else "US"
+
 def get_japanese_company_name(symbol, original_name):
     """Get Japanese company name for display when language is Japanese"""
     japanese_names = {
@@ -913,7 +925,10 @@ def display_results(view_mode, market):
     
     # Results table
     if view_mode == get_text('simple_view'):
-        display_simple_view(df)
+        if st.session_state.get('user_mode', '初級者') == '中級者':
+            display_intermediate_view(df)
+        else:
+            display_simple_view(df)
     else:
         display_detailed_view(df, data)
 
@@ -986,16 +1001,20 @@ def display_simple_view(df):
     """Display simple table view of results"""
     st.subheader("銘柄一覧" if st.session_state.language == 'ja' else "Stock List")
     
+    # Add market type column
+    df_with_market = df.copy()
+    df_with_market['Market'] = df_with_market['Symbol'].apply(get_market_type)
+    
     # Enhanced table with better formatting and styling - only use columns that exist
-    available_columns = ['Symbol', 'Company', 'Score', 'Recommendation', 'Current Price']
+    available_columns = ['Symbol', 'Market', 'Company', 'Score', 'Recommendation', 'Current Price']
     optional_columns = ['PER', 'PBR', 'ROE', 'Dividend Yield']
     
     # Add only the columns that exist in the DataFrame
     for col in optional_columns:
-        if col in df.columns:
+        if col in df_with_market.columns:
             available_columns.append(col)
     
-    table_df = df[available_columns].copy()
+    table_df = df_with_market[available_columns].copy()
     
     # Format numerical columns - only format columns that exist
     numerical_cols = ['PER', 'PBR', 'ROE', 'Dividend Yield']
@@ -1037,6 +1056,142 @@ def display_simple_view(df):
             ),
             "Symbol": st.column_config.TextColumn(
                 "Symbol" if st.session_state.language == 'en' else "銘柄",
+                width="small",
+            ),
+            "Market": st.column_config.TextColumn(
+                "Market" if st.session_state.language == 'en' else "市場",
+                width="small",
+            ),
+            "Company": st.column_config.TextColumn(
+                "Company" if st.session_state.language == 'en' else "企業名",
+                width="medium",
+            ),
+            "Current Price": st.column_config.TextColumn(
+                "Price" if st.session_state.language == 'en' else "価格",
+                width="small",
+            ),
+            "Recommendation": st.column_config.TextColumn(
+                "Rec." if st.session_state.language == 'en' else "推奨",
+                width="medium",
+            )
+        }
+    )
+
+def get_metric_color(metric_name, value, score_contribution):
+    """Get color for metric based on whether it contributes positively to the score"""
+    if pd.isna(value) or value == "N/A":
+        return "color: gray;"
+    
+    # Determine if metric contributes positively or negatively to score
+    # Higher is better: ROE, ROA, Dividend Yield, Revenue Growth, Free Cash Flow Yield
+    # Lower is better: PER, PBR, Debt to Equity, Current Ratio (but not too low)
+    
+    higher_is_better = ['ROE', 'ROA', 'Dividend Yield', 'Revenue Growth', 'Free Cash Flow Yield', 'Operating Margin']
+    lower_is_better = ['PER', 'PBR', 'Debt to Equity']
+    
+    if score_contribution > 50:  # Positive contribution
+        return "color: green; font-weight: bold;"
+    elif score_contribution < 50:  # Negative contribution  
+        return "color: red; font-weight: bold;"
+    else:  # Neutral
+        return "color: orange; font-weight: bold;"
+
+def display_intermediate_view(df):
+    """Display intermediate mode view with all 10 metrics and color coding"""
+    st.subheader("銘柄一覧（中級者モード）" if st.session_state.language == 'ja' else "Stock List (Intermediate Mode)")
+    
+    # Add market type column
+    df_with_market = df.copy()
+    df_with_market['Market'] = df_with_market['Symbol'].apply(get_market_type)
+    
+    # All 10 metrics for intermediate mode
+    all_columns = ['Symbol', 'Market', 'Company', 'Score', 'Recommendation', 'Current Price', 
+                  'PER', 'PBR', 'ROE', 'ROA', 'Dividend Yield', 'Revenue Growth', 
+                  'Free Cash Flow Yield', 'Debt to Equity', 'Operating Margin', 'Current Ratio']
+    
+    # Use only columns that exist in the DataFrame
+    available_columns = []
+    for col in all_columns:
+        if col in df_with_market.columns:
+            available_columns.append(col)
+    
+    table_df = df_with_market[available_columns].copy()
+    
+    # Format numerical columns
+    numerical_cols = ['PER', 'PBR', 'ROE', 'ROA', 'Dividend Yield', 'Revenue Growth', 
+                     'Free Cash Flow Yield', 'Debt to Equity', 'Operating Margin', 'Current Ratio']
+    
+    for col in numerical_cols:
+        if col in table_df.columns:
+            table_df[col] = pd.to_numeric(table_df[col], errors='coerce')
+            if col in ['ROE', 'ROA', 'Dividend Yield', 'Revenue Growth', 'Free Cash Flow Yield', 'Operating Margin']:
+                table_df[col] = table_df[col].apply(lambda x: f"{x:.1f}%" if pd.notna(x) else "N/A")
+            else:
+                table_df[col] = table_df[col].apply(lambda x: f"{x:.2f}" if pd.notna(x) else "N/A")
+    
+    # Color coding function with metric evaluation
+    def highlight_metrics(row):
+        styles = []
+        for col in row.index:
+            if col == 'Score':
+                score = row[col]
+                if score >= 80:
+                    styles.append('background-color: #d4edda')
+                elif score >= 60:
+                    styles.append('background-color: #fff3cd')
+                else:
+                    styles.append('background-color: #f8d7da')
+            elif col in numerical_cols and col in row.index:
+                # Simple scoring logic for color coding
+                value = pd.to_numeric(str(row[col]).replace('%', ''), errors='coerce')
+                if pd.notna(value):
+                    if col == 'PER':
+                        color = 'color: green; font-weight: bold;' if 10 <= value <= 20 else 'color: red; font-weight: bold;'
+                    elif col == 'PBR':
+                        color = 'color: green; font-weight: bold;' if 0.5 <= value <= 2.0 else 'color: red; font-weight: bold;'
+                    elif col in ['ROE', 'ROA']:
+                        color = 'color: green; font-weight: bold;' if value >= 15 else 'color: red; font-weight: bold;'
+                    elif col == 'Dividend Yield':
+                        color = 'color: green; font-weight: bold;' if value >= 3 else 'color: red; font-weight: bold;'
+                    elif col == 'Revenue Growth':
+                        color = 'color: green; font-weight: bold;' if value >= 5 else 'color: red; font-weight: bold;'
+                    elif col == 'Operating Margin':
+                        color = 'color: green; font-weight: bold;' if value >= 10 else 'color: red; font-weight: bold;'
+                    elif col == 'Debt to Equity':
+                        color = 'color: green; font-weight: bold;' if value <= 0.5 else 'color: red; font-weight: bold;'
+                    elif col == 'Current Ratio':
+                        color = 'color: green; font-weight: bold;' if 1.5 <= value <= 3.0 else 'color: red; font-weight: bold;'
+                    else:
+                        color = 'color: green; font-weight: bold;' if value > 0 else 'color: red; font-weight: bold;'
+                    styles.append(color)
+                else:
+                    styles.append('color: gray;')
+            else:
+                styles.append('')
+        return styles
+    
+    # Apply styling
+    styled_df = table_df.style.apply(highlight_metrics, axis=1)
+    
+    # Display the styled dataframe with all metrics
+    st.dataframe(
+        styled_df,
+        use_container_width=True,
+        height=600,
+        column_config={
+            "Score": st.column_config.ProgressColumn(
+                "Score",
+                help="Investment score (0-100)",
+                min_value=0,
+                max_value=100,
+                format="%.1f",
+            ),
+            "Symbol": st.column_config.TextColumn(
+                "Symbol" if st.session_state.language == 'en' else "銘柄",
+                width="small",
+            ),
+            "Market": st.column_config.TextColumn(
+                "Market" if st.session_state.language == 'en' else "市場",
                 width="small",
             ),
             "Company": st.column_config.TextColumn(
