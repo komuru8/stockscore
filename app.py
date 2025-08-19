@@ -202,6 +202,51 @@ def handle_action_buttons(popularity_button, dividend_button, theme_button, rand
         
     return selected_symbols
 
+def get_japanese_company_name(symbol, original_name):
+    """Get Japanese company name for display when language is Japanese"""
+    japanese_names = {
+        "7203.T": "トヨタ自動車",
+        "6758.T": "ソニーグループ", 
+        "9984.T": "ソフトバンクグループ",
+        "8306.T": "三菱UFJフィナンシャル・グループ",
+        "6861.T": "キーエンス",
+        "9434.T": "ソフトバンク",
+        "4063.T": "信越化学工業",
+        "6098.T": "リクルートホールディングス",
+        "8035.T": "東京エレクトロン",
+        "9432.T": "日本電信電話",
+        "4519.T": "中外製薬",
+        "6367.T": "ダイキン工業",
+        "7267.T": "ホンダ",
+        "8031.T": "三井物産",
+        "4568.T": "第一三共",
+        "9020.T": "東日本旅客鉄道",
+        "6954.T": "ファナック",
+        "8028.T": "富士商事",
+        "6902.T": "デンソー",
+        "7974.T": "任天堂",
+        "4507.T": "塩野義製薬",
+        "9022.T": "東海旅客鉄道",
+        "6326.T": "クボタ",
+        "6971.T": "京セラ",
+        "8411.T": "みずほフィナンシャルグループ",
+        "8316.T": "三井住友フィナンシャルグループ",
+        "8591.T": "オリックス",
+        "8604.T": "野村ホールディングス",
+        "8630.T": "SOMPOホールディングス",
+        "8725.T": "MS&ADインシュアランスグループホールディングス",
+        "8732.T": "マネーパートナーズグループ",
+        "8766.T": "東京海上ホールディングス",
+        "8795.T": "T&Dホールディングス",
+        "8830.T": "住友不動産",
+        "9501.T": "東京電力ホールディングス",
+        "9613.T": "エヌ・ティ・ティ・データ",
+        "9962.T": "ミスミグループ本社",
+        "9983.T": "ファーストリテイリング"
+    }
+    
+    return japanese_names.get(symbol, original_name)
+
 def get_theme_options(market):
     """Get theme-based stock selections by market"""
     if market == get_text('japanese_stocks'):
@@ -268,11 +313,8 @@ def main():
         index=0
     )
     
-    # View mode selection
-    view_mode = st.sidebar.radio(
-        get_text('view_mode'),
-        [get_text('simple_view'), get_text('detailed_view')]
-    )
+    # Always use simple view
+    view_mode = get_text('simple_view')
     
     # Scoring criteria adjustment
     st.sidebar.subheader(get_text('scoring_criteria'))
@@ -453,9 +495,14 @@ def display_results(view_mode, market):
     df_data = []
     for symbol, info in data.items():
         if info and 'total_score' in info:
+            # Get appropriate company name based on language setting
+            company_name = info.get('company_name', symbol)
+            if st.session_state.language == 'ja' and symbol.endswith('.T'):
+                company_name = get_japanese_company_name(symbol, company_name)
+            
             df_data.append({
                 'Symbol': symbol,
-                'Company': info.get('company_name', symbol),
+                'Company': company_name,
                 'Score': info.get('total_score', 0),
                 'Recommendation': get_recommendation(info.get('total_score', 0)),
                 'PER': info.get('per', 'N/A'),
