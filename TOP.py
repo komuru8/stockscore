@@ -1198,15 +1198,39 @@ def display_simple_view(df):
                 width="small",
             ),
             "PBR": st.column_config.TextColumn(
-                "PBR" if st.session_state.language == 'en' else "PBR",
+                "PBR" if st.session_state.language == 'en' else "PBR", 
                 width="small",
             ),
             "ROE": st.column_config.TextColumn(
                 "ROE" if st.session_state.language == 'en' else "ROE",
                 width="small",
             ),
+            "ROA": st.column_config.TextColumn(
+                "ROA" if st.session_state.language == 'en' else "ROA",
+                width="small",
+            ),
             "Dividend Yield": st.column_config.TextColumn(
                 "Dividend Yield" if st.session_state.language == 'en' else "配当利回り",
+                width="small",
+            ),
+            "Revenue Growth": st.column_config.TextColumn(
+                "Revenue Growth" if st.session_state.language == 'en' else "売上高成長率",
+                width="small",
+            ),
+            "EPS Growth": st.column_config.TextColumn(
+                "EPS Growth" if st.session_state.language == 'en' else "EPS成長率",
+                width="small",
+            ),
+            "Operating Margin": st.column_config.TextColumn(
+                "Operating Margin" if st.session_state.language == 'en' else "営業利益率",
+                width="small",
+            ),
+            "Equity Ratio": st.column_config.TextColumn(
+                "Equity Ratio" if st.session_state.language == 'en' else "自己資本比率",
+                width="small",
+            ),
+            "Payout Ratio": st.column_config.TextColumn(
+                "Payout Ratio" if st.session_state.language == 'en' else "配当性向",
                 width="small",
             ),
             "Current Price": st.column_config.TextColumn(
@@ -1247,16 +1271,17 @@ def display_intermediate_view(df):
     df_with_market = df.copy()
     df_with_market['Market'] = df_with_market['Symbol'].apply(get_market_type)
     
-    # All 10 metrics for intermediate mode
+    # All 10 metrics for intermediate mode - ensure all are available
     all_columns = ['Symbol', 'Market', 'Company', 'Score', 'Recommendation', 'Current Price', 
                   'PER', 'PBR', 'ROE', 'ROA', 'Dividend Yield', 'Revenue Growth', 
                   'EPS Growth', 'Operating Margin', 'Equity Ratio', 'Payout Ratio']
     
-    # Use only columns that exist in the DataFrame
-    available_columns = []
+    # Add missing columns with N/A values to ensure all 10 metrics are displayed
     for col in all_columns:
-        if col in df_with_market.columns:
-            available_columns.append(col)
+        if col not in df_with_market.columns:
+            df_with_market[col] = "N/A"
+    
+    available_columns = all_columns
     
     table_df = df_with_market[available_columns].copy()
     
