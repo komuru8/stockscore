@@ -543,7 +543,7 @@ def main():
         )
         
         dividend_multiplier = st.sidebar.slider(
-            "配当利回り重要度 / Dividend Yield Weight",
+            "配当利回り",
             min_value=0.5, max_value=2.0, value=1.2, step=0.1
         )
         
