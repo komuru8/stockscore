@@ -834,7 +834,7 @@ def main():
         st.markdown("**" + ("アクションボタンを選択すると、ここに分析結果が表示されます。" if st.session_state.language == 'ja' else "Select an action button above to see analysis results here.") + "**")
 
 def update_stock_data(symbols, per_threshold, pbr_threshold, roe_threshold, dividend_multiplier):
-    """Update stock data and scores"""
+    """Update stock data and scores with batch processing to prevent server overload"""
     progress_bar = None
     status_text = None
     
@@ -851,28 +851,61 @@ def update_stock_data(symbols, per_threshold, pbr_threshold, roe_threshold, divi
             roe_threshold=roe_threshold,
             dividend_multiplier=dividend_multiplier
         )
-        progress_bar.progress(10)
+        progress_bar.progress(5)
         
-        # Analyze stocks with progress updates
-        status_text.text(f"株価データを取得中... / Fetching data for {len(symbols)} stocks...")
-        progress_bar.progress(20)
+        # Batch processing for large symbol lists to prevent server overload
+        batch_size = 12  # Process in smaller batches to reduce server load
+        total_symbols = len(symbols)
+        all_results = {}
         
-        results = st.session_state.analyzer.analyze_stocks(symbols)
+        # Show warning for large requests
+        if total_symbols > 30:
+            st.warning("⚠️ 大量のデータを処理中です。処理に時間がかかる場合があります。/ Processing large amount of data. This may take some time.")
+        
+        for i in range(0, total_symbols, batch_size):
+            batch = symbols[i:i + batch_size]
+            batch_num = (i // batch_size) + 1
+            total_batches = (total_symbols + batch_size - 1) // batch_size
+            
+            status_text.text(f"バッチ {batch_num}/{total_batches} を処理中... / Processing batch {batch_num}/{total_batches} ({len(batch)} stocks)")
+            
+            # Analyze current batch
+            try:
+                batch_results = st.session_state.analyzer.analyze_stocks(batch)
+                all_results.update(batch_results)
+                
+                # Update progress
+                progress = 5 + (85 * (i + len(batch)) // total_symbols)
+                progress_bar.progress(progress)
+                
+                # Small delay between batches to prevent API rate limiting
+                if i + batch_size < total_symbols:
+                    time.sleep(1)
+                    
+            except Exception as batch_error:
+                st.warning(f"バッチ {batch_num} でエラー / Error in batch {batch_num}: {str(batch_error)}")
+                continue
+        
         progress_bar.progress(90)
         
         # Store results
-        st.session_state.stock_data = results
+        st.session_state.stock_data = all_results
         st.session_state.last_update = datetime.now()
         progress_bar.progress(100)
         
         # Show summary
-        valid_results = [r for r in results.values() if r and 'total_score' in r]
-        status_text.text(f"分析完了: {len(valid_results)}/{len(symbols)} 銘柄 / Analysis complete: {len(valid_results)}/{len(symbols)} stocks")
+        valid_results = [r for r in all_results.values() if r and 'total_score' in r]
+        status_text.text(f"分析完了: {len(valid_results)}/{total_symbols} 銘柄 / Analysis complete: {len(valid_results)}/{total_symbols} stocks")
         
         # Show notification for high-scoring stocks
-        high_scoring = [stock for stock in results if results.get(stock) and results[stock].get('total_score', 0) >= 80]
+        high_scoring = [stock for stock in all_results if all_results.get(stock) and all_results[stock].get('total_score', 0) >= 80]
         if high_scoring:
             st.success(f"🚀 高スコア銘柄発見! / High-scoring stocks found: {len(high_scoring)} stocks")
+        
+        # Show warning if many stocks failed to process
+        failed_count = total_symbols - len(valid_results)
+        if failed_count > total_symbols * 0.3:  # More than 30% failed
+            st.warning(f"⚠️ {failed_count} 銘柄のデータ取得に失敗しました。サーバー負荷が原因の可能性があります。/ {failed_count} stocks failed to process. This may be due to server load.")
             
         # Clear progress indicators after a moment
         time.sleep(2)

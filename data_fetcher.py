@@ -188,8 +188,8 @@ class DataFetcher:
         try:
             results = {}
             
-            # Process in larger batches for better performance
-            batch_size = 20  # Increased batch size
+            # Use smaller batches to reduce server load
+            batch_size = 10  # Reduced batch size to prevent server overload
             total_batches = (len(symbols) + batch_size - 1) // batch_size
             
             self.logger.info(f"Processing {len(symbols)} symbols in {total_batches} batches")
@@ -200,25 +200,28 @@ class DataFetcher:
                 
                 self.logger.info(f"Processing batch {batch_num}/{total_batches} ({len(batch)} symbols)")
                 
-                # Process symbols in parallel within batch
+                # Process symbols in parallel within batch with reduced concurrency
                 import concurrent.futures
-                with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
+                with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:  # Reduced workers
                     # Submit all symbols in the batch
                     future_to_symbol = {executor.submit(self.get_stock_info, symbol): symbol for symbol in batch}
                     
-                    # Collect results
+                    # Collect results with better error handling
                     for future in concurrent.futures.as_completed(future_to_symbol):
                         symbol = future_to_symbol[future]
                         try:
-                            result = future.result(timeout=30)  # 30 second timeout per symbol
+                            result = future.result(timeout=45)  # Increased timeout
                             results[symbol] = result
+                        except concurrent.futures.TimeoutError:
+                            self.logger.warning(f"Timeout fetching {symbol}")
+                            results[symbol] = None
                         except Exception as exc:
                             self.logger.warning(f"Error fetching {symbol}: {exc}")
                             results[symbol] = None
                 
-                # Shorter wait between batches
+                # Longer wait between batches to prevent server overload
                 if i + batch_size < len(symbols):
-                    time.sleep(0.5)  # Reduced wait time
+                    time.sleep(1.5)  # Increased wait time
             
             # Log summary
             successful = len([r for r in results.values() if r is not None])
