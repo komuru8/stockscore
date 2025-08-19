@@ -68,6 +68,10 @@ def get_text(key, lang=None):
             'ja': '新興国株 (Emerging Markets)',
             'en': 'Emerging Markets (新興国株)'
         },
+        'all_markets': {
+            'ja': '全て (All Markets)',
+            'en': 'All Markets (全て)'
+        },
         'view_mode': {
             'ja': '表示モード / View Mode',
             'en': 'View Mode / 表示モード'
@@ -148,7 +152,13 @@ def handle_action_buttons(popularity_button, dividend_button, theme_button, rand
     
     if popularity_button:
         # Popular/high market cap stocks by market
-        if market == get_text('japanese_stocks'):
+        if market == get_text('all_markets'):
+            # Combine top stocks from all markets
+            japanese_stocks = ["7203.T", "6758.T", "9984.T", "8306.T", "6861.T", "9434.T", "4063.T"][:7]
+            us_stocks = ["AAPL", "MSFT", "GOOGL", "AMZN", "NVDA", "TSLA", "META"][:7]
+            emerging_stocks = ["2330.TW", "005930.KS", "TSM", "BABA", "JD", "PDD"][:6]
+            selected_symbols = japanese_stocks + us_stocks + emerging_stocks
+        elif market == get_text('japanese_stocks'):
             selected_symbols = [
                 "7203.T", "6758.T", "9984.T", "8306.T", "6861.T", "9434.T", "4063.T", "6098.T",
                 "8035.T", "9432.T", "4519.T", "6367.T", "7267.T", "8031.T", "4568.T", "9020.T",
@@ -169,7 +179,13 @@ def handle_action_buttons(popularity_button, dividend_button, theme_button, rand
         
     elif dividend_button:
         # High dividend yield stocks by market
-        if market == get_text('japanese_stocks'):
+        if market == get_text('all_markets'):
+            # Combine high dividend stocks from all markets
+            japanese_dividend = ["8306.T", "8411.T", "8316.T", "8591.T", "8604.T", "8630.T", "8725.T"][:7]
+            us_dividend = ["T", "VZ", "XOM", "CVX", "KO", "PEP", "JNJ"][:7]  
+            emerging_dividend = ["VALE", "PBR", "ITUB", "BBD", "ABEV", "SID"][:6]
+            selected_symbols = japanese_dividend + us_dividend + emerging_dividend
+        elif market == get_text('japanese_stocks'):
             selected_symbols = [
                 "8306.T", "8411.T", "8316.T", "8591.T", "8604.T", "8630.T", "8725.T", "8732.T",
                 "8766.T", "8795.T", "8830.T", "9501.T", "9613.T", "9962.T", "9983.T", "8001.T",
@@ -204,7 +220,14 @@ def handle_action_buttons(popularity_button, dividend_button, theme_button, rand
                 
     elif random_button:
         # Random selection from all available stocks
-        if market == get_text('japanese_stocks'):
+        if market == get_text('all_markets'):
+            # Combine stocks from all markets for random selection
+            japanese_all = ["7203.T", "6758.T", "9984.T", "8306.T", "6861.T", "9434.T", "4063.T", "6098.T"][:8]
+            us_all = ["AAPL", "MSFT", "GOOGL", "AMZN", "NVDA", "TSLA", "META", "BRK-B"][:8]
+            emerging_all = ["2330.TW", "005930.KS", "TSM", "BABA", "JD", "PDD", "BIDU", "ASML"][:8]
+            all_symbols = japanese_all + us_all + emerging_all
+            selected_symbols = random.sample(all_symbols, min(20, len(all_symbols)))
+        elif market == get_text('japanese_stocks'):
             all_symbols = [
                 "7203.T", "6758.T", "9984.T", "8306.T", "6861.T", "9434.T", "4063.T", "6098.T",
                 "8035.T", "9432.T", "4519.T", "6367.T", "7267.T", "8031.T", "4568.T", "9020.T",
@@ -279,7 +302,16 @@ def get_japanese_company_name(symbol, original_name):
 
 def get_theme_options(market):
     """Get theme-based stock selections by market"""
-    if market == get_text('japanese_stocks'):
+    if market == get_text('all_markets'):
+        return {
+            "高配当株 / High Dividend": ["8306.T", "8411.T", "T", "VZ", "XOM", "PBR", "VALE", "ITUB"],
+            "成長株 / Growth": ["9984.T", "4063.T", "NVDA", "TSLA", "AMZN", "BABA", "JD", "PDD"],
+            "テクノロジー / Technology": ["6758.T", "9984.T", "AAPL", "MSFT", "GOOGL", "2330.TW", "TSM", "BABA"],
+            "金融 / Financial": ["8306.T", "8411.T", "JPM", "BAC", "WFC", "ITUB", "BBD", "005930.KS"],
+            "エネルギー / Energy": ["5020.T", "XOM", "CVX", "COP", "PBR", "VALE", "SID", "UGP"],
+            "大型優良株 / Blue Chips": ["7203.T", "6758.T", "AAPL", "MSFT", "2330.TW", "005930.KS", "TSM", "BABA"]
+        }
+    elif market == get_text('japanese_stocks'):
         return {
             "高配当株 / High Dividend": ["8306.T", "8411.T", "8316.T", "8591.T", "8604.T", "8630.T", "8725.T", "9501.T"],
             "成長株 / Growth": ["9984.T", "6098.T", "4063.T", "6367.T", "4568.T", "6178.T", "4755.T", "3659.T"],
@@ -466,6 +498,7 @@ def main():
     col1, col2, col3 = st.columns([2, 2, 2])
     with col1:
         market_options = [
+            get_text('all_markets'),
             get_text('japanese_stocks'),
             get_text('us_stocks'),
             get_text('emerging_stocks')
