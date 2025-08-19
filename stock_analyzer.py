@@ -22,15 +22,18 @@ class StockAnalyzer:
         )
     
     def analyze_stocks(self, symbols):
-        """Analyze a list of stock symbols"""
+        """Analyze a list of stock symbols efficiently"""
         results = {}
+        
+        # Use the optimized multiple stock fetcher
+        self.logger.info(f"Starting analysis of {len(symbols)} symbols")
+        stock_data_batch = self.data_fetcher.get_multiple_stocks(symbols)
+        
+        successful_analyses = 0
         
         for symbol in symbols:
             try:
-                self.logger.info(f"Analyzing {symbol}")
-                
-                # Fetch stock data
-                stock_data = self.data_fetcher.get_stock_info(symbol)
+                stock_data = stock_data_batch.get(symbol)
                 
                 if not stock_data:
                     self.logger.warning(f"No data available for {symbol}")
@@ -56,12 +59,13 @@ class StockAnalyzer:
                 }
                 
                 results[symbol] = result
-                self.logger.info(f"Successfully analyzed {symbol} - Score: {result.get('total_score', 0):.1f}")
+                successful_analyses += 1
                 
             except Exception as e:
                 self.logger.error(f"Error analyzing {symbol}: {str(e)}")
                 results[symbol] = None
         
+        self.logger.info(f"Analysis completed: {successful_analyses}/{len(symbols)} symbols successfully analyzed")
         return results
     
     def _calculate_metrics(self, stock_data):

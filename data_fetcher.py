@@ -193,17 +193,41 @@ class DataFetcher:
         try:
             results = {}
             
-            # Process in batches to avoid rate limiting
-            batch_size = 5
+            # Process in larger batches for better performance
+            batch_size = 20  # Increased batch size
+            total_batches = (len(symbols) + batch_size - 1) // batch_size
+            
+            self.logger.info(f"Processing {len(symbols)} symbols in {total_batches} batches")
+            
             for i in range(0, len(symbols), batch_size):
                 batch = symbols[i:i + batch_size]
+                batch_num = i // batch_size + 1
                 
-                for symbol in batch:
-                    results[symbol] = self.get_stock_info(symbol)
+                self.logger.info(f"Processing batch {batch_num}/{total_batches} ({len(batch)} symbols)")
                 
-                # Rate limiting - wait between batches
+                # Process symbols in parallel within batch
+                import concurrent.futures
+                with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
+                    # Submit all symbols in the batch
+                    future_to_symbol = {executor.submit(self.get_stock_info, symbol): symbol for symbol in batch}
+                    
+                    # Collect results
+                    for future in concurrent.futures.as_completed(future_to_symbol):
+                        symbol = future_to_symbol[future]
+                        try:
+                            result = future.result(timeout=30)  # 30 second timeout per symbol
+                            results[symbol] = result
+                        except Exception as exc:
+                            self.logger.warning(f"Error fetching {symbol}: {exc}")
+                            results[symbol] = None
+                
+                # Shorter wait between batches
                 if i + batch_size < len(symbols):
-                    time.sleep(1)
+                    time.sleep(0.5)  # Reduced wait time
+            
+            # Log summary
+            successful = len([r for r in results.values() if r is not None])
+            self.logger.info(f"Successfully fetched data for {successful}/{len(symbols)} symbols")
             
             return results
             

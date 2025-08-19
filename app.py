@@ -10,8 +10,8 @@ import os
 
 # Set page configuration
 st.set_page_config(
-    page_title="株予想アプリ - Stock Analysis Tool",
-    page_icon="📈",
+    page_title="StockScore - Advanced Stock Analysis",
+    page_icon="📊",
     layout="wide",
     initial_sidebar_state="expanded"
 )
@@ -33,8 +33,8 @@ def get_text(key, lang=None):
     
     texts = {
         'title': {
-            'ja': '📈 株予想アプリ - Japanese Stock Analysis Tool',
-            'en': '📈 Stock Analysis Tool - Japanese Stock Prediction App'
+            'ja': '📊 StockScore',
+            'en': '📊 StockScore'
         },
         'terms': {
             'ja': '📋 利用規約',
@@ -169,20 +169,62 @@ def main():
     col1, col2 = st.columns([3, 1])
     
     with col1:
-        if market == "日本株 (Japanese Stocks)":
-            default_symbols = ["7203.T", "6758.T", "9984.T", "8306.T", "6861.T"]
+        if market == get_text('japanese_stocks'):
+            # Expanded list of major Japanese stocks
+            default_symbols = [
+                # Top 50 Japanese stocks by market cap
+                "7203.T", "6758.T", "9984.T", "8306.T", "6861.T", "9434.T", "4063.T", "6098.T",
+                "8035.T", "9432.T", "4519.T", "6367.T", "7267.T", "8031.T", "4568.T", "9020.T",
+                "6954.T", "8028.T", "6902.T", "7974.T", "4507.T", "9022.T", "6326.T", "6971.T",
+                "6504.T", "8766.T", "4502.T", "7751.T", "6981.T", "8802.T", "4503.T", "9301.T",
+                "7269.T", "6178.T", "8001.T", "4661.T", "3382.T", "4755.T", "7762.T", "6273.T",
+                "8309.T", "6758.T", "8058.T", "4523.T", "6869.T", "7735.T", "4543.T", "6503.T",
+                "8411.T", "9983.T", "8830.T", "7201.T", "6113.T", "8604.T", "4901.T", "7733.T",
+                "6752.T", "8591.T", "2914.T", "9613.T", "6758.T", "4005.T", "8252.T", "7011.T",
+                "6857.T", "4188.T", "9104.T", "8725.T", "8316.T", "4324.T", "4452.T", "7453.T",
+                "6770.T", "8630.T", "4578.T", "7182.T", "8732.T", "4689.T", "6645.T", "8253.T",
+                "6305.T", "8601.T", "4208.T", "9501.T", "4186.T", "6479.T", "7832.T", "6723.T",
+                "6701.T", "8303.T", "4704.T", "8795.T", "6702.T", "8053.T", "6976.T", "6594.T",
+                "8308.T", "4385.T", "6146.T", "3659.T", "8354.T", "9962.T", "4151.T", "6301.T"
+            ]
             symbol_input = st.text_input(
                 "銘柄コード入力 (例: 7203.T) / Stock Symbol Input (e.g., 7203.T)",
                 placeholder="7203.T, 6758.T, 9984.T"
             )
-        elif market == "米国株 (US Stocks)":
-            default_symbols = ["AAPL", "MSFT", "GOOGL", "AMZN", "TSLA"]
+        elif market == get_text('us_stocks'):
+            # Expanded list of major US stocks
+            default_symbols = [
+                # S&P 500 top holdings and major stocks
+                "AAPL", "MSFT", "GOOGL", "GOOG", "AMZN", "NVDA", "TSLA", "META", "BRK-B", "UNH",
+                "XOM", "JNJ", "JPM", "V", "PG", "HD", "CVX", "MA", "BAC", "ABBV",
+                "PFE", "AVGO", "KO", "MRK", "PEP", "TMO", "COST", "WMT", "DHR", "LIN",
+                "ABT", "ACN", "VZ", "MCD", "ADBE", "CRM", "TXN", "NEE", "PM", "NFLX",
+                "NKE", "T", "DIS", "WFC", "BMY", "UPS", "QCOM", "ORCL", "MS", "HON",
+                "IBM", "GS", "LOW", "CAT", "BA", "AMGN", "SPGI", "BLK", "AXP", "DE",
+                "BKNG", "MDT", "ELV", "ADI", "GE", "ADP", "TJX", "VRTX", "LRCX", "SYK",
+                "MMC", "C", "MO", "ZTS", "CB", "CI", "NOW", "ISRG", "PLD", "AMT",
+                "CME", "TMUS", "SO", "DUK", "BSX", "EOG", "WM", "ITW", "HCA", "PNC",
+                "CL", "APD", "MMM", "AON", "GM", "ICE", "PYPL", "F", "USB", "FDX"
+            ]
             symbol_input = st.text_input(
                 "銘柄シンボル入力 (例: AAPL) / Stock Symbol Input (e.g., AAPL)",
                 placeholder="AAPL, MSFT, GOOGL"
             )
         else:
-            default_symbols = ["2330.TW", "005930.KS", "TSM", "BABA", "JD"]
+            # Expanded list of emerging market stocks
+            default_symbols = [
+                # Major emerging market stocks
+                "2330.TW", "005930.KS", "TSM", "BABA", "JD", "PDD", "BIDU", "ASML", "NIO", "XPEV",
+                "LI", "SHOP", "SE", "GRAB", "VALE", "PBR", "ITUB", "BBD", "EWZ", "FMX",
+                "WIT", "ABEV", "SID", "UGP", "CIG", "ERJ", "GOL", "AZUL", "BRFS", "JBS",
+                "CACC", "PAC", "TV", "QFIN", "IQ", "WB", "DOYU", "HUYA", "BZUN", "YY",
+                "MOMO", "YJ", "TME", "NTES", "VIPS", "ATHM", "DADA", "KC", "EH", "TUYA",
+                "000858.SZ", "000002.SZ", "000001.SZ", "600036.SS", "600519.SS", "000725.SZ",
+                "601318.SS", "600276.SS", "600887.SS", "000963.SZ", "002415.SZ", "300059.SZ",
+                "002304.SZ", "000776.SZ", "600585.SS", "601888.SS", "000333.SZ", "002236.SZ",
+                "600031.SS", "601012.SS", "600900.SS", "000538.SZ", "002027.SZ", "600104.SS",
+                "000895.SZ", "601166.SS", "000858.SZ", "002050.SZ", "000792.SZ", "601988.SS"
+            ]
             symbol_input = st.text_input(
                 "銘柄シンボル入力 / Stock Symbol Input",
                 placeholder="2330.TW, 005930.KS"
@@ -203,11 +245,11 @@ def main():
     if st.button(get_text('update_data'), type="primary"):
         update_stock_data(symbols, per_threshold, pbr_threshold, roe_threshold, dividend_multiplier)
     
-    # Auto-update data if it's been more than 30 minutes
-    if st.session_state.last_update is None or \
-       (datetime.now() - st.session_state.last_update).seconds > 1800:  # 30 minutes
-        with st.spinner("データを取得中... / Fetching data..."):
-            update_stock_data(symbols, per_threshold, pbr_threshold, roe_threshold, dividend_multiplier)
+    # Auto-update data if it's been more than 30 minutes (only for smaller datasets)
+    if len(symbols) <= 20 and (st.session_state.last_update is None or \
+       (datetime.now() - st.session_state.last_update).seconds > 1800):  # 30 minutes
+        st.info(f"自動更新中... / Auto-updating {len(symbols)} stocks...")
+        update_stock_data(symbols, per_threshold, pbr_threshold, roe_threshold, dividend_multiplier)
     
     # Display results
     if st.session_state.stock_data:
@@ -218,27 +260,52 @@ def main():
 def update_stock_data(symbols, per_threshold, pbr_threshold, roe_threshold, dividend_multiplier):
     """Update stock data and scores"""
     try:
-        with st.spinner("株価データを取得中... / Fetching stock data..."):
-            # Update scoring criteria
-            st.session_state.analyzer.update_criteria(
-                per_threshold=per_threshold,
-                pbr_threshold=pbr_threshold,
-                roe_threshold=roe_threshold,
-                dividend_multiplier=dividend_multiplier
-            )
+        # Create progress indicators
+        progress_bar = st.progress(0)
+        status_text = st.empty()
+        
+        # Update scoring criteria
+        status_text.text("設定を更新中... / Updating criteria...")
+        st.session_state.analyzer.update_criteria(
+            per_threshold=per_threshold,
+            pbr_threshold=pbr_threshold,
+            roe_threshold=roe_threshold,
+            dividend_multiplier=dividend_multiplier
+        )
+        progress_bar.progress(10)
+        
+        # Analyze stocks with progress updates
+        status_text.text(f"株価データを取得中... / Fetching data for {len(symbols)} stocks...")
+        progress_bar.progress(20)
+        
+        results = st.session_state.analyzer.analyze_stocks(symbols)
+        progress_bar.progress(90)
+        
+        # Store results
+        st.session_state.stock_data = results
+        st.session_state.last_update = datetime.now()
+        progress_bar.progress(100)
+        
+        # Show summary
+        valid_results = [r for r in results.values() if r and 'total_score' in r]
+        status_text.text(f"分析完了: {len(valid_results)}/{len(symbols)} 銘柄 / Analysis complete: {len(valid_results)}/{len(symbols)} stocks")
+        
+        # Show notification for high-scoring stocks
+        high_scoring = [stock for stock in results if results.get(stock) and results[stock].get('total_score', 0) >= 80]
+        if high_scoring:
+            st.success(f"🚀 高スコア銘柄発見! / High-scoring stocks found: {len(high_scoring)} stocks")
             
-            # Analyze stocks
-            results = st.session_state.analyzer.analyze_stocks(symbols)
-            st.session_state.stock_data = results
-            st.session_state.last_update = datetime.now()
-            
-            # Show notification for high-scoring stocks
-            high_scoring = [stock for stock in results if results[stock].get('total_score', 0) >= 80]
-            if high_scoring:
-                st.success(f"🚀 高スコア銘柄発見! / High-scoring stocks found: {', '.join(high_scoring)}")
-            
+        # Clear progress indicators after a moment
+        time.sleep(2)
+        progress_bar.empty()
+        status_text.empty()
+        
     except Exception as e:
         st.error(f"データ取得エラー / Data fetch error: {str(e)}")
+        if 'progress_bar' in locals():
+            progress_bar.empty()
+        if 'status_text' in locals():
+            status_text.empty()
 
 def display_results(view_mode, market):
     """Display analysis results"""
