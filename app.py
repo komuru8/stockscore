@@ -150,6 +150,128 @@ def get_text(key, lang=None):
     
     return texts.get(key, {}).get(lang, key)
 
+def handle_action_buttons(popularity_button, dividend_button, theme_button, random_button, market):
+    """Handle action button clicks and return selected symbols"""
+    import random
+    
+    selected_symbols = None
+    
+    if popularity_button:
+        # Popular/high market cap stocks by market
+        if market == get_text('japanese_stocks'):
+            selected_symbols = [
+                "7203.T", "6758.T", "9984.T", "8306.T", "6861.T", "9434.T", "4063.T", "6098.T",
+                "8035.T", "9432.T", "4519.T", "6367.T", "7267.T", "8031.T", "4568.T", "9020.T",
+                "6954.T", "8028.T", "6902.T", "7974.T", "4507.T", "9022.T", "6326.T", "6971.T"
+            ][:20]  # Top 20 popular Japanese stocks
+        elif market == get_text('us_stocks'):
+            selected_symbols = [
+                "AAPL", "MSFT", "GOOGL", "AMZN", "NVDA", "TSLA", "META", "BRK-B", "UNH", "XOM",
+                "JNJ", "JPM", "V", "PG", "HD", "CVX", "MA", "BAC", "ABBV", "PFE"
+            ]  # Top 20 popular US stocks
+        else:
+            selected_symbols = [
+                "2330.TW", "005930.KS", "TSM", "BABA", "JD", "PDD", "BIDU", "ASML", "NIO", "XPEV",
+                "LI", "SHOP", "SE", "GRAB", "VALE", "PBR", "ITUB", "BBD", "EWZ", "FMX"
+            ]  # Top 20 emerging market stocks
+        
+        st.success("人気ランキング上位銘柄を選択しました" if st.session_state.language == 'ja' else "Selected top popular stocks")
+        
+    elif dividend_button:
+        # High dividend yield stocks by market
+        if market == get_text('japanese_stocks'):
+            selected_symbols = [
+                "8306.T", "8411.T", "8316.T", "8591.T", "8604.T", "8630.T", "8725.T", "8732.T",
+                "8766.T", "8795.T", "8830.T", "9501.T", "9613.T", "9962.T", "9983.T", "8001.T",
+                "8028.T", "8031.T", "8053.T", "8058.T"
+            ]  # High dividend Japanese stocks (banks, utilities, etc.)
+        elif market == get_text('us_stocks'):
+            selected_symbols = [
+                "T", "VZ", "XOM", "CVX", "KO", "PEP", "JNJ", "PG", "MO", "PM",
+                "IBM", "VTI", "SCHD", "DVY", "HDV", "NOBL", "DGRO", "VYM", "SPYD", "USMV"
+            ]  # High dividend US stocks
+        else:
+            selected_symbols = [
+                "PBR", "VALE", "ITUB", "BBD", "ABEV", "SID", "UGP", "EWZ", "FMX", "CIG",
+                "ERJ", "GOL", "AZUL", "BRFS", "JBS", "CACC", "PAC", "TV", "WIT", "005930.KS"
+            ]  # High dividend emerging market stocks
+            
+        st.success("高配当利回り銘柄を選択しました" if st.session_state.language == 'ja' else "Selected high dividend yield stocks")
+        
+    elif theme_button:
+        # Show theme selection modal
+        with st.expander("テーマを選択してください" if st.session_state.language == 'ja' else "Select a Theme", expanded=True):
+            theme_options = get_theme_options(market)
+            selected_theme = st.selectbox(
+                "投資テーマ" if st.session_state.language == 'ja' else "Investment Theme",
+                list(theme_options.keys()),
+                index=0
+            )
+            
+            if st.button("このテーマで分析開始" if st.session_state.language == 'ja' else "Start Analysis with This Theme"):
+                selected_symbols = theme_options[selected_theme]
+                st.success(f"テーマ「{selected_theme}」の銘柄を選択しました" if st.session_state.language == 'ja' else f"Selected stocks for theme: {selected_theme}")
+                
+    elif random_button:
+        # Random selection from all available stocks
+        if market == get_text('japanese_stocks'):
+            all_symbols = [
+                "7203.T", "6758.T", "9984.T", "8306.T", "6861.T", "9434.T", "4063.T", "6098.T",
+                "8035.T", "9432.T", "4519.T", "6367.T", "7267.T", "8031.T", "4568.T", "9020.T",
+                "6954.T", "8028.T", "6902.T", "7974.T", "4507.T", "9022.T", "6326.T", "6971.T",
+                "6504.T", "8766.T", "4502.T", "7751.T", "6981.T", "8802.T", "4503.T", "9301.T",
+                "7269.T", "6178.T", "8001.T", "4661.T", "3382.T", "4755.T", "7762.T", "6273.T",
+                "8309.T", "6758.T", "8058.T", "4523.T", "6869.T", "7735.T", "4543.T", "6503.T"
+            ]
+        elif market == get_text('us_stocks'):
+            all_symbols = [
+                "AAPL", "MSFT", "GOOGL", "GOOG", "AMZN", "NVDA", "TSLA", "META", "BRK-B", "UNH",
+                "XOM", "JNJ", "JPM", "V", "PG", "HD", "CVX", "MA", "BAC", "ABBV",
+                "PFE", "AVGO", "KO", "MRK", "PEP", "TMO", "COST", "WMT", "DHR", "LIN",
+                "ABT", "ACN", "VZ", "MCD", "ADBE", "CRM", "TXN", "NEE", "PM", "NFLX"
+            ]
+        else:
+            all_symbols = [
+                "2330.TW", "005930.KS", "TSM", "BABA", "JD", "PDD", "BIDU", "ASML", "NIO", "XPEV",
+                "LI", "SHOP", "SE", "GRAB", "VALE", "PBR", "ITUB", "BBD", "EWZ", "FMX",
+                "WIT", "ABEV", "SID", "UGP", "CIG", "ERJ", "GOL", "AZUL", "BRFS", "JBS"
+            ]
+            
+        selected_symbols = random.sample(all_symbols, min(25, len(all_symbols)))
+        st.success("ランダムに銘柄を選択しました" if st.session_state.language == 'ja' else "Randomly selected stocks")
+        
+    return selected_symbols
+
+def get_theme_options(market):
+    """Get theme-based stock selections by market"""
+    if market == get_text('japanese_stocks'):
+        return {
+            "高配当株 / High Dividend": ["8306.T", "8411.T", "8316.T", "8591.T", "8604.T", "8630.T", "8725.T", "9501.T"],
+            "成長株 / Growth": ["9984.T", "6098.T", "4063.T", "6367.T", "4568.T", "6178.T", "4755.T", "3659.T"],
+            "防衛関連 / Defense": ["7203.T", "6902.T", "7267.T", "7269.T", "6113.T", "6770.T", "6645.T", "6301.T"],
+            "テクノロジー / Technology": ["6758.T", "9984.T", "4063.T", "6367.T", "4568.T", "6861.T", "4324.T", "4689.T"],
+            "バイオ・製薬 / Biotech & Pharma": ["4519.T", "4568.T", "4507.T", "4523.T", "4502.T", "4503.T", "4661.T", "4543.T"],
+            "エネルギー / Energy": ["5020.T", "1605.T", "5019.T", "1662.T", "9501.T", "9502.T", "9503.T", "9531.T"]
+        }
+    elif market == get_text('us_stocks'):
+        return {
+            "高配当株 / High Dividend": ["T", "VZ", "XOM", "CVX", "KO", "PEP", "JNJ", "PG", "MO", "IBM"],
+            "成長株 / Growth": ["AAPL", "MSFT", "GOOGL", "AMZN", "NVDA", "TSLA", "META", "NFLX", "CRM", "ADBE"],
+            "防衛関連 / Defense": ["BA", "LMT", "RTX", "GD", "NOC", "HII", "LDOS", "TXT", "KTOS", "AJRD"],
+            "テクノロジー / Technology": ["AAPL", "MSFT", "GOOGL", "AMZN", "NVDA", "META", "ORCL", "IBM", "CSCO", "INTC"],
+            "バイオ・製薬 / Biotech & Pharma": ["JNJ", "PFE", "ABBV", "MRK", "BMY", "AMGN", "GILD", "BIIB", "VRTX", "REGN"],
+            "エネルギー / Energy": ["XOM", "CVX", "COP", "EOG", "SLB", "MPC", "VLO", "PSX", "OXY", "KMI"]
+        }
+    else:
+        return {
+            "高配当株 / High Dividend": ["PBR", "VALE", "ITUB", "BBD", "ABEV", "SID", "UGP", "EWZ"],
+            "成長株 / Growth": ["BABA", "JD", "PDD", "BIDU", "NIO", "XPEV", "LI", "SE"],
+            "テクノロジー / Technology": ["2330.TW", "TSM", "BABA", "JD", "PDD", "BIDU", "ASML", "SHOP"],
+            "エネルギー / Energy": ["PBR", "VALE", "SID", "UGP", "CIG", "ERJ", "005930.KS", "2330.TW"],
+            "消費財 / Consumer": ["ABEV", "BRFS", "JBS", "FMX", "CACC", "PAC", "TV", "BBD"],
+            "金融 / Financial": ["ITUB", "BBD", "EWZ", "WIT", "CACC", "PAC", "TV", "005930.KS"]
+        }
+
 def main():
     # Language toggle in top right
     col1, col2, col3 = st.columns([6, 2, 2])
@@ -173,7 +295,7 @@ def main():
     """
     st.markdown(title_html, unsafe_allow_html=True)
     
-    # Sidebar configuration
+    # Sidebar configuration (moved up to define market first)
     st.sidebar.header("設定" if st.session_state.language == 'ja' else "Settings")
     
     # Market selection
@@ -217,81 +339,106 @@ def main():
         min_value=1.0, max_value=2.0, value=1.2, step=0.1
     )
     
-    # Stock symbol input
-    col1, col2 = st.columns([3, 1])
+    # Action buttons section with enhanced styling
+    st.markdown("---")
+    st.subheader("📍 " + ("株式検索方法を選択" if st.session_state.language == 'ja' else "Choose Stock Discovery Method"))
+    
+    # Add custom CSS for enhanced button styling
+    st.markdown("""
+    <style>
+    div[data-testid="column"] > div > div > div > button {
+        height: 120px;
+        border-radius: 15px;
+        border: 2px solid #e1e5e9;
+        background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%);
+        transition: all 0.3s ease;
+        font-size: 14px !important;
+        font-weight: 600;
+        text-align: center;
+    }
+    div[data-testid="column"] > div > div > div > button:hover {
+        border-color: #2563eb;
+        background: linear-gradient(135deg, #eff6ff 0%, #f0f9ff 100%);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(37, 99, 235, 0.15);
+    }
+    </style>
+    """, unsafe_allow_html=True)
+    
+    # Create action buttons in a grid layout
+    col1, col2, col3, col4 = st.columns(4, gap="medium")
     
     with col1:
-        if market == get_text('japanese_stocks'):
-            # Expanded list of major Japanese stocks
-            default_symbols = [
-                # Top 50 Japanese stocks by market cap
-                "7203.T", "6758.T", "9984.T", "8306.T", "6861.T", "9434.T", "4063.T", "6098.T",
-                "8035.T", "9432.T", "4519.T", "6367.T", "7267.T", "8031.T", "4568.T", "9020.T",
-                "6954.T", "8028.T", "6902.T", "7974.T", "4507.T", "9022.T", "6326.T", "6971.T",
-                "6504.T", "8766.T", "4502.T", "7751.T", "6981.T", "8802.T", "4503.T", "9301.T",
-                "7269.T", "6178.T", "8001.T", "4661.T", "3382.T", "4755.T", "7762.T", "6273.T",
-                "8309.T", "6758.T", "8058.T", "4523.T", "6869.T", "7735.T", "4543.T", "6503.T",
-                "8411.T", "9983.T", "8830.T", "7201.T", "6113.T", "8604.T", "4901.T", "7733.T",
-                "6752.T", "8591.T", "2914.T", "9613.T", "6758.T", "4005.T", "8252.T", "7011.T",
-                "6857.T", "4188.T", "9104.T", "8725.T", "8316.T", "4324.T", "4452.T", "7453.T",
-                "6770.T", "8630.T", "4578.T", "7182.T", "8732.T", "4689.T", "6645.T", "8253.T",
-                "6305.T", "8601.T", "4208.T", "9501.T", "4186.T", "6479.T", "7832.T", "6723.T",
-                "6701.T", "8303.T", "4704.T", "8795.T", "6702.T", "8053.T", "6976.T", "6594.T",
-                "8308.T", "4385.T", "6146.T", "3659.T", "8354.T", "9962.T", "4151.T", "6301.T"
-            ]
-            symbol_input = st.text_input(
-                "銘柄コード入力 (例: 7203.T) / Stock Symbol Input (e.g., 7203.T)",
-                placeholder="7203.T, 6758.T, 9984.T"
-            )
-        elif market == get_text('us_stocks'):
-            # Expanded list of major US stocks
-            default_symbols = [
-                # S&P 500 top holdings and major stocks
-                "AAPL", "MSFT", "GOOGL", "GOOG", "AMZN", "NVDA", "TSLA", "META", "BRK-B", "UNH",
-                "XOM", "JNJ", "JPM", "V", "PG", "HD", "CVX", "MA", "BAC", "ABBV",
-                "PFE", "AVGO", "KO", "MRK", "PEP", "TMO", "COST", "WMT", "DHR", "LIN",
-                "ABT", "ACN", "VZ", "MCD", "ADBE", "CRM", "TXN", "NEE", "PM", "NFLX",
-                "NKE", "T", "DIS", "WFC", "BMY", "UPS", "QCOM", "ORCL", "MS", "HON",
-                "IBM", "GS", "LOW", "CAT", "BA", "AMGN", "SPGI", "BLK", "AXP", "DE",
-                "BKNG", "MDT", "ELV", "ADI", "GE", "ADP", "TJX", "VRTX", "LRCX", "SYK",
-                "MMC", "C", "MO", "ZTS", "CB", "CI", "NOW", "ISRG", "PLD", "AMT",
-                "CME", "TMUS", "SO", "DUK", "BSX", "EOG", "WM", "ITW", "HCA", "PNC",
-                "CL", "APD", "MMM", "AON", "GM", "ICE", "PYPL", "F", "USB", "FDX"
-            ]
-            symbol_input = st.text_input(
-                "銘柄シンボル入力 (例: AAPL) / Stock Symbol Input (e.g., AAPL)",
-                placeholder="AAPL, MSFT, GOOGL"
-            )
-        else:
-            # Expanded list of emerging market stocks
-            default_symbols = [
-                # Major emerging market stocks
-                "2330.TW", "005930.KS", "TSM", "BABA", "JD", "PDD", "BIDU", "ASML", "NIO", "XPEV",
-                "LI", "SHOP", "SE", "GRAB", "VALE", "PBR", "ITUB", "BBD", "EWZ", "FMX",
-                "WIT", "ABEV", "SID", "UGP", "CIG", "ERJ", "GOL", "AZUL", "BRFS", "JBS",
-                "CACC", "PAC", "TV", "QFIN", "IQ", "WB", "DOYU", "HUYA", "BZUN", "YY",
-                "MOMO", "YJ", "TME", "NTES", "VIPS", "ATHM", "DADA", "KC", "EH", "TUYA",
-                "000858.SZ", "000002.SZ", "000001.SZ", "600036.SS", "600519.SS", "000725.SZ",
-                "601318.SS", "600276.SS", "600887.SS", "000963.SZ", "002415.SZ", "300059.SZ",
-                "002304.SZ", "000776.SZ", "600585.SS", "601888.SS", "000333.SZ", "002236.SZ",
-                "600031.SS", "601012.SS", "600900.SS", "000538.SZ", "002027.SZ", "600104.SS",
-                "000895.SZ", "601166.SS", "000858.SZ", "002050.SZ", "000792.SZ", "601988.SS"
-            ]
-            symbol_input = st.text_input(
-                "銘柄シンボル入力 / Stock Symbol Input",
-                placeholder="2330.TW, 005930.KS"
-            )
+        popularity_button = st.button(
+            "📈\n\n人気ランキング\nから探す" if st.session_state.language == 'ja' else "📈\n\nPopular\nRanking",
+            use_container_width=True,
+            help="市場で人気の銘柄を表示" if st.session_state.language == 'ja' else "Show popular stocks in the market"
+        )
     
     with col2:
-        use_default = st.button("デフォルト銘柄使用 / Use Default Stocks")
+        dividend_button = st.button(
+            "💰\n\n配当利回り\nから探す" if st.session_state.language == 'ja' else "💰\n\nHigh\nDividend",
+            use_container_width=True,
+            help="高配当利回りの銘柄を表示" if st.session_state.language == 'ja' else "Show high dividend yield stocks"
+        )
     
-    # Determine which symbols to analyze
-    if use_default:
-        symbols = default_symbols
-    elif symbol_input:
-        symbols = [s.strip().upper() for s in symbol_input.split(",") if s.strip()]
+    with col3:
+        theme_button = st.button(
+            "🎯\n\nテーマ別\nに探す" if st.session_state.language == 'ja' else "🎯\n\nBy\nTheme",
+            use_container_width=True,
+            help="特定のテーマやセクターの銘柄を表示" if st.session_state.language == 'ja' else "Show stocks by specific themes or sectors"
+        )
+    
+    with col4:
+        random_button = st.button(
+            "🎲\n\nランダム\nに探す" if st.session_state.language == 'ja' else "🎲\n\nRandom\nPick",
+            use_container_width=True,
+            help="ランダムに選択された銘柄を表示" if st.session_state.language == 'ja' else "Show randomly selected stocks"
+        )
+    
+    # Handle action button clicks
+    selected_method = handle_action_buttons(popularity_button, dividend_button, theme_button, random_button, market)
+    
+    # Determine which symbols to analyze based on selected method
+    if selected_method:
+        symbols = selected_method
     else:
-        symbols = default_symbols
+        # Manual stock symbol input (fallback)
+        st.markdown("---")
+        st.subheader("手動銘柄入力" if st.session_state.language == 'ja' else "Manual Stock Input")
+        
+        col1, col2 = st.columns([3, 1])
+        
+        with col1:
+            if market == get_text('japanese_stocks'):
+                default_symbols = ["7203.T", "6758.T", "9984.T", "8306.T", "6861.T", "9434.T", "4063.T", "6098.T"]
+                symbol_input = st.text_input(
+                    "銘柄コード入力 (例: 7203.T) / Stock Symbol Input (e.g., 7203.T)",
+                    placeholder="7203.T, 6758.T, 9984.T"
+                )
+            elif market == get_text('us_stocks'):
+                default_symbols = ["AAPL", "MSFT", "GOOGL", "AMZN", "NVDA", "TSLA", "META", "BRK-B"]
+                symbol_input = st.text_input(
+                    "銘柄シンボル入力 (例: AAPL) / Stock Symbol Input (e.g., AAPL)",
+                    placeholder="AAPL, MSFT, GOOGL"
+                )
+            else:
+                default_symbols = ["2330.TW", "005930.KS", "TSM", "BABA", "JD", "PDD", "BIDU", "ASML"]
+                symbol_input = st.text_input(
+                    "銘柄シンボル入力 / Stock Symbol Input",
+                    placeholder="2330.TW, 005930.KS"
+                )
+        
+        with col2:
+            use_default = st.button("デフォルト銘柄使用 / Use Default Stocks")
+        
+        # Set symbols based on user input
+        if use_default:
+            symbols = default_symbols
+        elif symbol_input:
+            symbols = [s.strip().upper() for s in symbol_input.split(",") if s.strip()]
+        else:
+            symbols = default_symbols
     
     # Update data button
     if st.button(get_text('update_data'), type="primary"):
