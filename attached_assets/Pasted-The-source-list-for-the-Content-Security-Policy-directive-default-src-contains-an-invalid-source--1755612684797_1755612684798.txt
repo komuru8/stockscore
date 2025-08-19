@@ -1,0 +1,60 @@
+The source list for the Content Security Policy directive 'default-src' contains an invalid source: ''unsafe-dynamic''. It will be ignored.Understand this error
+/~:1 The Content-Security-Policy directive 'default-src' contains 'report-uri' as a source expression. Did you want to add it as a directive and forget a semicolon?Understand this error
+/~:1 The source list for Content Security Policy directive 'default-src' contains a source with an invalid path: '/api/4509669501698048/security/?sentry_key=7eb3d90eb4660416caf507087367e67e'. The query component, including the '?', will be ignored.Understand this error
+_app-8412484c36008d85.js:13 [LaunchDarkly] LaunchDarkly client initialized
+content.js:1 Uncaught (in promise) The message port closed before a response was received.Understand this error
+/~:1 Banner not shown: beforeinstallpromptevent.preventDefault() called. The page must call beforeinstallpromptevent.prompt() to show the banner.
+78Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.Understand this error
+framework-32fbc922dea7b110.js:1 Unrecognized feature: 'ambient-light-sensor'.
+_ @ framework-32fbc922dea7b110.js:1Understand this warning
+framework-32fbc922dea7b110.js:1 Unrecognized feature: 'battery'.
+_ @ framework-32fbc922dea7b110.js:1Understand this warning
+framework-32fbc922dea7b110.js:1 Unrecognized feature: 'execution-while-not-rendered'.
+_ @ framework-32fbc922dea7b110.js:1Understand this warning
+framework-32fbc922dea7b110.js:1 Unrecognized feature: 'execution-while-out-of-viewport'.
+_ @ framework-32fbc922dea7b110.js:1Understand this warning
+framework-32fbc922dea7b110.js:1 Unrecognized feature: 'layout-animations'.
+_ @ framework-32fbc922dea7b110.js:1Understand this warning
+framework-32fbc922dea7b110.js:1 Unrecognized feature: 'legacy-image-formats'.
+_ @ framework-32fbc922dea7b110.js:1Understand this warning
+framework-32fbc922dea7b110.js:1 Unrecognized feature: 'navigation-override'.
+_ @ framework-32fbc922dea7b110.js:1Understand this warning
+framework-32fbc922dea7b110.js:1 Unrecognized feature: 'oversized-images'.
+_ @ framework-32fbc922dea7b110.js:1Understand this warning
+framework-32fbc922dea7b110.js:1 Unrecognized feature: 'publickey-credentials'.
+_ @ framework-32fbc922dea7b110.js:1Understand this warning
+framework-32fbc922dea7b110.js:1 Unrecognized feature: 'speaker-selection'.
+_ @ framework-32fbc922dea7b110.js:1Understand this warning
+framework-32fbc922dea7b110.js:1 Unrecognized feature: 'unoptimized-images'.
+_ @ framework-32fbc922dea7b110.js:1Understand this warning
+framework-32fbc922dea7b110.js:1 Unrecognized feature: 'unsized-media'.
+_ @ framework-32fbc922dea7b110.js:1Understand this warning
+framework-32fbc922dea7b110.js:1 Unrecognized feature: 'pointer-lock'.
+_ @ framework-32fbc922dea7b110.js:1Understand this warning
+framework-32fbc922dea7b110.js:1 Allow attribute will take precedence over 'allowfullscreen'.
+_ @ framework-32fbc922dea7b110.js:1Understand this warning
+framework-32fbc922dea7b110.js:1 Allow attribute will take precedence over 'allowpaymentrequest'.
+_ @ framework-32fbc922dea7b110.js:1Understand this warning
+9content.js:1 Uncaught (in promise) The message port closed before a response was received.Understand this error
+_app-8412484c36008d85.js:13 Measure loop restarted more than 5 times
+(anonymous) @ _app-8412484c36008d85.js:13Understand this warning
+Grammarly-check.js:1 [Violation] Permissions policy violation: unload is not allowed in this document.
+(anonymous) @ Grammarly-check.js:1Understand this error
+10content.js:1 Uncaught (in promise) The message port closed before a response was received.Understand this error
+workspace_iframe.html?initialPath=%2F&id=%3Ar3im%3A:32 Unrecognized feature: 'ambient-light-sensor'.Understand this warning
+workspace_iframe.html?initialPath=%2F&id=%3Ar3im%3A:32 Unrecognized feature: 'battery'.Understand this warning
+workspace_iframe.html?initialPath=%2F&id=%3Ar3im%3A:32 Unrecognized feature: 'execution-while-not-rendered'.Understand this warning
+workspace_iframe.html?initialPath=%2F&id=%3Ar3im%3A:32 Unrecognized feature: 'execution-while-out-of-viewport'.Understand this warning
+workspace_iframe.html?initialPath=%2F&id=%3Ar3im%3A:32 Unrecognized feature: 'layout-animations'.Understand this warning
+workspace_iframe.html?initialPath=%2F&id=%3Ar3im%3A:32 Unrecognized feature: 'legacy-image-formats'.Understand this warning
+workspace_iframe.html?initialPath=%2F&id=%3Ar3im%3A:32 Unrecognized feature: 'navigation-override'.Understand this warning
+workspace_iframe.html?initialPath=%2F&id=%3Ar3im%3A:32 Unrecognized feature: 'oversized-images'.Understand this warning
+workspace_iframe.html?initialPath=%2F&id=%3Ar3im%3A:32 Unrecognized feature: 'publickey-credentials'.Understand this warning
+workspace_iframe.html?initialPath=%2F&id=%3Ar3im%3A:32 Unrecognized feature: 'speaker-selection'.Understand this warning
+workspace_iframe.html?initialPath=%2F&id=%3Ar3im%3A:32 Unrecognized feature: 'unoptimized-images'.Understand this warning
+workspace_iframe.html?initialPath=%2F&id=%3Ar3im%3A:32 Unrecognized feature: 'unsized-media'.Understand this warning
+workspace_iframe.html?initialPath=%2F&id=%3Ar3im%3A:32 Allow attribute will take precedence over 'allowfullscreen'.Understand this warning
+workspace_iframe.html?initialPath=%2F&id=%3Ar3im%3A:32 Allow attribute will take precedence over 'allowpaymentrequest'.Understand this warning
+2Console.js:61 `preventOverflow` modifier is required by `hide` modifier in order to work, be sure to include it before `hide`!
+Mt.forEach.n.<computed> @ Console.js:61Understand this warning
+stallwart.build.js:1 stallwart: failed ping 1
