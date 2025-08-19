@@ -328,7 +328,7 @@ def main():
     
     with col1:
         popularity_button = st.button(
-            "📈\n\n人気ランキング\nから探す" if st.session_state.language == 'ja' else "📈\n\nPopular\nRanking",
+            "📈\n\n人気から\n探す" if st.session_state.language == 'ja' else "📈\n\nPopular\nRanking",
             use_container_width=True,
             help="市場で人気の銘柄を表示" if st.session_state.language == 'ja' else "Show popular stocks in the market"
         )
