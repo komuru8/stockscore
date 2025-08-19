@@ -808,40 +808,41 @@ def display_results(view_mode, market):
     top_recommendations = df.head(3)
     
     if len(top_recommendations) > 0:
-        # Display in 1 row of 3 columns
-        cols = st.columns(3)
-        for col_idx, col in enumerate(cols):
-            if col_idx < len(top_recommendations):
-                stock = top_recommendations.iloc[col_idx]
-                
-                with col:
-                    # Create card-like container
-                    with st.container():
-                        st.markdown(f"""
-                        <div style="
-                            border: 2px solid {'#28a745' if stock['Score'] >= 80 else '#fd7e14' if stock['Score'] >= 60 else '#ffc107'};
-                            border-radius: 15px;
-                            padding: 20px;
-                            margin-bottom: 15px;
-                            background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
-                            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-                            text-align: center;
-                        ">
-                        """, unsafe_allow_html=True)
-                        
-                        # Stock header
-                        st.markdown(f"**{stock['Symbol']}**")
-                        st.markdown(f"<div style='font-size: 0.9em; color: #666;'>{stock['Company']}</div>", unsafe_allow_html=True)
-                        
-                        # Circular score
-                        circular_svg = create_circular_score(stock['Score'], 100)
-                        st.markdown(circular_svg, unsafe_allow_html=True)
-                        
-                        # Price and recommendation
-                        st.markdown(f"**{stock['Current Price']}**")
-                        st.markdown(f"<div style='font-size: 0.9em; font-weight: bold;'>{stock['Recommendation']}</div>", unsafe_allow_html=True)
-                        
-                        st.markdown("</div>", unsafe_allow_html=True)
+        # Display only the columns we need (no empty boxes)
+        num_stocks = min(len(top_recommendations), 3)
+        cols = st.columns(num_stocks)
+        
+        for col_idx in range(num_stocks):
+            stock = top_recommendations.iloc[col_idx]
+            
+            with cols[col_idx]:
+                # Create card-like container
+                with st.container():
+                    st.markdown(f"""
+                    <div style="
+                        border: 2px solid {'#28a745' if stock['Score'] >= 80 else '#fd7e14' if stock['Score'] >= 60 else '#ffc107'};
+                        border-radius: 15px;
+                        padding: 20px;
+                        margin-bottom: 15px;
+                        background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+                        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+                        text-align: center;
+                    ">
+                    """, unsafe_allow_html=True)
+                    
+                    # Stock header
+                    st.markdown(f"**{stock['Symbol']}**")
+                    st.markdown(f"<div style='font-size: 0.9em; color: #666;'>{stock['Company']}</div>", unsafe_allow_html=True)
+                    
+                    # Circular score
+                    circular_svg = create_circular_score(stock['Score'], 100)
+                    st.markdown(circular_svg, unsafe_allow_html=True)
+                    
+                    # Price and recommendation
+                    st.markdown(f"**{stock['Current Price']}**")
+                    st.markdown(f"<div style='font-size: 0.9em; font-weight: bold;'>{stock['Recommendation']}</div>", unsafe_allow_html=True)
+                    
+                    st.markdown("</div>", unsafe_allow_html=True)
     
     # Results table
     if view_mode == get_text('simple_view'):
@@ -918,17 +919,26 @@ def display_simple_view(df):
     """Display simple table view of results"""
     st.subheader("銘柄一覧" if st.session_state.language == 'ja' else "Stock List")
     
-    # Enhanced table with better formatting and styling
-    display_columns = ['Symbol', 'Company', 'Score', 'Recommendation', 'Current Price', 'PER', 'PBR', 'ROE', 'Dividend Yield']
-    table_df = df[display_columns].copy()
+    # Enhanced table with better formatting and styling - only use columns that exist
+    available_columns = ['Symbol', 'Company', 'Score', 'Recommendation', 'Current Price']
+    optional_columns = ['PER', 'PBR', 'ROE', 'Dividend Yield']
     
-    # Format numerical columns
-    for col in ['PER', 'PBR', 'ROE', 'Dividend Yield']:
-        table_df[col] = pd.to_numeric(table_df[col], errors='coerce')
-        if col in ['ROE', 'Dividend Yield']:
-            table_df[col] = table_df[col].apply(lambda x: f"{x:.1f}%" if pd.notna(x) else "N/A")
-        else:
-            table_df[col] = table_df[col].apply(lambda x: f"{x:.2f}" if pd.notna(x) else "N/A")
+    # Add only the columns that exist in the DataFrame
+    for col in optional_columns:
+        if col in df.columns:
+            available_columns.append(col)
+    
+    table_df = df[available_columns].copy()
+    
+    # Format numerical columns - only format columns that exist
+    numerical_cols = ['PER', 'PBR', 'ROE', 'Dividend Yield']
+    for col in numerical_cols:
+        if col in table_df.columns:
+            table_df[col] = pd.to_numeric(table_df[col], errors='coerce')
+            if col in ['ROE', 'Dividend Yield']:
+                table_df[col] = table_df[col].apply(lambda x: f"{x:.1f}%" if pd.notna(x) else "N/A")
+            else:
+                table_df[col] = table_df[col].apply(lambda x: f"{x:.2f}" if pd.notna(x) else "N/A")
     
     # Color coding function for scores
     def highlight_scores(row):
