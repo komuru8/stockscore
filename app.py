@@ -828,34 +828,24 @@ def main():
             except Exception as e:
                 st.sidebar.error(f"❌ {symbol}: {str(e)}")
     
-    # Update data button - only show if symbols are selected
+    # Update data button - only show if symbols are selected, with strict limits to prevent 502 errors
     if symbols:
-        # Show different options based on symbol count to prevent server overload
-        if len(symbols) > 25:
-            col1, col2, col3 = st.columns(3)
-            with col1:
-                if st.button(get_text('update_data'), type="primary"):
-                    update_stock_data(symbols, per_threshold, pbr_threshold, roe_threshold, dividend_multiplier)
-            with col2:
-                if st.button("最初の25銘柄のみ / First 25 Only", type="secondary"):
-                    limited_symbols = symbols[:25]
-                    st.info(f"サーバー負荷軽減のため最初の25銘柄のみ分析 / Analyzing first 25 stocks to reduce server load")
-                    update_stock_data(limited_symbols, per_threshold, pbr_threshold, roe_threshold, dividend_multiplier)
-            with col3:
-                if st.button("テスト用5銘柄 / Test 5 Stocks", type="secondary"):
-                    test_symbols = symbols[:5]
-                    st.info(f"動作テスト用に5銘柄のみ分析 / Testing with only 5 stocks")
-                    update_stock_data(test_symbols, per_threshold, pbr_threshold, roe_threshold, dividend_multiplier)
-        elif len(symbols) > 10:
+        st.warning("⚠️ サーバー負荷軽減のため、現在は最大5銘柄までの検索に制限しています。/ Limited to max 5 stocks to prevent server overload.")
+        
+        # Always limit to 5 stocks maximum to prevent 502 Bad Gateway errors
+        if len(symbols) > 5:
             col1, col2 = st.columns(2)
             with col1:
-                if st.button(get_text('update_data'), type="primary"):
-                    update_stock_data(symbols, per_threshold, pbr_threshold, roe_threshold, dividend_multiplier)
+                if st.button("最初の5銘柄のみ分析 / First 5 Only", type="primary"):
+                    limited_symbols = symbols[:5]
+                    st.info(f"安定性優先で最初の5銘柄のみ分析: {', '.join(limited_symbols)}")
+                    update_stock_data(limited_symbols, per_threshold, pbr_threshold, roe_threshold, dividend_multiplier)
             with col2:
-                if st.button("テスト用5銘柄 / Test 5 Stocks", type="secondary"):
-                    test_symbols = symbols[:5]
-                    st.info(f"動作テスト用に5銘柄のみ分析 / Testing with only 5 stocks")
-                    update_stock_data(test_symbols, per_threshold, pbr_threshold, roe_threshold, dividend_multiplier)
+                if st.button("ランダム5銘柄 / Random 5", type="secondary"):
+                    import random
+                    random_symbols = random.sample(symbols, 5)
+                    st.info(f"ランダム選択5銘柄: {', '.join(random_symbols)}")
+                    update_stock_data(random_symbols, per_threshold, pbr_threshold, roe_threshold, dividend_multiplier)
         else:
             if st.button(get_text('update_data'), type="primary"):
                 update_stock_data(symbols, per_threshold, pbr_threshold, roe_threshold, dividend_multiplier)
@@ -903,48 +893,46 @@ def update_stock_data(symbols, per_threshold, pbr_threshold, roe_threshold, divi
         
         progress_bar.progress(5)
         
-        # Controlled batch processing as suggested by user
+        # Ultra-safe processing: only 1 stock at a time with long delays
         total_symbols = len(symbols)
         all_results = {}
-        batch_size = 5  # Process 5 stocks at a time
-        total_batches = (total_symbols + batch_size - 1) // batch_size
         
-        # Show processing information
-        st.info(f"📊 {total_batches}バッチ（各{batch_size}銘柄）で処理します。キャッシュ利用で高速化。/ Processing in {total_batches} batches of {batch_size} stocks each. Using cache for speed.")
+        # Process one stock at a time to absolutely prevent server overload
+        st.info(f"📊 サーバー安定性のため1銘柄ずつ順番に処理します（計{total_symbols}銘柄）/ Processing 1 stock at a time for maximum stability ({total_symbols} total).")
         
-        # Process in controlled batches
-        for batch_num in range(total_batches):
-            start_idx = batch_num * batch_size
-            end_idx = min(start_idx + batch_size, total_symbols)
-            batch_symbols = symbols[start_idx:end_idx]
-            
-            status_text.text(f"バッチ {batch_num + 1}/{total_batches} 処理中: {', '.join(batch_symbols)} / Processing batch {batch_num + 1}/{total_batches}")
+        # Process one stock at a time
+        for idx, symbol in enumerate(symbols):
+            status_text.text(f"銘柄 {idx + 1}/{total_symbols} 処理中: {symbol} / Processing stock {idx + 1}/{total_symbols}: {symbol}")
             
             try:
-                # Analyze batch of stocks
-                st.write(f"🔍 バッチ {batch_num + 1} 分析開始: {batch_symbols}")
-                batch_results = st.session_state.analyzer.analyze_stocks(batch_symbols)
+                st.write(f"🔍 {symbol} 分析開始...")
                 
-                if batch_results:
-                    valid_count = len([r for r in batch_results.values() if r and 'total_score' in r])
-                    st.success(f"✅ バッチ {batch_num + 1}: {valid_count}/{len(batch_symbols)} 銘柄成功")
-                    all_results.update(batch_results)
+                # Process single stock with direct API call
+                single_result = st.session_state.analyzer.analyze_stocks([symbol])
+                
+                if single_result and symbol in single_result and single_result[symbol]:
+                    if 'total_score' in single_result[symbol]:
+                        st.success(f"✅ {symbol}: スコア {single_result[symbol]['total_score']:.1f}")
+                        all_results.update(single_result)
+                    else:
+                        st.warning(f"⚠️ {symbol}: データ不完全")
+                        all_results[symbol] = None
                 else:
-                    st.warning(f"⚠️ バッチ {batch_num + 1}: 結果なし")
+                    st.warning(f"⚠️ {symbol}: データ取得失敗")
+                    all_results[symbol] = None
                 
                 # Update progress
-                progress = 5 + (85 * end_idx // total_symbols)
+                progress = 5 + (85 * (idx + 1) // total_symbols)
                 progress_bar.progress(progress)
                 
-                # Wait between batches (except for the last one)
-                if batch_num < total_batches - 1:
-                    status_text.text(f"次のバッチまで2秒待機... / Waiting 2 seconds before next batch...")
-                    time.sleep(2.0)
+                # Wait between stocks - long delay to prevent 502 errors
+                if idx < total_symbols - 1:
+                    status_text.text(f"次の銘柄まで3秒待機（サーバー負荷軽減）... / Waiting 3 seconds before next stock...")
+                    time.sleep(3.0)
                     
-            except Exception as batch_error:
-                st.error(f"❌ バッチ {batch_num + 1} でエラー / Error in batch {batch_num + 1}: {str(batch_error)}")
-                st.write(f"エラー詳細: {type(batch_error).__name__}")
-                # Continue with the next batch
+            except Exception as stock_error:
+                st.error(f"❌ {symbol} でエラー / Error with {symbol}: {str(stock_error)}")
+                all_results[symbol] = None
                 continue
         
         progress_bar.progress(90)

@@ -202,12 +202,12 @@ class DataFetcher:
         self.cache_expiry.clear()
     
     def get_multiple_stocks(self, symbols):
-        """Get data for multiple stocks efficiently"""
+        """Get data for multiple stocks with improved error handling and caching"""
         try:
             results = {}
             
-            # Implement controlled batch processing as suggested
-            batch_size = 5  # Small batches of 5 stocks
+            # Much smaller batches to prevent server overload
+            batch_size = 2  # Only 2 stocks at a time
             total_batches = (len(symbols) + batch_size - 1) // batch_size
             
             self.logger.info(f"Processing {len(symbols)} symbols in {total_batches} batches of {batch_size}")
@@ -221,40 +221,77 @@ class DataFetcher:
                 
                 # Process each symbol in the batch
                 for symbol in batch_symbols:
-                    # Check cache first before making API call
-                    cached_result = self._get_cached_result(symbol)
-                    if cached_result is not None:
-                        self.logger.info(f"Using cached data for {symbol}")
-                        results[symbol] = cached_result
-                        continue
-                    
                     try:
-                        result = self.get_stock_info(symbol)
-                        results[symbol] = result
-                        # Cache the result
-                        self._cache_result(symbol, result)
+                        # Check cache first before making API call
+                        cached_result = self._get_cached_result(symbol)
+                        if cached_result is not None:
+                            self.logger.info(f"Using cached data for {symbol}")
+                            results[symbol] = cached_result
+                            continue
                         
-                        # Small delay between stocks within batch
-                        time.sleep(0.5)
-                        
-                    except Exception as exc:
-                        self.logger.warning(f"Error fetching {symbol}: {exc}")
+                        # Fetch fresh data with retry logic
+                        stock_data = self._fetch_with_retry(symbol, max_retries=2)
+                        if stock_data:
+                            results[symbol] = stock_data
+                            self._cache_result(symbol, stock_data)
+                        else:
+                            results[symbol] = None
+                            
+                    except Exception as symbol_error:
+                        self.logger.error(f"Error processing {symbol}: {str(symbol_error)}")
                         results[symbol] = None
                 
-                # Wait between batches to respect API limits
+                # Longer delay between batches to prevent server overload
                 if batch_idx < total_batches - 1:
-                    self.logger.info(f"Waiting 2 seconds before next batch...")
-                    time.sleep(2.0)
-            
-            # Log summary
-            successful = len([r for r in results.values() if r is not None])
-            self.logger.info(f"Successfully fetched data for {successful}/{len(symbols)} symbols")
-            
+                    time.sleep(3.0)  # 3 second delay between batches
+                    
             return results
             
         except Exception as e:
-            self.logger.error(f"Error fetching multiple stocks: {str(e)}")
+            self.logger.error(f"Error in get_multiple_stocks: {str(e)}")
             return {}
+    
+    def _fetch_with_retry(self, symbol, max_retries=2):
+        """Fetch data with retry logic and error handling"""
+        for attempt in range(max_retries + 1):
+            try:
+                self.logger.info(f"Fetching {symbol} (attempt {attempt + 1})")
+                
+                # Create yfinance ticker object
+                ticker = yf.Ticker(symbol)
+                
+                # Get basic info with timeout
+                info = ticker.info
+                
+                if not info or not info.get('regularMarketPrice'):
+                    self.logger.warning(f"No valid info data for {symbol}")
+                    if attempt < max_retries:
+                        time.sleep(1.0)  # Wait before retry
+                        continue
+                    return None
+                
+                # Get historical data
+                hist = ticker.history(period="6mo")  # Reduced to 6 months for faster processing
+                
+                if hist.empty:
+                    self.logger.warning(f"No historical data for {symbol}")
+                    if attempt < max_retries:
+                        time.sleep(1.0)
+                        continue
+                    return None
+                
+                # Extract stock data
+                stock_data = self._extract_stock_data(info, hist)
+                return stock_data
+                
+            except Exception as e:
+                self.logger.error(f"Error fetching {symbol} on attempt {attempt + 1}: {str(e)}")
+                if attempt < max_retries:
+                    time.sleep(2.0)  # Wait longer before retry
+                    continue
+                return None
+        
+        return None
     
     def validate_symbol(self, symbol):
         """Validate if a stock symbol exists and has data"""
