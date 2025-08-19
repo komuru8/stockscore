@@ -188,32 +188,22 @@ class DataFetcher:
         try:
             results = {}
             
-            # Use very small batches and conservative processing to prevent server overload
-            batch_size = 6  # Very conservative batch size
-            total_batches = (len(symbols) + batch_size - 1) // batch_size
+            # Ultra-conservative single-stock processing to prevent any server overload
+            self.logger.info(f"Processing {len(symbols)} symbols sequentially")
             
-            self.logger.info(f"Processing {len(symbols)} symbols in {total_batches} batches")
-            
-            for i in range(0, len(symbols), batch_size):
-                batch = symbols[i:i + batch_size]
-                batch_num = i // batch_size + 1
-                
-                self.logger.info(f"Processing batch {batch_num}/{total_batches} ({len(batch)} symbols)")
-                
-                # Process symbols sequentially within batch to minimize load
-                for symbol in batch:
-                    try:
-                        result = self.get_stock_info(symbol)
-                        results[symbol] = result
-                        # Small delay between each stock
-                        time.sleep(0.3)
-                    except Exception as exc:
-                        self.logger.warning(f"Error fetching {symbol}: {exc}")
-                        results[symbol] = None
-                
-                # Longer wait between batches to prevent server overload
-                if i + batch_size < len(symbols):
-                    time.sleep(2.0)  # Even longer wait between batches
+            for i, symbol in enumerate(symbols):
+                try:
+                    self.logger.info(f"Processing {i+1}/{len(symbols)}: {symbol}")
+                    result = self.get_stock_info(symbol)
+                    results[symbol] = result
+                    
+                    # Longer delay between each stock to be absolutely safe
+                    if i < len(symbols) - 1:
+                        time.sleep(1.0)
+                        
+                except Exception as exc:
+                    self.logger.warning(f"Error fetching {symbol}: {exc}")
+                    results[symbol] = None
             
             # Log summary
             successful = len([r for r in results.values() if r is not None])
