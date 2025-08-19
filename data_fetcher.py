@@ -15,6 +15,22 @@ class DataFetcher:
         self.cache_expiry = {}
         self.cache_duration = 1800  # 30 minutes in seconds
         
+    def _get_cached_result(self, symbol):
+        """Get cached result if still valid"""
+        if symbol in self.cache and symbol in self.cache_expiry:
+            if datetime.now() < self.cache_expiry[symbol]:
+                return self.cache[symbol]
+            else:
+                # Remove expired cache
+                del self.cache[symbol]
+                del self.cache_expiry[symbol]
+        return None
+        
+    def _cache_result(self, symbol, result):
+        """Cache the result with expiry time"""
+        self.cache[symbol] = result
+        self.cache_expiry[symbol] = datetime.now() + timedelta(seconds=self.cache_duration)
+        
     def get_stock_info(self, symbol):
         """Get comprehensive stock information"""
         try:
@@ -188,22 +204,45 @@ class DataFetcher:
         try:
             results = {}
             
-            # Ultra-conservative single-stock processing to prevent any server overload
-            self.logger.info(f"Processing {len(symbols)} symbols sequentially")
+            # Implement controlled batch processing as suggested
+            batch_size = 5  # Small batches of 5 stocks
+            total_batches = (len(symbols) + batch_size - 1) // batch_size
             
-            for i, symbol in enumerate(symbols):
-                try:
-                    self.logger.info(f"Processing {i+1}/{len(symbols)}: {symbol}")
-                    result = self.get_stock_info(symbol)
-                    results[symbol] = result
+            self.logger.info(f"Processing {len(symbols)} symbols in {total_batches} batches of {batch_size}")
+            
+            for batch_idx in range(total_batches):
+                start_idx = batch_idx * batch_size
+                end_idx = min(start_idx + batch_size, len(symbols))
+                batch_symbols = symbols[start_idx:end_idx]
+                
+                self.logger.info(f"Processing batch {batch_idx + 1}/{total_batches}: {batch_symbols}")
+                
+                # Process each symbol in the batch
+                for symbol in batch_symbols:
+                    # Check cache first before making API call
+                    cached_result = self._get_cached_result(symbol)
+                    if cached_result is not None:
+                        self.logger.info(f"Using cached data for {symbol}")
+                        results[symbol] = cached_result
+                        continue
                     
-                    # Longer delay between each stock to be absolutely safe
-                    if i < len(symbols) - 1:
-                        time.sleep(1.0)
+                    try:
+                        result = self.get_stock_info(symbol)
+                        results[symbol] = result
+                        # Cache the result
+                        self._cache_result(symbol, result)
                         
-                except Exception as exc:
-                    self.logger.warning(f"Error fetching {symbol}: {exc}")
-                    results[symbol] = None
+                        # Small delay between stocks within batch
+                        time.sleep(0.5)
+                        
+                    except Exception as exc:
+                        self.logger.warning(f"Error fetching {symbol}: {exc}")
+                        results[symbol] = None
+                
+                # Wait between batches to respect API limits
+                if batch_idx < total_batches - 1:
+                    self.logger.info(f"Waiting 2 seconds before next batch...")
+                    time.sleep(2.0)
             
             # Log summary
             successful = len([r for r in results.values() if r is not None])

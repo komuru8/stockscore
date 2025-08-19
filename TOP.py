@@ -877,34 +877,40 @@ def update_stock_data(symbols, per_threshold, pbr_threshold, roe_threshold, divi
         )
         progress_bar.progress(5)
         
-        # Ultra-conservative single-stock processing to prevent server overload
+        # Controlled batch processing as suggested by user
         total_symbols = len(symbols)
         all_results = {}
+        batch_size = 5  # Process 5 stocks at a time
+        total_batches = (total_symbols + batch_size - 1) // batch_size
         
         # Show processing information
-        if total_symbols > 15:
-            st.warning("⚠️ サーバー安定性のため1銘柄ずつ順次処理します。しばらくお待ちください。/ Processing stocks one by one for server stability. Please wait.")
+        st.info(f"📊 {total_batches}バッチ（各{batch_size}銘柄）で処理します。キャッシュ利用で高速化。/ Processing in {total_batches} batches of {batch_size} stocks each. Using cache for speed.")
         
-        # Process each stock individually to minimize server load
-        for i, symbol in enumerate(symbols):
-            status_text.text(f"処理中 {i+1}/{total_symbols}: {symbol} / Processing {i+1}/{total_symbols}: {symbol}")
+        # Process in controlled batches
+        for batch_num in range(total_batches):
+            start_idx = batch_num * batch_size
+            end_idx = min(start_idx + batch_size, total_symbols)
+            batch_symbols = symbols[start_idx:end_idx]
+            
+            status_text.text(f"バッチ {batch_num + 1}/{total_batches} 処理中: {', '.join(batch_symbols)} / Processing batch {batch_num + 1}/{total_batches}")
             
             try:
-                # Analyze single stock
-                single_result = st.session_state.analyzer.analyze_stocks([symbol])
-                all_results.update(single_result)
+                # Analyze batch of stocks
+                batch_results = st.session_state.analyzer.analyze_stocks(batch_symbols)
+                all_results.update(batch_results)
                 
                 # Update progress
-                progress = 5 + (85 * (i + 1) // total_symbols)
+                progress = 5 + (85 * end_idx // total_symbols)
                 progress_bar.progress(progress)
                 
-                # Pause between stocks to prevent server overload
-                if i < total_symbols - 1:
-                    time.sleep(0.8)
+                # Wait between batches (except for the last one)
+                if batch_num < total_batches - 1:
+                    status_text.text(f"次のバッチまで2秒待機... / Waiting 2 seconds before next batch...")
+                    time.sleep(2.0)
                     
-            except Exception as stock_error:
-                st.warning(f"銘柄 {symbol} でエラー / Error with stock {symbol}: {str(stock_error)}")
-                all_results[symbol] = None
+            except Exception as batch_error:
+                st.warning(f"バッチ {batch_num + 1} でエラー / Error in batch {batch_num + 1}: {str(batch_error)}")
+                # Continue with the next batch
                 continue
         
         progress_bar.progress(90)
