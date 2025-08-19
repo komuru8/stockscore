@@ -812,6 +812,22 @@ def main():
         st.info("上記のアクションボタンから検索方法を選択してください。\nPlease select a discovery method from the action buttons above.")
         symbols = []
     
+    # Quick test button for debugging
+    if st.sidebar.button("🔧 API テスト / API Test", type="secondary"):
+        st.sidebar.write("Testing yfinance connection...")
+        test_symbols = ["7203.T", "AAPL", "MSFT"]
+        for symbol in test_symbols:
+            try:
+                import yfinance as yf
+                ticker = yf.Ticker(symbol)
+                info = ticker.info
+                if info and info.get('regularMarketPrice'):
+                    st.sidebar.success(f"✅ {symbol}: {info.get('longName', 'N/A')}")
+                else:
+                    st.sidebar.error(f"❌ {symbol}: No data")
+            except Exception as e:
+                st.sidebar.error(f"❌ {symbol}: {str(e)}")
+    
     # Update data button - only show if symbols are selected
     if symbols:
         # Show different options based on symbol count to prevent server overload
@@ -867,14 +883,24 @@ def update_stock_data(symbols, per_threshold, pbr_threshold, roe_threshold, divi
         progress_bar = st.progress(0)
         status_text = st.empty()
         
+        # Debug info
+        st.info(f"🔧 デバッグ: {len(symbols)} 銘柄の処理を開始 / Debug: Starting to process {len(symbols)} symbols")
+        status_text.text(f"処理開始: {', '.join(symbols[:5])}" + ("..." if len(symbols) > 5 else ""))
+        
         # Update scoring criteria
         status_text.text("設定を更新中... / Updating criteria...")
-        st.session_state.analyzer.update_criteria(
-            per_threshold=per_threshold,
-            pbr_threshold=pbr_threshold,
-            roe_threshold=roe_threshold,
-            dividend_multiplier=dividend_multiplier
-        )
+        try:
+            st.session_state.analyzer.update_criteria(
+                per_threshold=per_threshold,
+                pbr_threshold=pbr_threshold,
+                roe_threshold=roe_threshold,
+                dividend_multiplier=dividend_multiplier
+            )
+            st.success("✅ スコア設定を更新しました / Score criteria updated")
+        except Exception as criteria_error:
+            st.error(f"❌ スコア設定エラー / Criteria error: {str(criteria_error)}")
+            return
+        
         progress_bar.progress(5)
         
         # Controlled batch processing as suggested by user
@@ -896,8 +922,15 @@ def update_stock_data(symbols, per_threshold, pbr_threshold, roe_threshold, divi
             
             try:
                 # Analyze batch of stocks
+                st.write(f"🔍 バッチ {batch_num + 1} 分析開始: {batch_symbols}")
                 batch_results = st.session_state.analyzer.analyze_stocks(batch_symbols)
-                all_results.update(batch_results)
+                
+                if batch_results:
+                    valid_count = len([r for r in batch_results.values() if r and 'total_score' in r])
+                    st.success(f"✅ バッチ {batch_num + 1}: {valid_count}/{len(batch_symbols)} 銘柄成功")
+                    all_results.update(batch_results)
+                else:
+                    st.warning(f"⚠️ バッチ {batch_num + 1}: 結果なし")
                 
                 # Update progress
                 progress = 5 + (85 * end_idx // total_symbols)
@@ -909,7 +942,8 @@ def update_stock_data(symbols, per_threshold, pbr_threshold, roe_threshold, divi
                     time.sleep(2.0)
                     
             except Exception as batch_error:
-                st.warning(f"バッチ {batch_num + 1} でエラー / Error in batch {batch_num + 1}: {str(batch_error)}")
+                st.error(f"❌ バッチ {batch_num + 1} でエラー / Error in batch {batch_num + 1}: {str(batch_error)}")
+                st.write(f"エラー詳細: {type(batch_error).__name__}")
                 # Continue with the next batch
                 continue
         
@@ -923,6 +957,33 @@ def update_stock_data(symbols, per_threshold, pbr_threshold, roe_threshold, divi
         # Show summary
         valid_results = [r for r in all_results.values() if r and 'total_score' in r]
         status_text.text(f"分析完了: {len(valid_results)}/{total_symbols} 銘柄 / Analysis complete: {len(valid_results)}/{total_symbols} stocks")
+        
+        # Debug: Show what we got
+        st.info(f"🔧 デバッグ: 取得データ {len(all_results)} 件, 有効データ {len(valid_results)} 件")
+        if len(valid_results) == 0:
+            st.error("⚠️ 有効なデータが取得できませんでした。")
+            
+            # Test single stock to debug
+            if symbols:
+                test_symbol = symbols[0]
+                st.write(f"🔍 {test_symbol} 単体テスト開始...")
+                try:
+                    test_data = st.session_state.analyzer.data_fetcher.get_stock_info(test_symbol)
+                    if test_data:
+                        st.success(f"✅ {test_symbol} データ取得成功: {test_data.get('company_name', 'Unknown')}")
+                        st.json(test_data)
+                    else:
+                        st.error(f"❌ {test_symbol} データ取得失敗")
+                except Exception as test_e:
+                    st.error(f"❌ テストエラー: {test_e}")
+            
+            # Show sample of what we got
+            if all_results:
+                sample_key = list(all_results.keys())[0]
+                sample_data = all_results[sample_key]
+                st.write(f"サンプルデータ ({sample_key}): {sample_data}")
+        else:
+            st.success(f"✅ {len(valid_results)} 銘柄のデータを正常に取得しました")
         
         # Show notification for high-scoring stocks
         high_scoring = [stock for stock in all_results if all_results.get(stock) and all_results[stock].get('total_score', 0) >= 80]

@@ -31,13 +31,20 @@ class DataFetcher:
         self.cache[symbol] = result
         self.cache_expiry[symbol] = datetime.now() + timedelta(seconds=self.cache_duration)
         
+    def _is_cached(self, symbol):
+        """Check if symbol data is cached and still valid"""
+        if symbol in self.cache and symbol in self.cache_expiry:
+            return datetime.now() < self.cache_expiry[symbol]
+        return False
+    
     def get_stock_info(self, symbol):
         """Get comprehensive stock information"""
         try:
             # Check cache first
-            if self._is_cached(symbol):
+            cached_result = self._get_cached_result(symbol)
+            if cached_result:
                 self.logger.info(f"Using cached data for {symbol}")
-                return self.cache[symbol]
+                return cached_result
             
             self.logger.info(f"Fetching fresh data for {symbol}")
             
@@ -187,12 +194,7 @@ class DataFetcher:
             self.logger.error(f"Error cleaning data: {str(e)}")
             return data
     
-    def _is_cached(self, symbol):
-        """Check if symbol data is cached and still valid"""
-        if symbol not in self.cache or symbol not in self.cache_expiry:
-            return False
-        
-        return datetime.now() < self.cache_expiry[symbol]
+
     
     def clear_cache(self):
         """Clear the data cache"""
