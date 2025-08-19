@@ -1068,6 +1068,22 @@ def display_simple_view(df):
                 "Company" if st.session_state.language == 'en' else "企業名",
                 width="medium",
             ),
+            "PER": st.column_config.TextColumn(
+                "PER" if st.session_state.language == 'en' else "PER",
+                width="small",
+            ),
+            "PBR": st.column_config.TextColumn(
+                "PBR" if st.session_state.language == 'en' else "PBR",
+                width="small",
+            ),
+            "ROE": st.column_config.TextColumn(
+                "ROE" if st.session_state.language == 'en' else "ROE",
+                width="small",
+            ),
+            "Dividend Yield": st.column_config.TextColumn(
+                "Dividend Yield" if st.session_state.language == 'en' else "配当利回り",
+                width="small",
+            ),
             "Current Price": st.column_config.TextColumn(
                 "Price" if st.session_state.language == 'en' else "価格",
                 width="small",
@@ -1201,6 +1217,46 @@ def display_intermediate_view(df):
             "Company": st.column_config.TextColumn(
                 "Company" if st.session_state.language == 'en' else "企業名",
                 width="medium",
+            ),
+            "PER": st.column_config.TextColumn(
+                "PER" if st.session_state.language == 'en' else "PER",
+                width="small",
+            ),
+            "PBR": st.column_config.TextColumn(
+                "PBR" if st.session_state.language == 'en' else "PBR",
+                width="small",
+            ),
+            "ROE": st.column_config.TextColumn(
+                "ROE" if st.session_state.language == 'en' else "ROE",
+                width="small",
+            ),
+            "ROA": st.column_config.TextColumn(
+                "ROA" if st.session_state.language == 'en' else "ROA",
+                width="small",
+            ),
+            "Dividend Yield": st.column_config.TextColumn(
+                "Dividend Yield" if st.session_state.language == 'en' else "配当利回り",
+                width="small",
+            ),
+            "Revenue Growth": st.column_config.TextColumn(
+                "Revenue Growth" if st.session_state.language == 'en' else "売上高成長率",
+                width="small",
+            ),
+            "EPS Growth": st.column_config.TextColumn(
+                "EPS Growth" if st.session_state.language == 'en' else "EPS成長率",
+                width="small",
+            ),
+            "Operating Margin": st.column_config.TextColumn(
+                "Operating Margin" if st.session_state.language == 'en' else "営業利益率",
+                width="small",
+            ),
+            "Equity Ratio": st.column_config.TextColumn(
+                "Equity Ratio" if st.session_state.language == 'en' else "自己資本比率",
+                width="small",
+            ),
+            "Payout Ratio": st.column_config.TextColumn(
+                "Payout Ratio" if st.session_state.language == 'en' else "配当性向",
+                width="small",
             ),
             "Current Price": st.column_config.TextColumn(
                 "Price" if st.session_state.language == 'en' else "価格",
