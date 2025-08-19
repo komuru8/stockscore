@@ -1255,30 +1255,34 @@ def display_intermediate_view(df):
                     styles.append('background-color: #f8d7da')
             elif col in numerical_cols and col in row.index:
                 # Simple scoring logic for color coding
-                value = pd.to_numeric(str(row[col]).replace('%', ''), errors='coerce')
-                if pd.notna(value):
-                    if col == 'PER':
-                        color = 'color: green; font-weight: bold;' if 10 <= value <= 20 else 'color: red; font-weight: bold;'
-                    elif col == 'PBR':
-                        color = 'color: green; font-weight: bold;' if 0.5 <= value <= 2.0 else 'color: red; font-weight: bold;'
-                    elif col in ['ROE', 'ROA']:
-                        color = 'color: green; font-weight: bold;' if value >= 15 else 'color: red; font-weight: bold;'
-                    elif col == 'Dividend Yield':
-                        color = 'color: green; font-weight: bold;' if value >= 3 else 'color: red; font-weight: bold;'
-                    elif col == 'Revenue Growth':
-                        color = 'color: green; font-weight: bold;' if value >= 5 else 'color: red; font-weight: bold;'
-                    elif col == 'EPS Growth':
-                        color = 'color: green; font-weight: bold;' if value >= 10 else 'color: red; font-weight: bold;'
-                    elif col == 'Operating Margin':
-                        color = 'color: green; font-weight: bold;' if value >= 10 else 'color: red; font-weight: bold;'
-                    elif col == 'Equity Ratio':
-                        color = 'color: green; font-weight: bold;' if value >= 40 else 'color: red; font-weight: bold;'
-                    elif col == 'Payout Ratio':
-                        color = 'color: green; font-weight: bold;' if 20 <= value <= 60 else 'color: red; font-weight: bold;'
+                try:
+                    value_str = str(row[col]).replace('%', '').replace('N/A', '')
+                    if value_str:
+                        value = float(value_str)
+                        if col == 'PER':
+                            color = 'color: green; font-weight: bold;' if 10.0 <= value <= 20.0 else 'color: red; font-weight: bold;'
+                        elif col == 'PBR':
+                            color = 'color: green; font-weight: bold;' if 0.5 <= value <= 2.0 else 'color: red; font-weight: bold;'
+                        elif col in ['ROE', 'ROA']:
+                            color = 'color: green; font-weight: bold;' if value >= 15.0 else 'color: red; font-weight: bold;'
+                        elif col == 'Dividend Yield':
+                            color = 'color: green; font-weight: bold;' if value >= 3.0 else 'color: red; font-weight: bold;'
+                        elif col == 'Revenue Growth':
+                            color = 'color: green; font-weight: bold;' if value >= 5.0 else 'color: red; font-weight: bold;'
+                        elif col == 'EPS Growth':
+                            color = 'color: green; font-weight: bold;' if value >= 10.0 else 'color: red; font-weight: bold;'
+                        elif col == 'Operating Margin':
+                            color = 'color: green; font-weight: bold;' if value >= 10.0 else 'color: red; font-weight: bold;'
+                        elif col == 'Equity Ratio':
+                            color = 'color: green; font-weight: bold;' if value >= 40.0 else 'color: red; font-weight: bold;'
+                        elif col == 'Payout Ratio':
+                            color = 'color: green; font-weight: bold;' if 20.0 <= value <= 60.0 else 'color: red; font-weight: bold;'
+                        else:
+                            color = 'color: green; font-weight: bold;' if value > 0.0 else 'color: red; font-weight: bold;'
+                        styles.append(color)
                     else:
-                        color = 'color: green; font-weight: bold;' if value > 0 else 'color: red; font-weight: bold;'
-                    styles.append(color)
-                else:
+                        styles.append('color: gray;')
+                except (ValueError, TypeError):
                     styles.append('color: gray;')
             else:
                 styles.append('')

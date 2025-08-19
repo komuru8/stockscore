@@ -46,22 +46,48 @@ class ScoringEngine:
                 self.market_averages[key] = value
     
     def calculate_score(self, metrics):
-        """Calculate comprehensive investment score for a stock"""
+        """Calculate comprehensive investment score for a stock using all 10 metrics"""
         try:
             scores = {}
             
-            # Calculate individual metric scores
+            # Calculate individual metric scores for all 10 indicators
             scores['per_score'] = self._calculate_per_score(metrics.get('per'))
             scores['pbr_score'] = self._calculate_pbr_score(metrics.get('pbr'))
             scores['roe_score'] = self._calculate_roe_score(metrics.get('roe'))
+            scores['roa_score'] = self._calculate_roa_score(metrics.get('roa'))
             scores['dividend_score'] = self._calculate_dividend_score(metrics.get('dividend_yield'))
+            scores['revenue_growth_score'] = self._calculate_revenue_growth_score(metrics.get('revenue_growth'))
+            scores['eps_growth_score'] = self._calculate_eps_growth_score(metrics.get('eps_growth'))
+            scores['operating_margin_score'] = self._calculate_operating_margin_score(metrics.get('operating_margin'))
+            scores['equity_ratio_score'] = self._calculate_equity_ratio_score(metrics.get('equity_ratio'))
+            scores['payout_ratio_score'] = self._calculate_payout_ratio_score(metrics.get('payout_ratio'))
+            
+            # Updated weights for 10 metrics (total = 100)
+            weights = {
+                'per_weight': 15,           # PER
+                'pbr_weight': 10,           # PBR
+                'roe_weight': 15,           # ROE
+                'roa_weight': 10,           # ROA
+                'dividend_weight': 10,      # Dividend Yield
+                'revenue_growth_weight': 10, # Revenue Growth
+                'eps_growth_weight': 10,    # EPS Growth
+                'operating_margin_weight': 10, # Operating Margin
+                'equity_ratio_weight': 5,   # Equity Ratio
+                'payout_ratio_weight': 5    # Payout Ratio
+            }
             
             # Calculate weighted total score
             total_score = (
-                scores['per_score'] * self.weights['per_weight'] / 100 +
-                scores['pbr_score'] * self.weights['pbr_weight'] / 100 +
-                scores['roe_score'] * self.weights['roe_weight'] / 100 +
-                scores['dividend_score'] * self.weights['dividend_weight'] / 100
+                scores['per_score'] * weights['per_weight'] / 100 +
+                scores['pbr_score'] * weights['pbr_weight'] / 100 +
+                scores['roe_score'] * weights['roe_weight'] / 100 +
+                scores['roa_score'] * weights['roa_weight'] / 100 +
+                scores['dividend_score'] * weights['dividend_weight'] / 100 +
+                scores['revenue_growth_score'] * weights['revenue_growth_weight'] / 100 +
+                scores['eps_growth_score'] * weights['eps_growth_weight'] / 100 +
+                scores['operating_margin_score'] * weights['operating_margin_weight'] / 100 +
+                scores['equity_ratio_score'] * weights['equity_ratio_weight'] / 100 +
+                scores['payout_ratio_score'] * weights['payout_ratio_weight'] / 100
             )
             
             # Additional quality adjustments
@@ -195,6 +221,144 @@ class ScoringEngine:
             self.logger.error(f"Error calculating dividend score: {str(e)}")
             return 0
     
+    def _calculate_roa_score(self, roa):
+        """Calculate ROA-based score (0-100)"""
+        if roa is None:
+            return 0
+        
+        try:
+            # Higher ROA indicates better asset efficiency
+            if roa >= 15:
+                return 100  # Excellent asset efficiency
+            elif roa >= 10:
+                return 80   # Very good asset efficiency
+            elif roa >= 5:
+                return 60   # Good asset efficiency
+            elif roa >= 2:
+                return 30   # Average asset efficiency
+            elif roa > 0:
+                return 10   # Low asset efficiency
+            else:
+                return 0    # Negative ROA
+        except Exception as e:
+            self.logger.error(f"Error calculating ROA score: {str(e)}")
+            return 0
+    
+    def _calculate_revenue_growth_score(self, revenue_growth):
+        """Calculate revenue growth-based score (0-100)"""
+        if revenue_growth is None:
+            return 0
+        
+        try:
+            # Higher revenue growth indicates business expansion
+            if revenue_growth >= 20:
+                return 100  # Excellent growth
+            elif revenue_growth >= 10:
+                return 80   # Very good growth
+            elif revenue_growth >= 5:
+                return 60   # Good growth
+            elif revenue_growth >= 0:
+                return 30   # Stable/slow growth
+            elif revenue_growth >= -5:
+                return 10   # Slight decline
+            else:
+                return 0    # Significant decline
+        except Exception as e:
+            self.logger.error(f"Error calculating revenue growth score: {str(e)}")
+            return 0
+    
+    def _calculate_eps_growth_score(self, eps_growth):
+        """Calculate EPS growth-based score (0-100)"""
+        if eps_growth is None:
+            return 0
+        
+        try:
+            # Higher EPS growth indicates improving profitability
+            if eps_growth >= 25:
+                return 100  # Excellent EPS growth
+            elif eps_growth >= 15:
+                return 80   # Very good EPS growth
+            elif eps_growth >= 10:
+                return 60   # Good EPS growth
+            elif eps_growth >= 0:
+                return 30   # Stable EPS
+            elif eps_growth >= -10:
+                return 10   # Declining EPS
+            else:
+                return 0    # Significant EPS decline
+        except Exception as e:
+            self.logger.error(f"Error calculating EPS growth score: {str(e)}")
+            return 0
+    
+    def _calculate_operating_margin_score(self, operating_margin):
+        """Calculate operating margin-based score (0-100)"""
+        if operating_margin is None:
+            return 0
+        
+        try:
+            # Higher operating margin indicates better operational efficiency
+            if operating_margin >= 20:
+                return 100  # Excellent operational efficiency
+            elif operating_margin >= 15:
+                return 80   # Very good operational efficiency
+            elif operating_margin >= 10:
+                return 60   # Good operational efficiency
+            elif operating_margin >= 5:
+                return 30   # Average operational efficiency
+            elif operating_margin > 0:
+                return 10   # Low operational efficiency
+            else:
+                return 0    # Negative operating margin
+        except Exception as e:
+            self.logger.error(f"Error calculating operating margin score: {str(e)}")
+            return 0
+    
+    def _calculate_equity_ratio_score(self, equity_ratio):
+        """Calculate equity ratio-based score (0-100)"""
+        if equity_ratio is None:
+            return 0
+        
+        try:
+            # Higher equity ratio indicates better financial stability
+            if equity_ratio >= 60:
+                return 100  # Excellent financial stability
+            elif equity_ratio >= 50:
+                return 80   # Very good financial stability
+            elif equity_ratio >= 40:
+                return 60   # Good financial stability
+            elif equity_ratio >= 30:
+                return 30   # Average financial stability
+            elif equity_ratio >= 20:
+                return 10   # Low financial stability
+            else:
+                return 0    # Poor financial stability
+        except Exception as e:
+            self.logger.error(f"Error calculating equity ratio score: {str(e)}")
+            return 0
+    
+    def _calculate_payout_ratio_score(self, payout_ratio):
+        """Calculate payout ratio-based score (0-100)"""
+        if payout_ratio is None:
+            return 50  # Neutral score for companies with no dividends
+        
+        try:
+            # Optimal payout ratio is typically 30-60%
+            if 30 <= payout_ratio <= 60:
+                return 100  # Optimal payout ratio
+            elif 20 <= payout_ratio <= 70:
+                return 80   # Good payout ratio
+            elif 10 <= payout_ratio <= 80:
+                return 60   # Acceptable payout ratio
+            elif payout_ratio <= 90:
+                return 30   # High payout ratio (sustainability risk)
+            elif payout_ratio > 100:
+                return 0    # Unsustainable payout ratio
+            else:
+                return 50   # Low/no payout (growth company)
+        except Exception as e:
+            self.logger.error(f"Error calculating payout ratio score: {str(e)}")
+            return 0
+
     def _calculate_quality_adjustment(self, metrics):
         """Calculate quality-based adjustments to the score"""
         try:
