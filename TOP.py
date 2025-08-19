@@ -144,7 +144,7 @@ def get_text(key, lang=None):
     
     return texts.get(key, {}).get(lang, key)
 
-def handle_action_buttons(popularity_button, dividend_button, theme_button, random_button, market):
+def handle_action_buttons(popularity_button, dividend_button, theme_button, random_button, market, stock_count=20):
     """Handle action button clicks and return selected symbols"""
     import random
     
@@ -157,23 +157,23 @@ def handle_action_buttons(popularity_button, dividend_button, theme_button, rand
             japanese_stocks = ["7203.T", "6758.T", "9984.T", "8306.T", "6861.T", "9434.T", "4063.T"][:7]
             us_stocks = ["AAPL", "MSFT", "GOOGL", "AMZN", "NVDA", "TSLA", "META"][:7]
             emerging_stocks = ["2330.TW", "005930.KS", "TSM", "BABA", "JD", "PDD"][:6]
-            selected_symbols = japanese_stocks + us_stocks + emerging_stocks
+            selected_symbols = (japanese_stocks + us_stocks + emerging_stocks)[:stock_count]
         elif market == get_text('japanese_stocks'):
             selected_symbols = [
                 "7203.T", "6758.T", "9984.T", "8306.T", "6861.T", "9434.T", "4063.T", "6098.T",
                 "8035.T", "9432.T", "4519.T", "6367.T", "7267.T", "8031.T", "4568.T", "9020.T",
                 "6954.T", "8028.T", "6902.T", "7974.T", "4507.T", "9022.T", "6326.T", "6971.T"
-            ][:20]  # Top 20 popular Japanese stocks
+            ][:stock_count]  # Popular Japanese stocks
         elif market == get_text('us_stocks'):
             selected_symbols = [
                 "AAPL", "MSFT", "GOOGL", "AMZN", "NVDA", "TSLA", "META", "BRK-B", "UNH", "XOM",
                 "JNJ", "JPM", "V", "PG", "HD", "CVX", "MA", "BAC", "ABBV", "PFE"
-            ]  # Top 20 popular US stocks
+            ][:stock_count]  # Popular US stocks
         else:
             selected_symbols = [
                 "2330.TW", "005930.KS", "TSM", "BABA", "JD", "PDD", "BIDU", "ASML", "NIO", "XPEV",
                 "LI", "SHOP", "SE", "GRAB", "VALE", "PBR", "ITUB", "BBD", "EWZ", "FMX"
-            ]  # Top 20 emerging market stocks
+            ][:stock_count]  # Emerging market stocks
         
         st.success("人気ランキング上位銘柄を選択しました" if st.session_state.language == 'ja' else "Selected top popular stocks")
         
@@ -184,23 +184,23 @@ def handle_action_buttons(popularity_button, dividend_button, theme_button, rand
             japanese_dividend = ["8306.T", "8411.T", "8316.T", "8591.T", "8604.T", "8630.T", "8725.T"][:7]
             us_dividend = ["T", "VZ", "XOM", "CVX", "KO", "PEP", "JNJ"][:7]  
             emerging_dividend = ["VALE", "PBR", "ITUB", "BBD", "ABEV", "SID"][:6]
-            selected_symbols = japanese_dividend + us_dividend + emerging_dividend
+            selected_symbols = (japanese_dividend + us_dividend + emerging_dividend)[:stock_count]
         elif market == get_text('japanese_stocks'):
             selected_symbols = [
                 "8306.T", "8411.T", "8316.T", "8591.T", "8604.T", "8630.T", "8725.T", "8732.T",
                 "8766.T", "8795.T", "8830.T", "9501.T", "9613.T", "9962.T", "9983.T", "8001.T",
                 "8028.T", "8031.T", "8053.T", "8058.T"
-            ]  # High dividend Japanese stocks (banks, utilities, etc.)
+            ][:stock_count]  # High dividend Japanese stocks (banks, utilities, etc.)
         elif market == get_text('us_stocks'):
             selected_symbols = [
                 "T", "VZ", "XOM", "CVX", "KO", "PEP", "JNJ", "PG", "MO", "PM",
                 "IBM", "VTI", "SCHD", "DVY", "HDV", "NOBL", "DGRO", "VYM", "SPYD", "USMV"
-            ]  # High dividend US stocks
+            ][:stock_count]  # High dividend US stocks
         else:
             selected_symbols = [
                 "PBR", "VALE", "ITUB", "BBD", "ABEV", "SID", "UGP", "EWZ", "FMX", "CIG",
                 "ERJ", "GOL", "AZUL", "BRFS", "JBS", "CACC", "PAC", "TV", "WIT", "005930.KS"
-            ]  # High dividend emerging market stocks
+            ][:stock_count]  # High dividend emerging market stocks
             
         st.success("高配当利回り銘柄を選択しました" if st.session_state.language == 'ja' else "Selected high dividend yield stocks")
         
@@ -226,7 +226,7 @@ def handle_action_buttons(popularity_button, dividend_button, theme_button, rand
             us_all = ["AAPL", "MSFT", "GOOGL", "AMZN", "NVDA", "TSLA", "META", "BRK-B"][:8]
             emerging_all = ["2330.TW", "005930.KS", "TSM", "BABA", "JD", "PDD", "BIDU", "ASML"][:8]
             all_symbols = japanese_all + us_all + emerging_all
-            selected_symbols = random.sample(all_symbols, min(20, len(all_symbols)))
+            selected_symbols = random.sample(all_symbols, min(stock_count, len(all_symbols)))
         elif market == get_text('japanese_stocks'):
             all_symbols = [
                 "7203.T", "6758.T", "9984.T", "8306.T", "6861.T", "9434.T", "4063.T", "6098.T",
@@ -250,7 +250,7 @@ def handle_action_buttons(popularity_button, dividend_button, theme_button, rand
                 "WIT", "ABEV", "SID", "UGP", "CIG", "ERJ", "GOL", "AZUL", "BRFS", "JBS"
             ]
             
-        selected_symbols = random.sample(all_symbols, min(25, len(all_symbols)))
+        selected_symbols = random.sample(all_symbols, min(stock_count, len(all_symbols)))
         st.success("ランダムに銘柄を選択しました" if st.session_state.language == 'ja' else "Randomly selected stocks")
         
     return selected_symbols
@@ -510,6 +510,28 @@ def main():
             help="分析したい市場を選択してください / Select the market to analyze"
         )
     
+    with col2:
+        # Number of stocks selection
+        stock_count_options = ["20", "50", "100", "200", "任意入力 / Custom"]
+        selected_count_option = st.selectbox(
+            "📊 " + ("検索銘柄数" if st.session_state.language == 'ja' else "Number of Stocks"),
+            stock_count_options,
+            index=0,
+            help="分析する銘柄数を選択してください / Select number of stocks to analyze"
+        )
+        
+        # Handle custom input
+        if selected_count_option == "任意入力 / Custom":
+            stock_count = st.number_input(
+                "銘柄数を入力 / Enter number",
+                min_value=1,
+                max_value=500,
+                value=20,
+                step=1
+            )
+        else:
+            stock_count = int(selected_count_option)
+    
     # Add custom CSS for enhanced button styling
     st.markdown("""
     <style>
@@ -565,7 +587,7 @@ def main():
         )
     
     # Handle action button clicks
-    selected_method = handle_action_buttons(popularity_button, dividend_button, theme_button, random_button, market)
+    selected_method = handle_action_buttons(popularity_button, dividend_button, theme_button, random_button, market, stock_count)
     
     # Determine which symbols to analyze based on selected method
     if selected_method:
