@@ -71,30 +71,25 @@ class DataFetcher:
             stock_data['previous_close'] = info.get('previousClose', 0)
             stock_data['market_cap'] = info.get('marketCap', 0)
             
-            # Financial metrics
+            # Financial metrics - All 10 indicators
             stock_data['earnings_per_share'] = info.get('trailingEps', info.get('forwardEps', 0))
             stock_data['book_value_per_share'] = info.get('bookValue', 0)
             stock_data['return_on_equity'] = info.get('returnOnEquity', 0)
-            stock_data['profit_margins'] = info.get('profitMargins', 0)
-            
-            # Dividend information
+            stock_data['return_on_assets'] = info.get('returnOnAssets', 0)
             stock_data['dividend_yield'] = info.get('dividendYield', 0)
-            stock_data['dividend_rate'] = info.get('dividendRate', 0)
+            stock_data['revenue_growth'] = info.get('revenueGrowth', 0)
+            stock_data['earnings_growth'] = info.get('earningsGrowth', 0)
+            stock_data['operating_margin'] = info.get('operatingMargins', 0)
+            stock_data['debt_to_equity'] = info.get('debtToEquity', 0)
             stock_data['payout_ratio'] = info.get('payoutRatio', 0)
             
-            # Valuation metrics
+            # Additional financial data
+            stock_data['dividend_rate'] = info.get('dividendRate', 0)
             stock_data['pe_ratio'] = info.get('trailingPE', info.get('forwardPE', 0))
             stock_data['pb_ratio'] = info.get('priceToBook', 0)
-            stock_data['price_to_sales'] = info.get('priceToSalesTrailing12Months', 0)
-            
-            # Growth metrics
-            stock_data['earnings_growth'] = info.get('earningsGrowth', 0)
-            stock_data['revenue_growth'] = info.get('revenueGrowth', 0)
-            
-            # Financial health
-            stock_data['debt_to_equity'] = info.get('debtToEquity', 0)
             stock_data['current_ratio'] = info.get('currentRatio', 0)
             stock_data['quick_ratio'] = info.get('quickRatio', 0)
+            stock_data['profit_margins'] = info.get('profitMargins', 0)
             
             # Calculate additional metrics from historical data
             if not hist.empty:

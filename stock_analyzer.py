@@ -98,6 +98,14 @@ class StockAnalyzer:
             else:
                 metrics['roe'] = None
             
+            # ROA (Return on Assets)
+            roa = stock_data.get('return_on_assets', 0)
+            if roa is not None:
+                # Convert to percentage if it's in decimal form
+                metrics['roa'] = roa * 100 if roa < 1 else roa
+            else:
+                metrics['roa'] = None
+            
             # Dividend Yield
             dividend_yield = stock_data.get('dividend_yield', 0)
             if dividend_yield is not None:
@@ -105,6 +113,46 @@ class StockAnalyzer:
                 metrics['dividend_yield'] = dividend_yield * 100 if dividend_yield < 1 else dividend_yield
             else:
                 metrics['dividend_yield'] = None
+            
+            # Revenue Growth (売上高成長率)
+            revenue_growth = stock_data.get('revenue_growth', 0)
+            if revenue_growth is not None:
+                # Convert to percentage if it's in decimal form
+                metrics['revenue_growth'] = revenue_growth * 100 if revenue_growth < 1 and revenue_growth > -1 else revenue_growth
+            else:
+                metrics['revenue_growth'] = None
+            
+            # EPS Growth (EPS成長率)
+            eps_growth = stock_data.get('earnings_growth', 0)
+            if eps_growth is not None:
+                # Convert to percentage if it's in decimal form
+                metrics['eps_growth'] = eps_growth * 100 if eps_growth < 1 and eps_growth > -1 else eps_growth
+            else:
+                metrics['eps_growth'] = None
+            
+            # Operating Margin (営業利益率)
+            operating_margin = stock_data.get('operating_margin', 0)
+            if operating_margin is not None:
+                # Convert to percentage if it's in decimal form
+                metrics['operating_margin'] = operating_margin * 100 if operating_margin < 1 else operating_margin
+            else:
+                metrics['operating_margin'] = None
+            
+            # Equity Ratio (自己資本比率) - calculated from debt to equity
+            debt_to_equity = stock_data.get('debt_to_equity', 0)
+            if debt_to_equity is not None and debt_to_equity > 0:
+                # Equity ratio = 1 / (1 + debt_to_equity_ratio) * 100
+                metrics['equity_ratio'] = (1 / (1 + debt_to_equity/100)) * 100 if debt_to_equity > 1 else (1 / (1 + debt_to_equity)) * 100
+            else:
+                metrics['equity_ratio'] = None
+            
+            # Payout Ratio (配当性向)
+            payout_ratio = stock_data.get('payout_ratio', 0)
+            if payout_ratio is not None:
+                # Convert to percentage if it's in decimal form
+                metrics['payout_ratio'] = payout_ratio * 100 if payout_ratio < 1 else payout_ratio
+            else:
+                metrics['payout_ratio'] = None
             
             # Market Cap
             metrics['market_cap'] = stock_data.get('market_cap', 0)

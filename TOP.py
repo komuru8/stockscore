@@ -843,7 +843,7 @@ def display_results(view_mode, market):
                     'Current Price': info.get('current_price', 'N/A')
                 })
             else:
-                # Full data for intermediate/advanced users with available metrics
+                # Full data for intermediate/advanced users with all 10 metrics
                 df_data.append({
                     'Symbol': symbol,
                     'Company': company_name,
@@ -853,7 +853,13 @@ def display_results(view_mode, market):
                     'PER': info.get('per', 'N/A'),
                     'PBR': info.get('pbr', 'N/A'),
                     'ROE': info.get('roe', 'N/A'),
-                    'Dividend Yield': info.get('dividend_yield', 'N/A')
+                    'ROA': info.get('roa', 'N/A'),
+                    'Dividend Yield': info.get('dividend_yield', 'N/A'),
+                    'Revenue Growth': info.get('revenue_growth', 'N/A'),
+                    'EPS Growth': info.get('eps_growth', 'N/A'),
+                    'Operating Margin': info.get('operating_margin', 'N/A'),
+                    'Equity Ratio': info.get('equity_ratio', 'N/A'),
+                    'Payout Ratio': info.get('payout_ratio', 'N/A')
                 })
     
     if not df_data:
@@ -1057,8 +1063,8 @@ def display_simple_view(df):
     
     # Enhanced table with better formatting and styling - only use columns that exist
     available_columns = ['Symbol', 'Market', 'Company', 'Score', 'Recommendation', 'Current Price']
-    # Currently available financial metrics (will expand to 10 metrics later)
-    optional_columns = ['PER', 'PBR', 'ROE', 'Dividend Yield']
+    # All 10 financial metrics now available
+    optional_columns = ['PER', 'PBR', 'ROE', 'ROA', 'Dividend Yield', 'Revenue Growth', 'EPS Growth', 'Operating Margin', 'Equity Ratio', 'Payout Ratio']
     
     # Add only the columns that exist in the DataFrame
     for col in optional_columns:
@@ -1068,11 +1074,11 @@ def display_simple_view(df):
     table_df = df_with_market[available_columns].copy()
     
     # Format numerical columns - only format columns that exist
-    numerical_cols = ['PER', 'PBR', 'ROE', 'Dividend Yield']
+    numerical_cols = ['PER', 'PBR', 'ROE', 'ROA', 'Dividend Yield', 'Revenue Growth', 'EPS Growth', 'Operating Margin', 'Equity Ratio', 'Payout Ratio']
     for col in numerical_cols:
         if col in table_df.columns:
             table_df[col] = pd.to_numeric(table_df[col], errors='coerce')
-            if col in ['ROE', 'Dividend Yield']:
+            if col in ['ROE', 'ROA', 'Dividend Yield', 'Revenue Growth', 'EPS Growth', 'Operating Margin', 'Equity Ratio', 'Payout Ratio']:
                 table_df[col] = table_df[col].apply(lambda x: f"{x:.1f}%" if pd.notna(x) else "N/A")
             else:
                 table_df[col] = table_df[col].apply(lambda x: f"{x:.2f}" if pd.notna(x) else "N/A")
