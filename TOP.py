@@ -113,8 +113,8 @@ def get_text(key, lang=None):
             'en': 'Update Data / データ更新'
         },
         'user_mode_selection': {
-            'ja': 'ユーザーモード / User Mode',
-            'en': 'User Mode / ユーザーモード'
+            'ja': 'ユーザーモード',
+            'en': 'User Mode'
         },
         'beginner_mode': {
             'ja': '👶 初級者',
@@ -373,7 +373,7 @@ def main():
     """, unsafe_allow_html=True)
     
     # Sidebar configuration
-    st.sidebar.header("設定" if st.session_state.language == 'ja' else "Settings")
+    st.sidebar.header("" if st.session_state.language == 'ja' else "")
     
     # User mode selection
     st.sidebar.subheader(get_text('user_mode_selection'))
@@ -418,7 +418,7 @@ def main():
     
     if st.session_state.user_mode == 'beginner':
         # Simplified criteria for beginners
-        st.sidebar.subheader("🎯 簡易設定 / Simple Settings")
+        st.sidebar.subheader("🎯 簡易設定")
         
         per_threshold = st.sidebar.slider(
             "PER基準 / PER Standard",
