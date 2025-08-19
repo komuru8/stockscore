@@ -814,8 +814,20 @@ def main():
     
     # Update data button - only show if symbols are selected
     if symbols:
-        if st.button(get_text('update_data'), type="primary"):
-            update_stock_data(symbols, per_threshold, pbr_threshold, roe_threshold, dividend_multiplier)
+        # Show different options based on symbol count to prevent server overload
+        if len(symbols) > 25:
+            col1, col2 = st.columns(2)
+            with col1:
+                if st.button(get_text('update_data'), type="primary"):
+                    update_stock_data(symbols, per_threshold, pbr_threshold, roe_threshold, dividend_multiplier)
+            with col2:
+                if st.button("最初の25銘柄のみ分析 / Analyze First 25 Only", type="secondary"):
+                    limited_symbols = symbols[:25]
+                    st.info(f"サーバー負荷軽減のため最初の25銘柄のみ分析します / Analyzing first 25 stocks to reduce server load")
+                    update_stock_data(limited_symbols, per_threshold, pbr_threshold, roe_threshold, dividend_multiplier)
+        else:
+            if st.button(get_text('update_data'), type="primary"):
+                update_stock_data(symbols, per_threshold, pbr_threshold, roe_threshold, dividend_multiplier)
         
         # Auto-update data if it's been more than 30 minutes (only for smaller datasets to avoid server overload)
         if len(symbols) <= 25 and (st.session_state.last_update is None or \
@@ -853,14 +865,15 @@ def update_stock_data(symbols, per_threshold, pbr_threshold, roe_threshold, divi
         )
         progress_bar.progress(5)
         
-        # Batch processing for large symbol lists to prevent server overload
-        batch_size = 12  # Process in smaller batches to reduce server load
+        # Use very conservative batch processing to prevent server overload
+        batch_size = 8  # Very small batches to minimize server load
         total_symbols = len(symbols)
         all_results = {}
         
-        # Show warning for large requests
-        if total_symbols > 30:
-            st.warning("⚠️ 大量のデータを処理中です。処理に時間がかかる場合があります。/ Processing large amount of data. This may take some time.")
+        # Show warning for large requests and suggest manual processing
+        if total_symbols > 25:
+            st.warning("⚠️ 大量のデータ処理中です。サーバー負荷を避けるため少数ずつ処理します。/ Processing large dataset in small batches to avoid server overload.")
+            st.info("💡 ヒント：より高速な処理には銘柄数を25以下に制限することをお勧めします。/ Tip: For faster processing, consider limiting to 25 stocks or fewer.")
         
         for i in range(0, total_symbols, batch_size):
             batch = symbols[i:i + batch_size]
