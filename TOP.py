@@ -340,20 +340,8 @@ def main():
     </div>
     """, unsafe_allow_html=True)
     
-    # Sidebar configuration (moved up to define market first)
+    # Sidebar configuration
     st.sidebar.header("設定" if st.session_state.language == 'ja' else "Settings")
-    
-    # Market selection
-    market_options = [
-        get_text('japanese_stocks'),
-        get_text('us_stocks'),
-        get_text('emerging_stocks')
-    ]
-    market = st.sidebar.selectbox(
-        get_text('market_selection'),
-        market_options,
-        index=0
-    )
     
     # User mode selection
     st.sidebar.subheader(get_text('user_mode_selection'))
@@ -473,9 +461,24 @@ def main():
         roe_threshold = 10
         dividend_multiplier = 1.2
     
-    # Action buttons section with enhanced styling
+    # Stock discovery section with market selection
     st.markdown("---")
     st.subheader("📍 " + ("株式検索方法を選択" if st.session_state.language == 'ja' else "Choose Stock Discovery Method"))
+    
+    # Market selection integrated into discovery section
+    col1, col2, col3 = st.columns([2, 2, 2])
+    with col1:
+        market_options = [
+            get_text('japanese_stocks'),
+            get_text('us_stocks'),
+            get_text('emerging_stocks')
+        ]
+        market = st.selectbox(
+            "🌍 " + ("市場選択 / Market" if st.session_state.language == 'ja' else "Market / 市場選択"),
+            market_options,
+            index=0,
+            help="分析したい市場を選択してください / Select the market to analyze"
+        )
     
     # Add custom CSS for enhanced button styling
     st.markdown("""
@@ -500,6 +503,7 @@ def main():
     """, unsafe_allow_html=True)
     
     # Create action buttons in a grid layout
+    st.markdown("") # Add some spacing
     col1, col2, col3, col4 = st.columns(4, gap="medium")
     
     with col1:
