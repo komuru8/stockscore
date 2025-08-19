@@ -39,8 +39,8 @@ def get_text(key, lang=None):
             'en': 'StockScore'
         },
         'terms': {
-            'ja': '📋 利用規約',
-            'en': '📋 Terms'
+            'ja': '利用規約',
+            'en': 'Terms'
         },
         'terms_help': {
             'ja': '利用規約・免責事項を確認',

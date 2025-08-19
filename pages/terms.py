@@ -128,7 +128,7 @@ def main():
     
     # Back to main page button
     st.markdown("---")
-    if st.button("🏠 メインページに戻る / Back to Main Page", type="primary"):
+    if st.button("🏠 TOPに戻る / Back to TOP", type="primary"):
         st.switch_page("app.py")
 
 if __name__ == "__main__":
