@@ -611,46 +611,44 @@ def display_results(view_mode, market):
     # Featured Recommendations Section
     st.subheader("🌟 " + ("推奨銘柄ピックアップ" if st.session_state.language == 'ja' else "Featured Recommendations"))
     
-    # Get top 6 recommendations
-    top_recommendations = df.head(6)
+    # Get top 3 recommendations
+    top_recommendations = df.head(3)
     
     if len(top_recommendations) > 0:
-        # Display in 2 rows of 3 columns
-        for row in range(2):
-            cols = st.columns(3)
-            for col_idx, col in enumerate(cols):
-                stock_idx = row * 3 + col_idx
-                if stock_idx < len(top_recommendations):
-                    stock = top_recommendations.iloc[stock_idx]
-                    
-                    with col:
-                        # Create card-like container
-                        with st.container():
-                            st.markdown(f"""
-                            <div style="
-                                border: 2px solid {'#28a745' if stock['Score'] >= 80 else '#fd7e14' if stock['Score'] >= 60 else '#ffc107'};
-                                border-radius: 15px;
-                                padding: 20px;
-                                margin-bottom: 15px;
-                                background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
-                                box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-                                text-align: center;
-                            ">
-                            """, unsafe_allow_html=True)
-                            
-                            # Stock header
-                            st.markdown(f"**{stock['Symbol']}**")
-                            st.markdown(f"<div style='font-size: 0.9em; color: #666;'>{stock['Company']}</div>", unsafe_allow_html=True)
-                            
-                            # Circular score
-                            circular_svg = create_circular_score(stock['Score'], 100)
-                            st.markdown(circular_svg, unsafe_allow_html=True)
-                            
-                            # Price and recommendation
-                            st.markdown(f"**{stock['Current Price']}**")
-                            st.markdown(f"<div style='font-size: 0.9em; font-weight: bold;'>{stock['Recommendation']}</div>", unsafe_allow_html=True)
-                            
-                            st.markdown("</div>", unsafe_allow_html=True)
+        # Display in 1 row of 3 columns
+        cols = st.columns(3)
+        for col_idx, col in enumerate(cols):
+            if col_idx < len(top_recommendations):
+                stock = top_recommendations.iloc[col_idx]
+                
+                with col:
+                    # Create card-like container
+                    with st.container():
+                        st.markdown(f"""
+                        <div style="
+                            border: 2px solid {'#28a745' if stock['Score'] >= 80 else '#fd7e14' if stock['Score'] >= 60 else '#ffc107'};
+                            border-radius: 15px;
+                            padding: 20px;
+                            margin-bottom: 15px;
+                            background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+                            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+                            text-align: center;
+                        ">
+                        """, unsafe_allow_html=True)
+                        
+                        # Stock header
+                        st.markdown(f"**{stock['Symbol']}**")
+                        st.markdown(f"<div style='font-size: 0.9em; color: #666;'>{stock['Company']}</div>", unsafe_allow_html=True)
+                        
+                        # Circular score
+                        circular_svg = create_circular_score(stock['Score'], 100)
+                        st.markdown(circular_svg, unsafe_allow_html=True)
+                        
+                        # Price and recommendation
+                        st.markdown(f"**{stock['Current Price']}**")
+                        st.markdown(f"<div style='font-size: 0.9em; font-weight: bold;'>{stock['Recommendation']}</div>", unsafe_allow_html=True)
+                        
+                        st.markdown("</div>", unsafe_allow_html=True)
     
     # Results table
     if view_mode == get_text('simple_view'):
