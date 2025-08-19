@@ -41,6 +41,18 @@ User Modes: 👶 Beginner (simplified AI scoring), 🧑‍💼 Intermediate (10-
 - **Market Selection**: Support for multiple stock markets with different data sources
 - **Weighted Scoring System**: Customizable weights for different fundamental metrics
 
+## Deployment Configuration
+
+### File Structure
+- **Main Application**: `TOP.py` - Contains the primary Streamlit application logic
+- **Deployment Wrapper**: `app.py` - Entry point for Replit deployments (imports and runs TOP.py)
+- **Configuration**: `.streamlit/config.toml` - Server configuration for deployments
+
+### Deployment Settings
+- **Port**: 5000 (configured for Replit deployment compatibility)
+- **Server Configuration**: Headless mode with CORS disabled for production
+- **Entry Point**: Uses `app.py` as deployment entry point while maintaining `TOP.py` as main application
+
 ## External Dependencies
 
 ### APIs and Data Sources

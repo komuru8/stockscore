@@ -3,3 +3,6 @@
 
 # Import and run the main Streamlit application
 import TOP
+
+# The import above automatically executes the Streamlit application
+# No additional code needed as TOP.py contains all the Streamlit app logic
