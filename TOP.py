@@ -493,6 +493,7 @@ def main():
     per_threshold = 15
     pbr_threshold = 1.0
     roe_threshold = 10
+    dividend_threshold = 3.0
     dividend_multiplier = 1.2
     roa_threshold = 5
     sales_growth_threshold = 5
@@ -511,11 +512,14 @@ def main():
             help="低いほど割安 / Lower is better value"
         )
         
-        dividend_multiplier = st.sidebar.slider(
-            "配当重視度 / Dividend Focus",
-            min_value=1.0, max_value=2.0, value=1.5, step=0.1,
-            help="高いほど配当重視 / Higher prioritizes dividends"
+        dividend_threshold = st.sidebar.slider(
+            "配当利回り基準 (%) / Dividend Yield Standard (%)",
+            min_value=2.0, max_value=6.0, value=3.5, step=0.5,
+            help="この値以上の配当利回りを評価 / Evaluate dividend yields above this value"
         )
+        
+        # Convert to multiplier for backward compatibility with analyzer
+        dividend_multiplier = 1.5
         
     elif st.session_state.user_mode == 'intermediate':
         # Full 10 indicators for intermediate users
@@ -542,10 +546,13 @@ def main():
             min_value=2, max_value=15, value=5, step=1
         )
         
-        dividend_multiplier = st.sidebar.slider(
-            "配当利回り",
-            min_value=0.5, max_value=2.0, value=1.2, step=0.1
+        dividend_threshold = st.sidebar.slider(
+            "配当利回り閾値 (%) / Dividend Yield Threshold (%)",
+            min_value=1.0, max_value=8.0, value=3.0, step=0.5
         )
+        
+        # Convert to multiplier for backward compatibility with analyzer
+        dividend_multiplier = 1.2
         
         # Growth metrics
         sales_growth_threshold = st.sidebar.slider(
