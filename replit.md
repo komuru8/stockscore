@@ -11,7 +11,7 @@ UI Preferences: Clean, simple main page with legal disclaimers moved to separate
 Visual Design: Circular score indicators for featured recommendations, table format for complete listings. Custom logo with emoji instead of SVG.
 Language Support: Full Japanese/English bilingual interface with dropdown language selector. Japanese company names displayed when Japanese language selected.
 Navigation: Simplified top navigation with only language selector and terms button. No page menu navigation.
-User Modes: 👶 Beginner (simplified AI scoring), 🧑‍💼 Intermediate (10-metric analysis), 🧑‍🔬 Advanced (planned advanced filtering).
+User Modes: 👶 Beginner (simplified AI scoring), 🧑‍💼 Intermediate (10-metric analysis).
 
 ## System Architecture
 

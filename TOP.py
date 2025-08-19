@@ -347,8 +347,7 @@ def main():
     st.sidebar.subheader(get_text('user_mode_selection'))
     mode_options = {
         get_text('beginner_mode'): 'beginner',
-        get_text('intermediate_mode'): 'intermediate',
-        get_text('advanced_mode'): 'advanced'
+        get_text('intermediate_mode'): 'intermediate'
     }
     
     current_mode_display = next(k for k, v in mode_options.items() if v == st.session_state.user_mode)
@@ -368,13 +367,23 @@ def main():
         st.sidebar.info(get_text('beginner_description'))
     elif st.session_state.user_mode == 'intermediate':
         st.sidebar.info(get_text('intermediate_description'))
-    else:
-        st.sidebar.warning(get_text('advanced_description'))
     
     # Always use simple view
     view_mode = get_text('simple_view')
     
     # Conditional scoring criteria adjustment based on user mode
+    # Initialize default values for all thresholds
+    per_threshold = 15
+    pbr_threshold = 1.0
+    roe_threshold = 10
+    dividend_multiplier = 1.2
+    roa_threshold = 5
+    sales_growth_threshold = 5
+    eps_growth_threshold = 10
+    operating_margin_threshold = 10
+    equity_ratio_threshold = 40
+    payout_ratio_threshold = 30
+    
     if st.session_state.user_mode == 'beginner':
         # Simplified criteria for beginners
         st.sidebar.subheader("🎯 簡易設定 / Simple Settings")
@@ -390,10 +399,6 @@ def main():
             min_value=1.0, max_value=2.0, value=1.5, step=0.1,
             help="高いほど配当重視 / Higher prioritizes dividends"
         )
-        
-        # Set default values for other criteria in beginner mode
-        pbr_threshold = 1.0
-        roe_threshold = 10
         
     elif st.session_state.user_mode == 'intermediate':
         # Full 10 indicators for intermediate users
@@ -452,14 +457,6 @@ def main():
             "配当性向閾値 (%) / Payout Ratio Threshold (%)",
             min_value=10, max_value=80, value=30, step=5
         )
-        
-    else:  # Advanced mode - placeholder
-        st.sidebar.warning("上級者モードは開発中です / Advanced mode is in development")
-        # Use intermediate defaults
-        per_threshold = 15
-        pbr_threshold = 1.0
-        roe_threshold = 10
-        dividend_multiplier = 1.2
     
     # Stock discovery section with market selection
     st.markdown("---")
