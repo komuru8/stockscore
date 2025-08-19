@@ -794,23 +794,23 @@ def display_results(view_mode, market):
                     'Current Price': info.get('current_price', 'N/A')
                 })
             else:
-                # Full data for intermediate/advanced users
+                # Full data for intermediate/advanced users with all 10 metrics
                 df_data.append({
                     'Symbol': symbol,
                     'Company': company_name,
                     'Score': info.get('total_score', 0),
                     'Recommendation': get_recommendation(info.get('total_score', 0)),
+                    'Current Price': info.get('current_price', 'N/A'),
                     'PER': info.get('per', 'N/A'),
                     'PBR': info.get('pbr', 'N/A'),
                     'ROE': info.get('roe', 'N/A'),
                     'ROA': info.get('roa', 'N/A'),
                     'Dividend Yield': info.get('dividend_yield', 'N/A'),
-                    'Sales Growth': info.get('sales_growth', 'N/A'),
+                    'Revenue Growth': info.get('revenue_growth', info.get('sales_growth', 'N/A')),
                     'EPS Growth': info.get('eps_growth', 'N/A'),
                     'Operating Margin': info.get('operating_margin', 'N/A'),
                     'Equity Ratio': info.get('equity_ratio', 'N/A'),
-                    'Payout Ratio': info.get('payout_ratio', 'N/A'),
-                    'Current Price': info.get('current_price', 'N/A')
+                    'Payout Ratio': info.get('payout_ratio', 'N/A')
                 })
     
     if not df_data:
@@ -1014,7 +1014,8 @@ def display_simple_view(df):
     
     # Enhanced table with better formatting and styling - only use columns that exist
     available_columns = ['Symbol', 'Market', 'Company', 'Score', 'Recommendation', 'Current Price']
-    optional_columns = ['PER', 'PBR', 'ROE', 'Dividend Yield']
+    # All 10 financial metrics for comprehensive analysis
+    optional_columns = ['PER', 'PBR', 'ROE', 'ROA', 'Dividend Yield', 'Revenue Growth', 'EPS Growth', 'Operating Margin', 'Equity Ratio', 'Payout Ratio']
     
     # Add only the columns that exist in the DataFrame
     for col in optional_columns:
@@ -1024,11 +1025,11 @@ def display_simple_view(df):
     table_df = df_with_market[available_columns].copy()
     
     # Format numerical columns - only format columns that exist
-    numerical_cols = ['PER', 'PBR', 'ROE', 'Dividend Yield']
+    numerical_cols = ['PER', 'PBR', 'ROE', 'ROA', 'Dividend Yield', 'Revenue Growth', 'EPS Growth', 'Operating Margin', 'Equity Ratio', 'Payout Ratio']
     for col in numerical_cols:
         if col in table_df.columns:
             table_df[col] = pd.to_numeric(table_df[col], errors='coerce')
-            if col in ['ROE', 'Dividend Yield']:
+            if col in ['ROE', 'ROA', 'Dividend Yield', 'Revenue Growth', 'EPS Growth', 'Operating Margin', 'Equity Ratio', 'Payout Ratio']:
                 table_df[col] = table_df[col].apply(lambda x: f"{x:.1f}%" if pd.notna(x) else "N/A")
             else:
                 table_df[col] = table_df[col].apply(lambda x: f"{x:.2f}" if pd.notna(x) else "N/A")
@@ -1114,7 +1115,7 @@ def display_intermediate_view(df):
     # All 10 metrics for intermediate mode
     all_columns = ['Symbol', 'Market', 'Company', 'Score', 'Recommendation', 'Current Price', 
                   'PER', 'PBR', 'ROE', 'ROA', 'Dividend Yield', 'Revenue Growth', 
-                  'Free Cash Flow Yield', 'Debt to Equity', 'Operating Margin', 'Current Ratio']
+                  'EPS Growth', 'Operating Margin', 'Equity Ratio', 'Payout Ratio']
     
     # Use only columns that exist in the DataFrame
     available_columns = []
@@ -1126,12 +1127,12 @@ def display_intermediate_view(df):
     
     # Format numerical columns
     numerical_cols = ['PER', 'PBR', 'ROE', 'ROA', 'Dividend Yield', 'Revenue Growth', 
-                     'Free Cash Flow Yield', 'Debt to Equity', 'Operating Margin', 'Current Ratio']
+                     'EPS Growth', 'Operating Margin', 'Equity Ratio', 'Payout Ratio']
     
     for col in numerical_cols:
         if col in table_df.columns:
             table_df[col] = pd.to_numeric(table_df[col], errors='coerce')
-            if col in ['ROE', 'ROA', 'Dividend Yield', 'Revenue Growth', 'Free Cash Flow Yield', 'Operating Margin']:
+            if col in ['ROE', 'ROA', 'Dividend Yield', 'Revenue Growth', 'EPS Growth', 'Operating Margin', 'Equity Ratio', 'Payout Ratio']:
                 table_df[col] = table_df[col].apply(lambda x: f"{x:.1f}%" if pd.notna(x) else "N/A")
             else:
                 table_df[col] = table_df[col].apply(lambda x: f"{x:.2f}" if pd.notna(x) else "N/A")
@@ -1162,12 +1163,14 @@ def display_intermediate_view(df):
                         color = 'color: green; font-weight: bold;' if value >= 3 else 'color: red; font-weight: bold;'
                     elif col == 'Revenue Growth':
                         color = 'color: green; font-weight: bold;' if value >= 5 else 'color: red; font-weight: bold;'
+                    elif col == 'EPS Growth':
+                        color = 'color: green; font-weight: bold;' if value >= 10 else 'color: red; font-weight: bold;'
                     elif col == 'Operating Margin':
                         color = 'color: green; font-weight: bold;' if value >= 10 else 'color: red; font-weight: bold;'
-                    elif col == 'Debt to Equity':
-                        color = 'color: green; font-weight: bold;' if value <= 0.5 else 'color: red; font-weight: bold;'
-                    elif col == 'Current Ratio':
-                        color = 'color: green; font-weight: bold;' if 1.5 <= value <= 3.0 else 'color: red; font-weight: bold;'
+                    elif col == 'Equity Ratio':
+                        color = 'color: green; font-weight: bold;' if value >= 40 else 'color: red; font-weight: bold;'
+                    elif col == 'Payout Ratio':
+                        color = 'color: green; font-weight: bold;' if 20 <= value <= 60 else 'color: red; font-weight: bold;'
                     else:
                         color = 'color: green; font-weight: bold;' if value > 0 else 'color: red; font-weight: bold;'
                     styles.append(color)
