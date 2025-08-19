@@ -18,23 +18,11 @@ author = "agent"
 
 [[workflows.workflow.tasks]]
 task = "workflow.run"
-args = "Streamlit Stock Analysis App"
+args = "install_dependencies"
 
 [[workflows.workflow.tasks]]
 task = "workflow.run"
-args = "install_dependencies"
-
-[[workflows.workflow]]
-name = "Streamlit Stock Analysis App"
-author = "agent"
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "streamlit run app.py --server.port 5000"
-waitForPort = 5000
-
-[workflows.workflow.metadata]
-outputType = "webview"
+args = "Streamlit Stock Analysis App"
 
 [[workflows.workflow]]
 name = "install_dependencies"
@@ -43,6 +31,15 @@ author = "agent"
 [[workflows.workflow.tasks]]
 task = "shell.exec"
 args = "uv add yfinance plotly"
+
+[[workflows.workflow]]
+name = "Streamlit Stock Analysis App"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "streamlit run TOP.py --server.port 5000"
+waitForPort = 5000
 
 [[ports]]
 localPort = 5000

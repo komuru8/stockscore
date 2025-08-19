@@ -298,7 +298,7 @@ def main():
             st.rerun()
     with col3:
         if st.button(get_text('terms'), help=get_text('terms_help')):
-            st.switch_page("pages/terms.py")
+            st.switch_page("pages/利用規約.py")
     
     # Display title with emoji icon instead of SVG - reduced top spacing
     st.markdown(f"""
