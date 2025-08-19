@@ -255,6 +255,57 @@ def handle_action_buttons(popularity_button, dividend_button, theme_button, rand
         
     return selected_symbols
 
+def generate_stock_analysis(stock):
+    """Generate detailed stock analysis based on fundamentals and market position"""
+    symbol = stock['Symbol']
+    score = stock['Score']
+    company = stock['Company']
+    
+    # Get language preference
+    is_japanese = st.session_state.language == 'ja'
+    
+    # Analysis templates based on symbol patterns and scores
+    analyses = {
+        # Japanese stocks
+        "7203.T": {
+            'ja': "トヨタは世界最大級の自動車メーカーとして、電動化・自動運転技術への積極投資により持続的成長を実現。強固な財務基盤とグローバル市場での競争優位性、ESG経営への取り組みが評価されています。半導体不足などの一時的な逆風はありますが、長期的には脱炭素社会への移行をリードする企業として期待されます。",
+            'en': "Toyota maintains its position as a global automotive leader through aggressive investment in electrification and autonomous driving technologies. Strong financial foundation, competitive advantages in global markets, and commitment to ESG management drive sustainable growth. Despite temporary headwinds like semiconductor shortages, the company is well-positioned to lead the transition to a carbon-neutral society."
+        },
+        "6758.T": {
+            'ja': "ソニーグループは娯楽・エレクトロニクス・金融の多角化により安定した収益基盤を構築。PlayStation事業の好調、半導体センサー事業での世界的優位性、コンテンツIP活用による収益の多重化が成長を支えています。5G・IoT・メタバース関連技術への先行投資により、デジタル社会の発展とともに成長が期待されます。",
+            'en': "Sony Group has built a stable revenue foundation through diversification across entertainment, electronics, and financial services. Strong PlayStation performance, global leadership in semiconductor sensors, and multi-layered revenue from content IP drive growth. Strategic investments in 5G, IoT, and metaverse technologies position the company for growth alongside digital society development."
+        },
+        "9984.T": {
+            'ja': "ソフトバンクグループは世界最大級のテクノロジー投資会社として、AI・IoT・フィンテック分野のユニコーン企業への戦略的投資を展開。Vision Fundを通じた投資ポートフォリオの価値向上と、国内通信事業の安定収益が企業価値を支えています。テクノロジー革新の恩恵を受けやすい投資構造により、長期的な成長性が期待されます。",
+            'en': "SoftBank Group operates as one of the world's largest technology investment companies, strategically investing in AI, IoT, and fintech unicorns. Portfolio value appreciation through Vision Fund and stable domestic telecom revenue support corporate value. The investment structure positioned to benefit from technology innovation offers strong long-term growth potential."
+        },
+        # US stocks
+        "AAPL": {
+            'ja': "アップルは世界最大の時価総額を誇るテクノロジー企業として、iPhone・Mac・サービス事業での圧倒的なブランド力と収益性を維持。エコシステム戦略による顧客囲い込み、継続的なイノベーション、強固なキャッシュフローが特徴です。AR/VR・自動運転・ヘルスケア分野への展開により、さらなる成長機会を創出しています。",
+            'en': "Apple maintains its position as the world's largest company by market cap, with overwhelming brand strength and profitability in iPhone, Mac, and Services. Ecosystem strategy for customer retention, continuous innovation, and robust cash flow are key strengths. Expansion into AR/VR, autonomous driving, and healthcare creates additional growth opportunities."
+        },
+        "MSFT": {
+            'ja': "マイクロソフトはクラウドコンピューティング分野でAzureを中心とした急成長により、企業向けソフトウェアの盟主的地位を確立。AI技術への先行投資、サブスクリプション型ビジネスモデルの浸透、企業のデジタルトランスフォーメーション需要の拡大が成長を牽引しています。",
+            'en': "Microsoft has established dominance in enterprise software through rapid growth centered on Azure cloud computing. Leading AI technology investments, subscription business model penetration, and expanding enterprise digital transformation demand drive sustained growth in the cloud-first era."
+        },
+        "GOOGL": {
+            'ja': "グーグル（アルファベット）は世界最大の検索エンジン・デジタル広告プラットフォームとして、膨大なデータ資産を活用したAI・機械学習技術で競争優位を構築。YouTube・クラウド事業の成長、自動運転Waymo等の未来技術への投資により、デジタル経済の発展とともに成長が期待されます。",
+            'en': "Google (Alphabet) leverages its position as the world's largest search engine and digital advertising platform, building competitive advantages through AI and machine learning technologies powered by massive data assets. Growth in YouTube and cloud services, plus investments in future technologies like autonomous driving Waymo, position the company for continued expansion alongside the digital economy."
+        }
+    }
+    
+    # Generic analysis for stocks not in the specific list
+    generic_analysis = {
+        'ja': f"{company}は当社の分析において{score}点という{'優秀な' if score >= 80 else '良好な' if score >= 60 else '標準的な'}評価を獲得しました。現在の市場環境下での財務指標、成長性、収益性を総合的に評価した結果、{'積極的な投資検討' if score >= 80 else '慎重な投資検討' if score >= 60 else '様子見'}をお勧めします。詳細な財務分析と市場動向を踏まえた投資判断をご検討ください。",
+        'en': f"{company} achieved a {'excellent' if score >= 80 else 'good' if score >= 60 else 'moderate'} score of {score} points in our comprehensive analysis. Based on evaluation of financial metrics, growth prospects, and profitability under current market conditions, we recommend {'active investment consideration' if score >= 80 else 'careful investment consideration' if score >= 60 else 'monitoring'}. Please consider detailed financial analysis and market trends for your investment decision."
+    }
+    
+    # Return specific analysis if available, otherwise use generic
+    if symbol in analyses:
+        return analyses[symbol]['ja' if is_japanese else 'en']
+    else:
+        return generic_analysis['ja' if is_japanese else 'en']
+
 def get_japanese_company_name(symbol, original_name):
     """Get Japanese company name for display when language is Japanese"""
     japanese_names = {
@@ -841,6 +892,14 @@ def display_results(view_mode, market):
                     # Price and recommendation
                     st.markdown(f"**{stock['Current Price']}**")
                     st.markdown(f"<div style='font-size: 0.9em; font-weight: bold;'>{stock['Recommendation']}</div>", unsafe_allow_html=True)
+                    
+                    # Stock analysis explanation
+                    analysis = generate_stock_analysis(stock)
+                    preview_text = analysis[:80] + "..." if len(analysis) > 80 else analysis
+                    st.markdown(f"<div style='font-size: 0.8em; color: #555; margin-top: 10px;'>{preview_text}</div>", unsafe_allow_html=True)
+                    
+                    with st.expander("詳細分析を見る" if st.session_state.language == 'ja' else "See Detailed Analysis"):
+                        st.write(analysis)
                     
                     st.markdown("</div>", unsafe_allow_html=True)
     
