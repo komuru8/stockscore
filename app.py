@@ -11,7 +11,7 @@ import os
 # Set page configuration
 st.set_page_config(
     page_title="StockScore - Advanced Stock Analysis",
-    page_icon="📊",
+    page_icon="🎯",
     layout="wide",
     initial_sidebar_state="expanded"
 )
@@ -26,6 +26,48 @@ if 'stock_data' not in st.session_state:
 if 'language' not in st.session_state:
     st.session_state.language = 'ja'  # Default to Japanese
 
+def create_stock_logo():
+    """Create custom StockScore logo SVG inspired by the provided design"""
+    return """
+    <div style="display: inline-block; margin-right: 10px; vertical-align: middle;">
+        <svg width="40" height="40" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+            <!-- Background gradient -->
+            <defs>
+                <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" style="stop-color:#2563eb;stop-opacity:1" />
+                    <stop offset="100%" style="stop-color:#0f172a;stop-opacity:1" />
+                </linearGradient>
+                <linearGradient id="chartGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" style="stop-color:#10b981;stop-opacity:1" />
+                    <stop offset="100%" style="stop-color:#22d3ee;stop-opacity:1" />
+                </linearGradient>
+            </defs>
+            
+            <!-- Rounded background -->
+            <rect x="5" y="5" width="90" height="90" rx="20" ry="20" fill="url(#bgGrad)" />
+            
+            <!-- Chart bars -->
+            <rect x="20" y="65" width="12" height="20" rx="2" fill="url(#chartGrad)" opacity="0.9"/>
+            <rect x="35" y="55" width="12" height="30" rx="2" fill="url(#chartGrad)" opacity="0.9"/>
+            <rect x="50" y="45" width="12" height="40" rx="2" fill="url(#chartGrad)" opacity="0.9"/>
+            <rect x="65" y="35" width="12" height="50" rx="2" fill="url(#chartGrad)" opacity="0.9"/>
+            
+            <!-- Trend line -->
+            <path d="M 20 70 Q 35 60 50 50 Q 65 40 80 30" stroke="#10b981" stroke-width="3" fill="none" opacity="0.8"/>
+            
+            <!-- Data points -->
+            <circle cx="26" cy="70" r="4" fill="#10b981"/>
+            <circle cx="41" cy="60" r="4" fill="#10b981"/>
+            <circle cx="56" cy="50" r="4" fill="#10b981"/>
+            <circle cx="71" cy="40" r="4" fill="#10b981"/>
+            <circle cx="80" cy="30" r="4" fill="#10b981"/>
+            
+            <!-- Checkmark -->
+            <path d="M 70 75 L 75 80 L 85 70" stroke="#10b981" stroke-width="3" fill="none" stroke-linecap="round"/>
+        </svg>
+    </div>
+    """
+
 def get_text(key, lang=None):
     """Get localized text"""
     if lang is None:
@@ -33,8 +75,8 @@ def get_text(key, lang=None):
     
     texts = {
         'title': {
-            'ja': '📊 StockScore',
-            'en': '📊 StockScore'
+            'ja': 'StockScore',
+            'en': 'StockScore'
         },
         'terms': {
             'ja': '📋 利用規約',
@@ -119,7 +161,17 @@ def main():
         if st.button(get_text('terms'), help=get_text('terms_help')):
             st.switch_page("pages/terms.py")
     
-    st.title(get_text('title'))
+    # Display title with custom logo
+    logo_html = create_stock_logo()
+    title_html = f"""
+    <div style="display: flex; align-items: center; margin-bottom: 20px;">
+        {logo_html}
+        <h1 style="margin: 0; font-size: 2.5rem; font-weight: 700; background: linear-gradient(135deg, #2563eb 0%, #10b981 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">
+            {get_text('title')}
+        </h1>
+    </div>
+    """
+    st.markdown(title_html, unsafe_allow_html=True)
     
     # Sidebar configuration
     st.sidebar.header("設定" if st.session_state.language == 'ja' else "Settings")
@@ -259,6 +311,9 @@ def main():
 
 def update_stock_data(symbols, per_threshold, pbr_threshold, roe_threshold, dividend_multiplier):
     """Update stock data and scores"""
+    progress_bar = None
+    status_text = None
+    
     try:
         # Create progress indicators
         progress_bar = st.progress(0)
@@ -297,14 +352,16 @@ def update_stock_data(symbols, per_threshold, pbr_threshold, roe_threshold, divi
             
         # Clear progress indicators after a moment
         time.sleep(2)
-        progress_bar.empty()
-        status_text.empty()
+        if progress_bar:
+            progress_bar.empty()
+        if status_text:
+            status_text.empty()
         
     except Exception as e:
         st.error(f"データ取得エラー / Data fetch error: {str(e)}")
-        if 'progress_bar' in locals():
+        if progress_bar:
             progress_bar.empty()
-        if 'status_text' in locals():
+        if status_text:
             status_text.empty()
 
 def display_results(view_mode, market):
@@ -404,8 +461,52 @@ def display_results(view_mode, market):
     
     st.plotly_chart(fig, use_container_width=True)
     
+    # Featured Recommendations Section
+    st.subheader("🌟 " + ("推奨銘柄ピックアップ" if st.session_state.language == 'ja' else "Featured Recommendations"))
+    
+    # Get top 6 recommendations
+    top_recommendations = df.head(6)
+    
+    if len(top_recommendations) > 0:
+        # Display in 2 rows of 3 columns
+        for row in range(2):
+            cols = st.columns(3)
+            for col_idx, col in enumerate(cols):
+                stock_idx = row * 3 + col_idx
+                if stock_idx < len(top_recommendations):
+                    stock = top_recommendations.iloc[stock_idx]
+                    
+                    with col:
+                        # Create card-like container
+                        with st.container():
+                            st.markdown(f"""
+                            <div style="
+                                border: 2px solid {'#28a745' if stock['Score'] >= 80 else '#fd7e14' if stock['Score'] >= 60 else '#ffc107'};
+                                border-radius: 15px;
+                                padding: 20px;
+                                margin-bottom: 15px;
+                                background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+                                box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+                                text-align: center;
+                            ">
+                            """, unsafe_allow_html=True)
+                            
+                            # Stock header
+                            st.markdown(f"**{stock['Symbol']}**")
+                            st.markdown(f"<div style='font-size: 0.9em; color: #666;'>{stock['Company']}</div>", unsafe_allow_html=True)
+                            
+                            # Circular score
+                            circular_svg = create_circular_score(stock['Score'], 100)
+                            st.markdown(circular_svg, unsafe_allow_html=True)
+                            
+                            # Price and recommendation
+                            st.markdown(f"**{stock['Current Price']}**")
+                            st.markdown(f"<div style='font-size: 0.9em; font-weight: bold;'>{stock['Recommendation']}</div>", unsafe_allow_html=True)
+                            
+                            st.markdown("</div>", unsafe_allow_html=True)
+    
     # Results table
-    if view_mode == "シンプル表示 / Simple View":
+    if view_mode == get_text('simple_view'):
         display_simple_view(df)
     else:
         display_detailed_view(df, data)
@@ -476,46 +577,67 @@ def create_circular_score(score, size=100):
     return svg
 
 def display_simple_view(df):
-    """Display simple view of results"""
+    """Display simple table view of results"""
     st.subheader("銘柄一覧" if st.session_state.language == 'ja' else "Stock List")
     
-    # Display stocks in a grid format with circular scores
-    for i in range(0, len(df), 2):
-        cols = st.columns(2)
-        
-        for j, col in enumerate(cols):
-            if i + j < len(df):
-                stock = df.iloc[i + j]
-                with col:
-                    with st.container():
-                        # Create card-like container
-                        st.markdown(f"""
-                        <div style="
-                            border: 1px solid #ddd;
-                            border-radius: 10px;
-                            padding: 20px;
-                            margin-bottom: 20px;
-                            background-color: white;
-                            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-                        ">
-                        """, unsafe_allow_html=True)
-                        
-                        # Stock header
-                        col1, col2 = st.columns([2, 1])
-                        with col1:
-                            st.markdown(f"**{stock['Symbol']}**")
-                            st.markdown(f"<small>{stock['Company']}</small>", unsafe_allow_html=True)
-                            st.markdown(f"価格: {stock['Current Price']}" if st.session_state.language == 'ja' else f"Price: {stock['Current Price']}")
-                        
-                        with col2:
-                            # Display circular score
-                            circular_svg = create_circular_score(stock['Score'], 80)
-                            st.markdown(circular_svg, unsafe_allow_html=True)
-                        
-                        # Recommendation
-                        st.markdown(f"**{stock['Recommendation']}**")
-                        
-                        st.markdown("</div>", unsafe_allow_html=True)
+    # Enhanced table with better formatting and styling
+    display_columns = ['Symbol', 'Company', 'Score', 'Recommendation', 'Current Price', 'PER', 'PBR', 'ROE', 'Dividend Yield']
+    table_df = df[display_columns].copy()
+    
+    # Format numerical columns
+    for col in ['PER', 'PBR', 'ROE', 'Dividend Yield']:
+        table_df[col] = pd.to_numeric(table_df[col], errors='coerce')
+        if col in ['ROE', 'Dividend Yield']:
+            table_df[col] = table_df[col].apply(lambda x: f"{x:.1f}%" if pd.notna(x) else "N/A")
+        else:
+            table_df[col] = table_df[col].apply(lambda x: f"{x:.2f}" if pd.notna(x) else "N/A")
+    
+    # Color coding function for scores
+    def highlight_scores(row):
+        score = row['Score']
+        if score >= 80:
+            return ['background-color: #d4edda'] * len(row)  # Light green
+        elif score >= 60:
+            return ['background-color: #fff3cd'] * len(row)  # Light yellow
+        elif score >= 40:
+            return ['background-color: #f8d7da'] * len(row)  # Light red
+        else:
+            return ['background-color: #f8f9fa'] * len(row)  # Light gray
+    
+    # Apply styling
+    styled_df = table_df.style.apply(highlight_scores, axis=1)
+    
+    # Display the styled dataframe
+    st.dataframe(
+        styled_df,
+        use_container_width=True,
+        height=600,
+        column_config={
+            "Score": st.column_config.ProgressColumn(
+                "Score",
+                help="Investment score (0-100)",
+                min_value=0,
+                max_value=100,
+                format="%.1f",
+            ),
+            "Symbol": st.column_config.TextColumn(
+                "Symbol" if st.session_state.language == 'en' else "銘柄",
+                width="small",
+            ),
+            "Company": st.column_config.TextColumn(
+                "Company" if st.session_state.language == 'en' else "企業名",
+                width="medium",
+            ),
+            "Current Price": st.column_config.TextColumn(
+                "Price" if st.session_state.language == 'en' else "価格",
+                width="small",
+            ),
+            "Recommendation": st.column_config.TextColumn(
+                "Rec." if st.session_state.language == 'en' else "推奨",
+                width="medium",
+            )
+        }
+    )
 
 def display_detailed_view(df, data):
     """Display detailed view of results"""
