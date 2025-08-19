@@ -26,47 +26,7 @@ if 'stock_data' not in st.session_state:
 if 'language' not in st.session_state:
     st.session_state.language = 'ja'  # Default to Japanese
 
-def create_stock_logo():
-    """Create custom StockScore logo SVG inspired by the provided design"""
-    return """
-    <div style="display: inline-block; margin-right: 10px; vertical-align: middle;">
-        <svg width="40" height="40" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-            <!-- Background gradient -->
-            <defs>
-                <linearGradient id="bgGrad1" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" style="stop-color:#2563eb;stop-opacity:1" />
-                    <stop offset="100%" style="stop-color:#0f172a;stop-opacity:1" />
-                </linearGradient>
-                <linearGradient id="chartGrad1" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" style="stop-color:#10b981;stop-opacity:1" />
-                    <stop offset="100%" style="stop-color:#22d3ee;stop-opacity:1" />
-                </linearGradient>
-            </defs>
-            
-            <!-- Rounded background -->
-            <rect x="5" y="5" width="90" height="90" rx="20" ry="20" fill="url(#bgGrad1)" />
-            
-            <!-- Chart bars -->
-            <rect x="20" y="65" width="12" height="20" rx="2" fill="url(#chartGrad1)" opacity="0.9"/>
-            <rect x="35" y="55" width="12" height="30" rx="2" fill="url(#chartGrad1)" opacity="0.9"/>
-            <rect x="50" y="45" width="12" height="40" rx="2" fill="url(#chartGrad1)" opacity="0.9"/>
-            <rect x="65" y="35" width="12" height="50" rx="2" fill="url(#chartGrad1)" opacity="0.9"/>
-            
-            <!-- Trend line -->
-            <path d="M 20 70 Q 35 60 50 50 Q 65 40 80 30" stroke="#10b981" stroke-width="3" fill="none" opacity="0.8"/>
-            
-            <!-- Data points -->
-            <circle cx="26" cy="70" r="4" fill="#10b981"/>
-            <circle cx="41" cy="60" r="4" fill="#10b981"/>
-            <circle cx="56" cy="50" r="4" fill="#10b981"/>
-            <circle cx="71" cy="40" r="4" fill="#10b981"/>
-            <circle cx="80" cy="30" r="4" fill="#10b981"/>
-            
-            <!-- Checkmark -->
-            <path d="M 70 75 L 75 80 L 85 70" stroke="#10b981" stroke-width="3" fill="none" stroke-linecap="round"/>
-        </svg>
-    </div>
-    """
+
 
 def get_text(key, lang=None):
     """Get localized text"""
@@ -283,17 +243,15 @@ def main():
         if st.button(get_text('terms'), help=get_text('terms_help')):
             st.switch_page("pages/terms.py")
     
-    # Display title with custom logo
-    logo_html = create_stock_logo()
-    title_html = f"""
+    # Display title with emoji icon instead of SVG
+    st.markdown(f"""
     <div style="display: flex; align-items: center; margin-bottom: 20px;">
-        {logo_html}
+        <div style="font-size: 3rem; margin-right: 15px;">🎯</div>
         <h1 style="margin: 0; font-size: 2.5rem; font-weight: 700; background: linear-gradient(135deg, #2563eb 0%, #10b981 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">
             {get_text('title')}
         </h1>
     </div>
-    """
-    st.markdown(title_html, unsafe_allow_html=True)
+    """, unsafe_allow_html=True)
     
     # Sidebar configuration (moved up to define market first)
     st.sidebar.header("設定" if st.session_state.language == 'ja' else "Settings")
