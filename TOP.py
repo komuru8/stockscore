@@ -800,6 +800,10 @@ def main():
     # Handle action button clicks
     selected_method = handle_action_buttons(popularity_button, dividend_button, theme_button, random_button, market, stock_count)
     
+    # Debug: Show selected count when method is chosen
+    if selected_method:
+        st.info(f"選択された銘柄数: {len(selected_method)} / Selected stocks: {len(selected_method)}")
+    
     # Determine which symbols to analyze based on selected method
     if selected_method:
         symbols = selected_method
@@ -813,8 +817,8 @@ def main():
         if st.button(get_text('update_data'), type="primary"):
             update_stock_data(symbols, per_threshold, pbr_threshold, roe_threshold, dividend_multiplier)
         
-        # Auto-update data if it's been more than 30 minutes (only for smaller datasets)
-        if len(symbols) <= 20 and (st.session_state.last_update is None or \
+        # Auto-update data if it's been more than 30 minutes (only for smaller datasets to avoid server overload)
+        if len(symbols) <= 25 and (st.session_state.last_update is None or \
            (datetime.now() - st.session_state.last_update).seconds > 1800):  # 30 minutes
             st.info(f"自動更新中... / Auto-updating {len(symbols)} stocks...")
             update_stock_data(symbols, per_threshold, pbr_threshold, roe_threshold, dividend_multiplier)
