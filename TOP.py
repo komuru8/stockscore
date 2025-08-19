@@ -154,9 +154,31 @@ def handle_action_buttons(popularity_button, dividend_button, theme_button, rand
         # Popular/high market cap stocks by market
         if market == get_text('all_markets'):
             # Combine stocks from all markets to support larger counts
-            japanese_stocks = ["7203.T", "6758.T", "9984.T", "8306.T", "6861.T", "9434.T", "4063.T", "6098.T", "8035.T", "9432.T", "4519.T", "6367.T", "7267.T", "8031.T", "4568.T", "9020.T", "6954.T", "8028.T"]
-            us_stocks = ["AAPL", "MSFT", "GOOGL", "AMZN", "NVDA", "TSLA", "META", "BRK-B", "UNH", "XOM", "JNJ", "JPM", "V", "PG", "HD", "CVX", "MA", "BAC"]
-            emerging_stocks = ["2330.TW", "005930.KS", "TSM", "BABA", "JD", "PDD", "BIDU", "ASML", "NIO", "XPEV", "LI", "SHOP", "SE", "GRAB", "VALE", "PBR", "ITUB", "BBD"]
+            japanese_stocks = [
+                "7203.T", "6758.T", "9984.T", "8306.T", "6861.T", "9434.T", "4063.T", "6098.T", "8035.T", "9432.T", 
+                "4519.T", "6367.T", "7267.T", "8031.T", "4568.T", "9020.T", "6954.T", "8028.T", "6902.T", "7974.T",
+                "4507.T", "9022.T", "6326.T", "6971.T", "8766.T", "4502.T", "7751.T", "6981.T", "8802.T", "4503.T",
+                "9301.T", "7269.T", "6178.T", "8001.T", "4661.T", "3382.T", "4755.T", "7762.T", "6273.T", "8309.T",
+                "8058.T", "4523.T", "6869.T", "7735.T", "4543.T", "6503.T", "9613.T", "9962.T", "9983.T", "8411.T",
+                "8316.T", "8591.T", "8604.T", "8630.T", "8725.T", "8732.T", "4385.T", "6501.T", "7013.T", "9101.T",
+                "2914.T", "1605.T", "3659.T", "4021.T", "4042.T", "4183.T", "4188.T", "4324.T", "4689.T", "4704.T"
+            ]
+            us_stocks = [
+                "AAPL", "MSFT", "GOOGL", "AMZN", "NVDA", "TSLA", "META", "BRK-B", "UNH", "XOM", "JNJ", "JPM", 
+                "V", "PG", "HD", "CVX", "MA", "BAC", "ABBV", "PFE", "KO", "MRK", "TMO", "COST", "WMT", "DHR", 
+                "LIN", "ABT", "ACN", "VZ", "MCD", "ADBE", "CRM", "TXN", "NEE", "PM", "NFLX", "BMY", "T", "CMCSA", 
+                "NKE", "HON", "UPS", "SBUX", "LOW", "QCOM", "AMD", "IBM", "GS", "MS", "BLK", "CAT", "RTX", "GE", 
+                "INTC", "ORCL", "CSCO", "DIS", "F", "GM", "PYPL", "UBER", "ABNB", "ROKU", "ZM", "SNOW", "CRM", 
+                "DDOG", "PLTR", "SQ", "TWTR", "SNAP", "PINS"
+            ]
+            emerging_stocks = [
+                "2330.TW", "005930.KS", "TSM", "BABA", "JD", "PDD", "BIDU", "ASML", "NIO", "XPEV", "LI", "SHOP", 
+                "SE", "GRAB", "VALE", "PBR", "ITUB", "BBD", "PETR4.SA", "WEGE3.SA", "MGLU3.SA", "B3SA3.SA", 
+                "RENT3.SA", "FLRY3.SA", "HAPV3.SA", "LREN3.SA", "NTCO3.SA", "RADL3.SA", "GGBR4.SA", "USIM5.SA",
+                "CSNA3.SA", "GOAU4.SA", "SUZB3.SA", "CMIG4.SA", "ELET3.SA", "TAEE11.SA", "VIVT3.SA", "TIMS3.SA",
+                "TOTS3.SA", "BRDT3.SA", "KLBN11.SA", "SUZB3.SA", "CIEL3.SA", "COGN3.SA", "YDUQ3.SA", "ARZZ3.SA",
+                "MRFG3.SA", "JBSS3.SA", "BEEF3.SA", "SMTO3.SA", "CAML3.SA", "MULT3.SA", "PCAR3.SA", "RAIZ4.SA"
+            ]
             all_combined = japanese_stocks + us_stocks + emerging_stocks
             selected_symbols = all_combined[:stock_count]
         elif market == get_text('japanese_stocks'):
@@ -167,7 +189,20 @@ def handle_action_buttons(popularity_button, dividend_button, theme_button, rand
                 "8766.T", "4502.T", "7751.T", "6981.T", "8802.T", "4503.T", "9301.T", "7269.T",
                 "6178.T", "8001.T", "4661.T", "3382.T", "4755.T", "7762.T", "6273.T", "8309.T",
                 "8058.T", "4523.T", "6869.T", "7735.T", "4543.T", "6503.T", "9613.T", "9962.T",
-                "9983.T", "8411.T", "8316.T", "8591.T", "8604.T", "8630.T", "8725.T", "8732.T"
+                "9983.T", "8411.T", "8316.T", "8591.T", "8604.T", "8630.T", "8725.T", "8732.T",
+                "4385.T", "6501.T", "7013.T", "9101.T", "2914.T", "1605.T", "3659.T", "4021.T",
+                "4042.T", "4183.T", "4188.T", "4324.T", "4689.T", "4704.T", "4708.T", "4751.T",
+                "4768.T", "4812.T", "4816.T", "4901.T", "4911.T", "4912.T", "4967.T", "4968.T",
+                "5020.T", "5101.T", "5108.T", "5201.T", "5202.T", "5232.T", "5301.T", "5332.T",
+                "5401.T", "5411.T", "5541.T", "5631.T", "5703.T", "5706.T", "5707.T", "5711.T",
+                "5714.T", "5802.T", "5803.T", "5901.T", "5902.T", "5938.T", "5947.T", "5991.T",
+                "6028.T", "6103.T", "6113.T", "6146.T", "6305.T", "6324.T", "6361.T", "6366.T",
+                "6370.T", "6448.T", "6460.T", "6471.T", "6473.T", "6506.T", "6594.T", "6674.T",
+                "6701.T", "6702.T", "6723.T", "6724.T", "6728.T", "6752.T", "6762.T", "6770.T",
+                "6806.T", "6841.T", "6856.T", "6857.T", "6952.T", "6976.T", "7003.T", "7004.T",
+                "7011.T", "7012.T", "7105.T", "7201.T", "7202.T", "7205.T", "7211.T", "7240.T",
+                "7261.T", "7270.T", "7272.T", "7282.T", "7309.T", "7731.T", "7733.T", "7752.T",
+                "7832.T", "7951.T", "7956.T", "7988.T", "8002.T", "8015.T", "8020.T", "8053.T"
             ]
             selected_symbols = all_japanese_stocks[:stock_count]
         elif market == get_text('us_stocks'):
@@ -176,7 +211,13 @@ def handle_action_buttons(popularity_button, dividend_button, theme_button, rand
                 "JNJ", "JPM", "V", "PG", "HD", "CVX", "MA", "BAC", "ABBV", "PFE", "KO", "MRK",
                 "TMO", "COST", "WMT", "DHR", "LIN", "ABT", "ACN", "VZ", "MCD", "ADBE", "CRM",
                 "TXN", "NEE", "PM", "NFLX", "BMY", "T", "CMCSA", "NKE", "HON", "UPS", "SBUX",
-                "LOW", "QCOM", "AMD", "IBM", "GS", "MS", "BLK", "CAT", "RTX", "GE", "INTC"
+                "LOW", "QCOM", "AMD", "IBM", "GS", "MS", "BLK", "CAT", "RTX", "GE", "INTC",
+                "ORCL", "CSCO", "DIS", "F", "GM", "PYPL", "UBER", "ABNB", "ROKU", "ZM", "SNOW",
+                "DDOG", "PLTR", "SQ", "TWTR", "SNAP", "PINS", "DOCU", "OKTA", "CRWD", "ZS",
+                "NET", "TEAM", "NOW", "WDAY", "VEEV", "PANW", "SPLK", "ESTC", "MDB", "WORK",
+                "SPOT", "TWLO", "PTON", "CHWY", "ETSY", "W", "SHOP", "SQ", "PYPL", "ROKU",
+                "NFLX", "DIS", "CMCSA", "T", "VZ", "TMUS", "CHTR", "DISH", "SIRI", "FOXA",
+                "CBS", "VIAC", "DISCA", "DISCK", "WBD", "PARA", "AMC", "CNK", "IMAX", "LGF-A"
             ]
             selected_symbols = all_us_stocks[:stock_count]
         else:
@@ -185,7 +226,14 @@ def handle_action_buttons(popularity_button, dividend_button, theme_button, rand
                 "LI", "SHOP", "SE", "GRAB", "VALE", "PBR", "ITUB", "BBD", "EWZ", "FMX", "ABEV",
                 "SID", "UGP", "CIG", "ERJ", "GOL", "AZUL", "BRFS", "JBS", "CACC", "PAC", "TV",
                 "WIT", "000001.SS", "000002.SS", "600036.SS", "600519.SS", "000858.SZ", "002594.SZ",
-                "600887.SS", "601318.SS", "000725.SZ", "002415.SZ", "600276.SS", "601166.SS"
+                "600887.SS", "601318.SS", "000725.SZ", "002415.SZ", "600276.SS", "601166.SS",
+                "PETR4.SA", "WEGE3.SA", "MGLU3.SA", "B3SA3.SA", "RENT3.SA", "FLRY3.SA", "HAPV3.SA",
+                "LREN3.SA", "NTCO3.SA", "RADL3.SA", "GGBR4.SA", "USIM5.SA", "CSNA3.SA", "GOAU4.SA",
+                "SUZB3.SA", "CMIG4.SA", "ELET3.SA", "TAEE11.SA", "VIVT3.SA", "TIMS3.SA", "TOTS3.SA",
+                "BRDT3.SA", "KLBN11.SA", "CIEL3.SA", "COGN3.SA", "YDUQ3.SA", "ARZZ3.SA", "MRFG3.SA",
+                "JBSS3.SA", "BEEF3.SA", "SMTO3.SA", "CAML3.SA", "MULT3.SA", "PCAR3.SA", "RAIZ4.SA",
+                "KEPL3.SA", "LWSA3.SA", "MTRE3.SA", "RRRP3.SA", "SBSP3.SA", "SAPR11.SA", "SANB11.SA",
+                "BPAC11.SA", "CCRO3.SA", "CMIN3.SA", "CPFE3.SA", "CRFB3.SA", "CSAN3.SA", "CVCB3.SA"
             ]
             selected_symbols = all_emerging_stocks[:stock_count]
         
@@ -195,10 +243,11 @@ def handle_action_buttons(popularity_button, dividend_button, theme_button, rand
         # High dividend yield stocks by market
         if market == get_text('all_markets'):
             # Combine high dividend stocks from all markets
-            japanese_dividend = ["8306.T", "8411.T", "8316.T", "8591.T", "8604.T", "8630.T", "8725.T"][:7]
-            us_dividend = ["T", "VZ", "XOM", "CVX", "KO", "PEP", "JNJ"][:7]  
-            emerging_dividend = ["VALE", "PBR", "ITUB", "BBD", "ABEV", "SID"][:6]
-            selected_symbols = (japanese_dividend + us_dividend + emerging_dividend)[:stock_count]
+            japanese_dividend = ["8306.T", "8411.T", "8316.T", "8591.T", "8604.T", "8630.T", "8725.T", "8732.T", "8766.T", "8795.T", "8830.T", "9501.T", "9613.T", "9962.T", "9983.T", "8001.T", "8028.T", "8031.T", "8053.T", "8058.T"]
+            us_dividend = ["T", "VZ", "XOM", "CVX", "KO", "PEP", "JNJ", "PG", "MO", "PM", "IBM", "MMM", "CAT", "GE", "F", "GM", "C", "BAC", "JPM", "WFC", "O", "MAIN", "STAG", "EPD", "ET", "KMI", "ENB", "TRP", "SPG", "REG"]
+            emerging_dividend = ["VALE", "PBR", "ITUB", "BBD", "ABEV", "SID", "UGP", "EWZ", "FMX", "CIG", "ERJ", "GOL", "AZUL", "BRFS", "JBS", "CACC", "PAC", "TV", "WIT", "005930.KS"]
+            all_dividend = japanese_dividend + us_dividend + emerging_dividend
+            selected_symbols = all_dividend[:stock_count]
         elif market == get_text('japanese_stocks'):
             all_dividend_japanese = [
                 "8306.T", "8411.T", "8316.T", "8591.T", "8604.T", "8630.T", "8725.T", "8732.T",
