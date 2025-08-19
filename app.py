@@ -27,16 +27,14 @@ if 'stock_data' not in st.session_state:
 def main():
     st.title("📈 株予想アプリ - Japanese Stock Analysis Tool")
     
-    # Display disclaimer
-    st.warning("""
-    **投資に関する重要な注意事項 / Important Investment Disclaimer**
-    
-    本アプリケーションで提供される情報は参考情報のみであり、投資助言ではありません。
-    投資判断は必ずご自身の責任で行ってください。投資にはリスクが伴います。
-    
-    This application provides reference information only and is not investment advice.
-    Please make investment decisions at your own risk and responsibility.
-    """)
+    # Add link to terms page
+    col1, col2, col3 = st.columns([1, 1, 8])
+    with col1:
+        if st.button("📋 利用規約", help="利用規約・免責事項を確認"):
+            st.switch_page("pages/terms.py")
+    with col2:
+        if st.button("📋 Terms", help="Terms of Service & Disclaimer"):
+            st.switch_page("pages/terms.py")
     
     # Sidebar configuration
     st.sidebar.header("設定 / Settings")
@@ -255,7 +253,7 @@ def display_simple_view(df):
     
     # Display formatted table
     display_df = df[['Symbol', 'Company', 'Score', 'Recommendation', 'Current Price']].copy()
-    styled_df = display_df.style.applymap(color_score, subset=['Score'])
+    styled_df = display_df.style.map(color_score, subset=['Score'])
     
     st.dataframe(styled_df, use_container_width=True, height=400)
 
