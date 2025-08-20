@@ -142,16 +142,16 @@ def get_text(key, lang=None):
             'en': 'User Mode'
         },
         'beginner_mode': {
-            'ja': '👶 初級者',
-            'en': '👶 Beginner'
+            'ja': '初級者',
+            'en': 'Beginner'
         },
         'intermediate_mode': {
-            'ja': '🧑‍💼 中級者',
-            'en': '🧑‍💼 Intermediate'
+            'ja': '中級者',
+            'en': 'Intermediate'
         },
         'advanced_mode': {
-            'ja': '🧑‍🔬 上級者',
-            'en': '🧑‍🔬 Advanced'
+            'ja': '上級者',
+            'en': 'Advanced'
         },
         'beginner_description': {
             'ja': 'AI推奨スコア中心、直感的な「買い/見送り」判定',
