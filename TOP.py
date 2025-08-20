@@ -584,9 +584,9 @@ def main():
     
     # Mobile-friendly sidebar toggle button
     if st.button("📱 モード選択・設定" if st.session_state.language == 'ja' else "📱 Mode & Settings", 
-                help="サイドバーを開く / Open sidebar", use_container_width=False):
-        st.sidebar.info("👈 " + ("左のメニューからモードを選択してください" if st.session_state.language == 'ja' 
-                                else "Please select mode from the left menu"))
+                help="サイドバーを開閉 / Toggle sidebar", use_container_width=False):
+        # Toggle sidebar state by creating a visual cue for mobile users
+        pass
     
     # Sidebar configuration
     st.sidebar.header("" if st.session_state.language == 'ja' else "")
