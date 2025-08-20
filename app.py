@@ -593,30 +593,35 @@ def main():
             st.rerun()
     
     with col3:
-        # Simple dropdown menu like language selector with wider column
-        menu_options = {
-            "🔧 APIステータス" if st.session_state.language == 'ja' else "🔧 API Status": "api_status",
-            "📋 " + get_text('terms'): "terms",
-            "🗑️ キャッシュクリア" if st.session_state.language == 'ja' else "🗑️ Clear Cache": "clear_cache"
-        }
+        # Simple dropdown menu with reordered items
+        menu_options = [
+            ("📋 " + get_text('terms'), "terms"),
+            ("🔧 APIステータス" if st.session_state.language == 'ja' else "🔧 API Status", "api_status"),
+            ("🗑️ キャッシュクリア" if st.session_state.language == 'ja' else "🗑️ Clear Cache", "clear_cache")
+        ]
         
         selected_menu = st.selectbox(
             "Menu",
-            options=["☰ メニュー" if st.session_state.language == 'ja' else "☰ Menu"] + list(menu_options.keys()),
+            options=["☰"] + [option[0] for option in menu_options],
             index=0,
             key='hamburger_menu',
             label_visibility="collapsed"
         )
         
         # Handle menu selection
-        if selected_menu != ("☰ メニュー" if st.session_state.language == 'ja' else "☰ Menu"):
-            action = menu_options[selected_menu]
+        if selected_menu != "☰":
+            # Find the action for the selected menu item
+            action = None
+            for option_text, option_action in menu_options:
+                if option_text == selected_menu:
+                    action = option_action
+                    break
             
-            if action == "api_status":
+            if action == "terms":
+                st.switch_page("pages/利用規約.py")
+            elif action == "api_status":
                 with st.expander("📊 API Status", expanded=True):
                     show_api_status()
-            elif action == "terms":
-                st.switch_page("pages/利用規約.py")
             elif action == "clear_cache":
                 st.session_state.stock_data = {}
                 st.session_state.last_update = None
