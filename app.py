@@ -569,12 +569,8 @@ def get_theme_options(market):
         }
 
 def main():
-    # Initialize hamburger menu state
-    if 'show_hamburger_menu' not in st.session_state:
-        st.session_state.show_hamburger_menu = False
-    
-    # Header with language selector and hamburger menu
-    col1, col2, col3 = st.columns([5, 2, 2])
+    # Language selection and terms button in top right
+    col1, col2, col3 = st.columns([6, 2, 2])
     with col2:
         # Language dropdown
         language_options = {
@@ -591,10 +587,8 @@ def main():
         if language_options[selected_lang] != st.session_state.language:
             st.session_state.language = language_options[selected_lang]
             st.rerun()
-    
     with col3:
-        # Simple dropdown menu with only Terms of Use
-        if st.button("📋 " + get_text('terms'), use_container_width=True):
+        if st.button(get_text('terms'), help=get_text('terms_help')):
             st.switch_page("pages/利用規約.py")
     
     # Display title with emoji icon instead of SVG - reduced top spacing
@@ -842,23 +836,69 @@ def main():
         
     else:
         # Show message to select an action button
-        st.info("上記のアクションボタンから検索方法を選択してください。")
+        st.info("上記のアクションボタンから検索方法を選択してください。\nPlease select a discovery method from the action buttons above.")
         symbols = []
     
-    # API Status and Cache Clear moved to Streamlit's built-in settings menu
-    
-    # Add API Status to sidebar for easy access
-    with st.sidebar:
-        st.markdown("---")
-        st.subheader("🔧 " + ("APIステータス" if st.session_state.language == 'ja' else "API Status"))
-        show_api_status()
+    # Enhanced API test button showing failover status
+    if st.sidebar.button("🔧 " + ("APIステータス" if st.session_state.language == 'ja' else "API Status"), type="secondary"):
+        st.sidebar.write("📊 データソースの接続状況を確認中... / Checking data source connections...")
         
-        st.markdown("---")
-        if st.button("🗑️ " + ("キャッシュクリア" if st.session_state.language == 'ja' else "Clear Cache"), 
-                    type="secondary", use_container_width=True):
-            st.session_state.stock_data = {}
-            st.session_state.last_update = None
-            st.success("キャッシュをクリアしました / Cache cleared")
+        # Test Yahoo Finance API
+        st.sidebar.markdown("**Yahoo Finance API:**")
+        test_symbols = ["7203.T", "AAPL"]
+        yahoo_status = True
+        for symbol in test_symbols:
+            try:
+                import yfinance as yf
+                ticker = yf.Ticker(symbol)
+                info = ticker.info
+                if info and info.get('regularMarketPrice'):
+                    st.sidebar.success(f"✅ {symbol}: 正常 / Normal")
+                else:
+                    st.sidebar.error(f"❌ {symbol}: データ取得失敗 / Data fetch failed")
+                    yahoo_status = False
+            except Exception as e:
+                st.sidebar.error(f"❌ {symbol}: エラー / Error - {str(e)[:50]}...")
+                yahoo_status = False
+        
+        # Overall Yahoo Finance status
+        if yahoo_status:
+            st.sidebar.success("🟢 Yahoo Finance API: 正常動作 / Working Normally")
+        else:
+            st.sidebar.error("🔴 Yahoo Finance API: 問題あり / Issues Detected")
+        
+        # Test Finnhub API if available
+        if hasattr(st.session_state, 'analyzer') and hasattr(st.session_state.analyzer, 'data_fetcher'):
+            st.sidebar.markdown("**Finnhub API:**")
+            try:
+                # Check if Finnhub is configured
+                import os
+                if os.getenv('FINNHUB_API_KEY'):
+                    st.sidebar.success("✅ Finnhub API Key: 設定済み / Configured")
+                    st.sidebar.info("🔄 Finnhub API: フェイルオーバー対応 / Failover Ready")
+                else:
+                    st.sidebar.warning("⚠️ Finnhub API Key: 未設定 / Not configured")
+            except Exception as e:
+                st.sidebar.error(f"❌ Finnhub: {str(e)[:50]}...")
+        
+        # Show analyzer status
+        st.sidebar.markdown("**アナライザー状態 / Analyzer Status:**")
+        if hasattr(st.session_state, 'using_enhanced') and st.session_state.using_enhanced:
+            st.sidebar.success("🔧 Enhanced Analyzer: アクティブ / Active")
+            if hasattr(st.session_state.analyzer, 'get_api_status'):
+                status = st.session_state.analyzer.get_api_status()
+                for api, stat in status.items():
+                    if stat == "healthy":
+                        st.sidebar.success(f"✅ {api}: 正常 / Healthy")
+                    else:
+                        st.sidebar.error(f"❌ {api}: {stat}")
+        else:
+            st.sidebar.info("🔧 Basic Analyzer: アクティブ / Active")
+        
+        # Show cache status
+        if hasattr(st.session_state, 'stock_data') and st.session_state.stock_data:
+            cache_count = len(st.session_state.stock_data)
+            st.sidebar.info(f"💾 キャッシュ済み銘柄数: {cache_count} / Cached stocks: {cache_count}")
     
     # Manual update button for additional control (optional)
     if symbols and not selected_method:  # Only show manual button if no auto-execution happened
@@ -1781,71 +1821,6 @@ def get_simple_recommendation(score):
         return "🟡 様子見 / Wait & See" if st.session_state.language == 'ja' else "🟡 Wait & See"
     else:
         return "🔴 見送り / Skip" if st.session_state.language == 'ja' else "🔴 Skip"
-
-def show_api_status():
-    """Display API status in a modal-like interface"""
-    st.info("📊 " + ("データソースの接続状況を確認中..." if st.session_state.language == 'ja' else "Checking data source connections..."))
-    
-    # Test Yahoo Finance API
-    st.subheader("**Yahoo Finance API:**")
-    test_symbols = ["7203.T", "AAPL"]
-    yahoo_status = True
-    for symbol in test_symbols:
-        try:
-            import yfinance as yf
-            ticker = yf.Ticker(symbol)
-            info = ticker.info
-            if info and info.get('regularMarketPrice'):
-                st.success(f"✅ {symbol}: 正常 / Normal")
-            else:
-                st.error(f"❌ {symbol}: データ取得失敗 / Data fetch failed")
-                yahoo_status = False
-        except Exception as e:
-            st.error(f"❌ {symbol}: エラー / Error - {str(e)[:50]}...")
-            yahoo_status = False
-    
-    # Overall Yahoo Finance status
-    if yahoo_status:
-        st.success("🟢 Yahoo Finance API: 正常動作 / Working Normally")
-    else:
-        st.error("🔴 Yahoo Finance API: 問題あり / Issues Detected")
-    
-    # Test Finnhub API if available
-    if hasattr(st.session_state, 'analyzer') and hasattr(st.session_state.analyzer, 'data_fetcher'):
-        st.subheader("**Finnhub API:**")
-        try:
-            # Check if Finnhub is configured
-            import os
-            if os.getenv('FINNHUB_API_KEY'):
-                st.success("✅ Finnhub API Key: 設定済み / Configured")
-                st.info("🔄 Finnhub API: フェイルオーバー対応 / Failover Ready")
-            else:
-                st.warning("⚠️ Finnhub API Key: 未設定 / Not configured")
-        except Exception as e:
-            st.error(f"❌ Finnhub: {str(e)[:50]}...")
-    
-    # Show analyzer status
-    st.subheader("**アナライザー状態 / Analyzer Status:**")
-    if hasattr(st.session_state, 'using_enhanced') and st.session_state.using_enhanced:
-        st.success("🔧 Enhanced Analyzer: アクティブ / Active")
-        if hasattr(st.session_state.analyzer, 'get_api_status'):
-            status = st.session_state.analyzer.get_api_status()
-            for api, stat in status.items():
-                if stat == "healthy":
-                    st.success(f"✅ {api}: 正常 / Healthy")
-                else:
-                    st.error(f"❌ {api}: {stat}")
-    else:
-        st.info("🔧 Basic Analyzer: アクティブ / Active")
-    
-    # Show cache status
-    st.subheader("**キャッシュ状態 / Cache Status:**")
-    if hasattr(st.session_state, 'stock_data') and st.session_state.stock_data:
-        st.info(f"💾 キャッシュ済み銘柄数 / Cached Stocks: {len(st.session_state.stock_data)}")
-        if st.session_state.last_update:
-            st.info(f"🕒 最終更新時刻 / Last Update: {st.session_state.last_update.strftime('%Y-%m-%d %H:%M')}")
-    else:
-        st.warning("💾 キャッシュデータなし / No cached data")
 
 if __name__ == "__main__":
     main()
