@@ -841,30 +841,64 @@ def main():
     
     # Enhanced API test button showing failover status
     if st.sidebar.button("🔧 API ステータス / API Status", type="secondary"):
-        st.sidebar.write("Testing data sources...")
+        st.sidebar.write("📊 データソースの接続状況を確認中... / Checking data source connections...")
         
-        # Test basic connection
+        # Test Yahoo Finance API
+        st.sidebar.markdown("**Yahoo Finance API:**")
         test_symbols = ["7203.T", "AAPL"]
+        yahoo_status = True
         for symbol in test_symbols:
             try:
                 import yfinance as yf
                 ticker = yf.Ticker(symbol)
                 info = ticker.info
                 if info and info.get('regularMarketPrice'):
-                    st.sidebar.success(f"✅ Yahoo: {symbol}")
+                    st.sidebar.success(f"✅ {symbol}: 正常 / Normal")
                 else:
-                    st.sidebar.error(f"❌ Yahoo: {symbol}")
+                    st.sidebar.error(f"❌ {symbol}: データ取得失敗 / Data fetch failed")
+                    yahoo_status = False
             except Exception as e:
-                st.sidebar.error(f"❌ Yahoo: {symbol} - {str(e)}")
+                st.sidebar.error(f"❌ {symbol}: エラー / Error - {str(e)[:50]}...")
+                yahoo_status = False
         
-        # Show enhanced analyzer status
+        # Overall Yahoo Finance status
+        if yahoo_status:
+            st.sidebar.success("🟢 Yahoo Finance API: 正常動作 / Working Normally")
+        else:
+            st.sidebar.error("🔴 Yahoo Finance API: 問題あり / Issues Detected")
+        
+        # Test Finnhub API if available
+        if hasattr(st.session_state, 'analyzer') and hasattr(st.session_state.analyzer, 'data_fetcher'):
+            st.sidebar.markdown("**Finnhub API:**")
+            try:
+                # Check if Finnhub is configured
+                import os
+                if os.getenv('FINNHUB_API_KEY'):
+                    st.sidebar.success("✅ Finnhub API Key: 設定済み / Configured")
+                    st.sidebar.info("🔄 Finnhub API: フェイルオーバー対応 / Failover Ready")
+                else:
+                    st.sidebar.warning("⚠️ Finnhub API Key: 未設定 / Not configured")
+            except Exception as e:
+                st.sidebar.error(f"❌ Finnhub: {str(e)[:50]}...")
+        
+        # Show analyzer status
+        st.sidebar.markdown("**アナライザー状態 / Analyzer Status:**")
         if hasattr(st.session_state, 'using_enhanced') and st.session_state.using_enhanced:
-            st.sidebar.info("🔧 Enhanced Analyzer: Active")
+            st.sidebar.success("🔧 Enhanced Analyzer: アクティブ / Active")
             if hasattr(st.session_state.analyzer, 'get_api_status'):
                 status = st.session_state.analyzer.get_api_status()
-                st.sidebar.json(status)
+                for api, stat in status.items():
+                    if stat == "healthy":
+                        st.sidebar.success(f"✅ {api}: 正常 / Healthy")
+                    else:
+                        st.sidebar.error(f"❌ {api}: {stat}")
         else:
-            st.sidebar.info("🔧 Basic Analyzer: Active")
+            st.sidebar.info("🔧 Basic Analyzer: アクティブ / Active")
+        
+        # Show cache status
+        if hasattr(st.session_state, 'stock_data') and st.session_state.stock_data:
+            cache_count = len(st.session_state.stock_data)
+            st.sidebar.info(f"💾 キャッシュ済み銘柄数: {cache_count} / Cached stocks: {cache_count}")
     
     # Manual update button for additional control (optional)
     if symbols and not selected_method:  # Only show manual button if no auto-execution happened
@@ -1295,9 +1329,8 @@ def display_results(view_mode, market):
                     # Price and recommendation
                     st.markdown(f"**{stock['Current Price']}**")
                     # Display rank and recommendation with color
-                    rank_color = data[stock['Symbol']].get('color', '#666666') if stock['Symbol'] in data else '#666666'
                     rank = data[stock['Symbol']].get('rank', 'N/A') if stock['Symbol'] in data else 'N/A'
-                    st.markdown(f"<div style='font-size: 1.2em; font-weight: bold; color: {rank_color};'>ランク {rank}</div>", unsafe_allow_html=True)
+                    st.markdown(f"<div style='font-size: 1.2em; font-weight: bold; color: black;'>ランク {rank}</div>", unsafe_allow_html=True)
                     st.markdown(f"<div style='font-size: 0.9em; font-weight: bold;'>{stock['Recommendation']}</div>", unsafe_allow_html=True)
                     
                     # Stock analysis explanation - only show in expander
