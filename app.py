@@ -592,14 +592,98 @@ def main():
             st.switch_page("pages/利用規約.py")
     
     # Display title with emoji icon instead of SVG - reduced top spacing
-    st.markdown(f"""
-    <div style="display: flex; align-items: center; margin-top: -20px; margin-bottom: 15px;">
-        <div style="font-size: 3rem; margin-right: 15px;">🎯</div>
-        <h1 style="margin: 0; font-size: 2.5rem; font-weight: 700; background: linear-gradient(135deg, #2563eb 0%, #10b981 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">
-            {get_text('title')}
-        </h1>
-    </div>
-    """, unsafe_allow_html=True)
+    # Top navigation with three-dot menu
+    nav_col1, nav_col2, nav_col3 = st.columns([1, 2, 1])
+    
+    with nav_col1:
+        # Language toggle
+        current_lang = "🌐 日本語" if st.session_state.language == 'ja' else "🌐 English"
+        if st.selectbox("", ["🌐 日本語", "🌐 English"], 
+                       index=0 if st.session_state.language == 'ja' else 1,
+                       key="lang_selector", label_visibility="collapsed") != current_lang:
+            st.session_state.language = 'ja' if current_lang == "🌐 English" else 'en'
+            st.rerun()
+    
+    with nav_col2:
+        # Main title
+        st.markdown(f"""
+        <div style="display: flex; align-items: center; margin-top: -20px; margin-bottom: 15px;">
+            <div style="font-size: 3rem; margin-right: 15px;">🎯</div>
+            <h1 style="margin: 0; font-size: 2.5rem; font-weight: 700; background: linear-gradient(135deg, #2563eb 0%, #10b981 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">
+                {get_text('title')}
+            </h1>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with nav_col3:
+        # Three-dot menu in the upper right
+        menu_options = ["⋯ " + ("メニュー" if st.session_state.language == 'ja' else "Menu"), 
+                       "🔧 " + ("APIステータス" if st.session_state.language == 'ja' else "API Status"),
+                       "📄 " + ("利用規約" if st.session_state.language == 'ja' else "Terms")]
+        
+        selected_menu = st.selectbox("", menu_options, key="menu_selector", label_visibility="collapsed")
+        
+        if selected_menu != menu_options[0]:  # If not the default menu option
+            if "APIステータス" in selected_menu or "API Status" in selected_menu:
+                # Show API status in an expander
+                with st.expander("🔧 " + ("APIステータス確認" if st.session_state.language == 'ja' else "API Status Check"), expanded=True):
+                    st.write("📊 " + ("データソースの接続状況を確認中..." if st.session_state.language == 'ja' else "Checking data source connections..."))
+                    
+                    # Test Yahoo Finance API
+                    st.markdown("**Yahoo Finance API:**")
+                    test_symbols = ["7203.T", "AAPL"]
+                    yahoo_status = True
+                    for symbol in test_symbols:
+                        try:
+                            import yfinance as yf
+                            ticker = yf.Ticker(symbol)
+                            info = ticker.info
+                            if info and info.get('regularMarketPrice'):
+                                st.success(f"✅ {symbol}: " + ("正常" if st.session_state.language == 'ja' else "Normal"))
+                            else:
+                                st.error(f"❌ {symbol}: " + ("データ取得失敗" if st.session_state.language == 'ja' else "Data fetch failed"))
+                                yahoo_status = False
+                        except Exception as e:
+                            st.error(f"❌ {symbol}: " + ("エラー" if st.session_state.language == 'ja' else "Error") + f" - {str(e)[:50]}...")
+                            yahoo_status = False
+                    
+                    # Overall Yahoo Finance status
+                    if yahoo_status:
+                        st.success("🟢 Yahoo Finance API: " + ("正常動作" if st.session_state.language == 'ja' else "Working Normally"))
+                    else:
+                        st.error("🔴 Yahoo Finance API: " + ("問題あり" if st.session_state.language == 'ja' else "Issues Detected"))
+                    
+                    # Test Finnhub API if available
+                    if hasattr(st.session_state, 'analyzer') and hasattr(st.session_state.analyzer, 'data_fetcher'):
+                        st.markdown("**Finnhub API:**")
+                        try:
+                            import os
+                            if os.getenv('FINNHUB_API_KEY'):
+                                st.success("✅ Finnhub API Key: " + ("設定済み" if st.session_state.language == 'ja' else "Configured"))
+                                st.info("🔄 Finnhub API: " + ("フェイルオーバー対応" if st.session_state.language == 'ja' else "Failover Ready"))
+                            else:
+                                st.warning("⚠️ Finnhub API Key: " + ("未設定" if st.session_state.language == 'ja' else "Not configured"))
+                        except Exception as e:
+                            st.error(f"❌ Finnhub: {str(e)[:50]}...")
+                    
+                    # Show analyzer status
+                    st.markdown("**" + ("アナライザー状態" if st.session_state.language == 'ja' else "Analyzer Status") + ":**")
+                    if hasattr(st.session_state, 'using_enhanced') and st.session_state.using_enhanced:
+                        st.success("🔧 Enhanced Analyzer: " + ("アクティブ" if st.session_state.language == 'ja' else "Active"))
+                        if hasattr(st.session_state.analyzer, 'get_api_status'):
+                            status = st.session_state.analyzer.get_api_status()
+                            for api, stat in status.items():
+                                if stat == "healthy":
+                                    st.success(f"✅ {api}: " + ("正常" if st.session_state.language == 'ja' else "Healthy"))
+                                else:
+                                    st.error(f"❌ {api}: {stat}")
+                    else:
+                        st.info("🔧 Basic Analyzer: " + ("アクティブ" if st.session_state.language == 'ja' else "Active"))
+            
+            elif "利用規約" in selected_menu or "Terms" in selected_menu:
+                # Show terms page
+                show_terms_page()
+                st.stop()
     
     # Sidebar configuration
     st.sidebar.header("" if st.session_state.language == 'ja' else "")
@@ -839,61 +923,7 @@ def main():
         st.info("上記のアクションボタンから検索方法を選択してください。\nPlease select a discovery method from the action buttons above.")
         symbols = []
     
-    # Enhanced API test button showing failover status
-    if st.sidebar.button("🔧 " + ("APIステータス" if st.session_state.language == 'ja' else "API Status"), type="secondary"):
-        st.sidebar.write("📊 データソースの接続状況を確認中... / Checking data source connections...")
-        
-        # Test Yahoo Finance API
-        st.sidebar.markdown("**Yahoo Finance API:**")
-        test_symbols = ["7203.T", "AAPL"]
-        yahoo_status = True
-        for symbol in test_symbols:
-            try:
-                import yfinance as yf
-                ticker = yf.Ticker(symbol)
-                info = ticker.info
-                if info and info.get('regularMarketPrice'):
-                    st.sidebar.success(f"✅ {symbol}: 正常 / Normal")
-                else:
-                    st.sidebar.error(f"❌ {symbol}: データ取得失敗 / Data fetch failed")
-                    yahoo_status = False
-            except Exception as e:
-                st.sidebar.error(f"❌ {symbol}: エラー / Error - {str(e)[:50]}...")
-                yahoo_status = False
-        
-        # Overall Yahoo Finance status
-        if yahoo_status:
-            st.sidebar.success("🟢 Yahoo Finance API: 正常動作 / Working Normally")
-        else:
-            st.sidebar.error("🔴 Yahoo Finance API: 問題あり / Issues Detected")
-        
-        # Test Finnhub API if available
-        if hasattr(st.session_state, 'analyzer') and hasattr(st.session_state.analyzer, 'data_fetcher'):
-            st.sidebar.markdown("**Finnhub API:**")
-            try:
-                # Check if Finnhub is configured
-                import os
-                if os.getenv('FINNHUB_API_KEY'):
-                    st.sidebar.success("✅ Finnhub API Key: 設定済み / Configured")
-                    st.sidebar.info("🔄 Finnhub API: フェイルオーバー対応 / Failover Ready")
-                else:
-                    st.sidebar.warning("⚠️ Finnhub API Key: 未設定 / Not configured")
-            except Exception as e:
-                st.sidebar.error(f"❌ Finnhub: {str(e)[:50]}...")
-        
-        # Show analyzer status
-        st.sidebar.markdown("**アナライザー状態 / Analyzer Status:**")
-        if hasattr(st.session_state, 'using_enhanced') and st.session_state.using_enhanced:
-            st.sidebar.success("🔧 Enhanced Analyzer: アクティブ / Active")
-            if hasattr(st.session_state.analyzer, 'get_api_status'):
-                status = st.session_state.analyzer.get_api_status()
-                for api, stat in status.items():
-                    if stat == "healthy":
-                        st.sidebar.success(f"✅ {api}: 正常 / Healthy")
-                    else:
-                        st.sidebar.error(f"❌ {api}: {stat}")
-        else:
-            st.sidebar.info("🔧 Basic Analyzer: アクティブ / Active")
+    # API status functionality has been moved to the three-dot menu in the top navigation
         
         # Show cache status
         if hasattr(st.session_state, 'stock_data') and st.session_state.stock_data:
