@@ -21,7 +21,7 @@ st.set_page_config(
     page_title="TOP - StockScore",
     page_icon="🎯",
     layout="wide",
-    initial_sidebar_state="collapsed"
+    initial_sidebar_state="auto"
 )
 
 # Initialize session state with proper error handling
@@ -584,33 +584,34 @@ def main():
     
 
     
-    # Sidebar configuration
-    st.sidebar.header("" if st.session_state.language == 'ja' else "")
-    
-    # User mode selection (moved to top)
-    st.sidebar.subheader(get_text('user_mode_selection'))
-    mode_options = {
-        get_text('beginner_mode'): 'beginner',
-        get_text('intermediate_mode'): 'intermediate'
-    }
-    
-    current_mode_display = next(k for k, v in mode_options.items() if v == st.session_state.user_mode)
-    selected_mode = st.sidebar.selectbox(
-        "モード選択" if st.session_state.language == 'ja' else "Mode Selection",
-        options=list(mode_options.keys()),
-        index=list(mode_options.keys()).index(current_mode_display),
-        help="投資経験に応じてモードを選択してください" if st.session_state.language == 'ja' else "Select mode based on your investment experience"
-    )
-    
-    if mode_options[selected_mode] != st.session_state.user_mode:
-        st.session_state.user_mode = mode_options[selected_mode]
-        st.rerun()
-    
-    # Mode description
-    if st.session_state.user_mode == 'beginner':
-        st.sidebar.info(get_text('beginner_description'))
-    elif st.session_state.user_mode == 'intermediate':
-        st.sidebar.info(get_text('intermediate_description'))
+    # Sidebar configuration with conditional display
+    if st.session_state.get('sidebar_open', True):
+        st.sidebar.header("" if st.session_state.language == 'ja' else "")
+        
+        # User mode selection (moved to top)
+        st.sidebar.subheader(get_text('user_mode_selection'))
+        mode_options = {
+            get_text('beginner_mode'): 'beginner',
+            get_text('intermediate_mode'): 'intermediate'
+        }
+        
+        current_mode_display = next(k for k, v in mode_options.items() if v == st.session_state.user_mode)
+        selected_mode = st.sidebar.selectbox(
+            "モード選択" if st.session_state.language == 'ja' else "Mode Selection",
+            options=list(mode_options.keys()),
+            index=list(mode_options.keys()).index(current_mode_display),
+            help="投資経験に応じてモードを選択してください" if st.session_state.language == 'ja' else "Select mode based on your investment experience"
+        )
+        
+        if mode_options[selected_mode] != st.session_state.user_mode:
+            st.session_state.user_mode = mode_options[selected_mode]
+            st.rerun()
+        
+        # Mode description
+        if st.session_state.user_mode == 'beginner':
+            st.sidebar.info(get_text('beginner_description'))
+        elif st.session_state.user_mode == 'intermediate':
+            st.sidebar.info(get_text('intermediate_description'))
     
     # Always use simple view
     view_mode = get_text('simple_view')
@@ -713,11 +714,16 @@ def main():
     st.markdown("---")
     st.subheader("📍 " + ("株式検索方法を選択" if st.session_state.language == 'ja' else "Choose Stock Discovery Method"))
     
-    # Mobile-friendly sidebar toggle button (moved above market selection)
-    if st.button("📱 モード選択・設定" if st.session_state.language == 'ja' else "📱 Mode & Settings", 
-                help="サイドバーを開閉 / Toggle sidebar", use_container_width=False):
-        # Toggle sidebar state by creating a visual cue for mobile users
-        pass
+    # Initialize sidebar toggle state
+    if 'sidebar_open' not in st.session_state:
+        st.session_state.sidebar_open = True
+    
+    # Sidebar toggle button (without icon)
+    button_text = "モード選択・設定" if st.session_state.language == 'ja' else "Mode & Settings"
+    if st.button(button_text, help="サイドバーを開閉 / Toggle sidebar", use_container_width=False):
+        # Toggle sidebar state
+        st.session_state.sidebar_open = not st.session_state.sidebar_open
+        st.rerun()
     
     st.markdown("")  # Add spacing
     
