@@ -817,16 +817,18 @@ def main():
             help="ランダムに選択された銘柄を表示" if st.session_state.language == 'ja' else "Show randomly selected stocks"
         )
     
-    # Handle action button clicks
+    # Handle action button clicks with auto-execution
     selected_method = handle_action_buttons(popularity_button, dividend_button, theme_button, random_button, market, stock_count)
     
-    # Debug: Show selected count when method is chosen
-    if selected_method:
-        st.info(f"選択された銘柄数: {len(selected_method)} / Selected stocks: {len(selected_method)}")
-    
-    # Determine which symbols to analyze based on selected method
+    # Auto-execute data fetching when action button is pressed
     if selected_method:
         symbols = selected_method
+        st.success(f"✅ {len(symbols)}銘柄を自動取得中... / Auto-fetching {len(symbols)} stocks...")
+        
+        # Automatically trigger data update
+        with st.spinner("データを取得中... / Fetching data..."):
+            update_stock_data(symbols, per_threshold, pbr_threshold, roe_threshold, dividend_multiplier)
+        
     else:
         # Show message to select an action button
         st.info("上記のアクションボタンから検索方法を選択してください。\nPlease select a discovery method from the action buttons above.")
@@ -859,8 +861,8 @@ def main():
         else:
             st.sidebar.info("🔧 Basic Analyzer: Active")
     
-    # Update data button - enhanced with caching and intelligent request control
-    if symbols:
+    # Manual update button for additional control (optional)
+    if symbols and not selected_method:  # Only show manual button if no auto-execution happened
         # Show analyzer status
         st.info("🔧 Basic Analyzer使用中: 安定性重視でシンプル処理 / Using Basic Analyzer with stability focus")
         
@@ -870,20 +872,25 @@ def main():
             if cache_size > 0:
                 st.success(f"📊 キャッシュ済み: {cache_size} 銘柄 / Cached: {cache_size} stocks")
         
-        # Enhanced update with proper batch management and debugging
-        st.write("🔧 デバッグ: データ更新ボタンの状態")
-        st.write(f"🔧 対象銘柄: {symbols}")
-        
         col1, col2 = st.columns(2)
         with col1:
-            button_clicked = st.button(get_text('update_data'), type="primary")
-            st.write(f"🔧 ボタンクリック状態: {button_clicked}")
-            
-            if button_clicked:
-                st.write("🔥 データ更新処理開始！")
-                with st.container():
-                    update_stock_data(symbols, per_threshold, pbr_threshold, roe_threshold, dividend_multiplier)
+            if st.button(get_text('update_data'), type="primary"):
+                update_stock_data(symbols, per_threshold, pbr_threshold, roe_threshold, dividend_multiplier)
                     
+        with col2:
+            if st.button("🗑️ キャッシュクリア / Clear Cache", type="secondary"):
+                if hasattr(st.session_state.analyzer, 'clear_cache'):
+                    st.session_state.analyzer.clear_cache()
+                    st.success("キャッシュをクリアしました / Cache cleared")
+                else:
+                    st.info("キャッシュ機能は利用できません / Cache not available")
+    
+    # Additional controls for cached data
+    elif symbols:
+        col1, col2 = st.columns(2)
+        with col1:
+            if st.button("🔄 再取得 / Re-fetch", type="secondary"):
+                update_stock_data(symbols, per_threshold, pbr_threshold, roe_threshold, dividend_multiplier)
         with col2:
             if st.button("🗑️ キャッシュクリア / Clear Cache", type="secondary"):
                 if hasattr(st.session_state.analyzer, 'clear_cache'):
