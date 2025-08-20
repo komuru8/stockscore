@@ -722,6 +722,35 @@ def main():
         else:
             st.info("👈 Use the \"<<\" \">>\" buttons in the top-left to toggle the sidebar")
     
+    # Add custom CSS to create a sidebar toggle button style
+    st.markdown("""
+    <style>
+    .sidebar-toggle-btn {
+        background: #f0f2f6;
+        border: 1px solid #d1d5db;
+        border-radius: 6px;
+        padding: 8px 12px;
+        font-size: 16px;
+        color: #262730;
+        cursor: pointer;
+        display: inline-block;
+        margin: 10px 0;
+        font-family: "Source Sans Pro", sans-serif;
+    }
+    .sidebar-toggle-btn:hover {
+        background: #e5e7eb;
+        border-color: #9ca3af;
+    }
+    </style>
+    """, unsafe_allow_html=True)
+    
+    # Add a styled toggle button that looks like the native one
+    st.markdown("""
+    <div class="sidebar-toggle-btn" title="サイドバーを開閉するには左上の << >> ボタンを使用してください">
+        ≪
+    </div>
+    """, unsafe_allow_html=True)
+    
     st.markdown("")  # Add spacing
     
     # Market selection integrated into discovery section
