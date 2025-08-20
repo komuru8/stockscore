@@ -870,11 +870,20 @@ def main():
             if cache_size > 0:
                 st.success(f"📊 キャッシュ済み: {cache_size} 銘柄 / Cached: {cache_size} stocks")
         
-        # Enhanced update with proper batch management
+        # Enhanced update with proper batch management and debugging
+        st.write("🔧 デバッグ: データ更新ボタンの状態")
+        st.write(f"🔧 対象銘柄: {symbols}")
+        
         col1, col2 = st.columns(2)
         with col1:
-            if st.button(get_text('update_data'), type="primary"):
-                update_stock_data(symbols, per_threshold, pbr_threshold, roe_threshold, dividend_multiplier)
+            button_clicked = st.button(get_text('update_data'), type="primary")
+            st.write(f"🔧 ボタンクリック状態: {button_clicked}")
+            
+            if button_clicked:
+                st.write("🔥 データ更新処理開始！")
+                with st.container():
+                    update_stock_data(symbols, per_threshold, pbr_threshold, roe_threshold, dividend_multiplier)
+                    
         with col2:
             if st.button("🗑️ キャッシュクリア / Clear Cache", type="secondary"):
                 if hasattr(st.session_state.analyzer, 'clear_cache'):
@@ -885,6 +894,24 @@ def main():
         
         # Disable auto-update to prevent server overload issues
         # Auto-update disabled due to server stability concerns
+        
+        # Force immediate test of analyzer functionality  
+        st.write("🧪 即座テスト: Analyzerが動作するかテスト")
+        
+        if st.button("🧪 単体テスト", key="single_test"):
+            st.write("単体テスト開始...")
+            try:
+                test_result = st.session_state.analyzer.analyze_stocks(['AAPL'])
+                st.write(f"テスト結果: {test_result}")
+                if 'AAPL' in test_result and test_result['AAPL']:
+                    st.success("✅ Analyzerは正常に動作しています")
+                    st.json(test_result['AAPL'])
+                else:
+                    st.error("❌ Analyzerの結果が空です")
+            except Exception as test_e:
+                st.error(f"❌ テストエラー: {test_e}")
+                import traceback
+                st.text(traceback.format_exc())
         
         # Display results with debugging
         st.write(f"🔧 Session stock_data keys: {list(st.session_state.stock_data.keys()) if st.session_state.stock_data else 'Empty'}")
@@ -915,7 +942,11 @@ def update_stock_data(symbols, per_threshold, pbr_threshold, roe_threshold, divi
         progress_bar = st.progress(0)
         status_text = st.empty()
         
-        # Debug info
+        # Debug info - IMMEDIATE DISPLAY
+        st.write("🔧 update_stock_data関数が呼ばれました！")
+        st.write(f"🔧 処理対象: {symbols}")
+        st.write(f"🔧 Analyzer: {type(st.session_state.analyzer).__name__}")
+        
         st.info(f"🔧 デバッグ: {len(symbols)} 銘柄の処理を開始 / Debug: Starting to process {len(symbols)} symbols")
         status_text.text(f"処理開始: {', '.join(symbols[:5])}" + ("..." if len(symbols) > 5 else ""))
         
@@ -958,7 +989,11 @@ def update_stock_data(symbols, per_threshold, pbr_threshold, roe_threshold, divi
             
             # Use the analyzer's batch processing with error catching
             status_text.text("analyze_stocks呼び出し中... / Calling analyze_stocks...")
+            
+            # FORCE IMMEDIATE FEEDBACK
+            st.write("⚡ analyze_stocks関数を今すぐ呼び出します")
             all_results = st.session_state.analyzer.analyze_stocks(symbols)
+            st.write("⚡ analyze_stocks関数が完了しました")
             
             # Log the raw results for debugging
             st.write(f"🔧 Raw results type: {type(all_results)}")
