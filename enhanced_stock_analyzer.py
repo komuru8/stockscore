@@ -206,28 +206,32 @@ class EnhancedStockAnalyzer:
         positive_factors = 0
         negative_factors = 0
         
-        # Valuation
-        if pe_ratio and pe_ratio < 20:
-            positive_factors += 1
-        elif pe_ratio and pe_ratio > 30:
-            negative_factors += 1
+        # Valuation - safe comparison
+        if pe_ratio and isinstance(pe_ratio, (int, float)):
+            if pe_ratio < 20:
+                positive_factors += 1
+            elif pe_ratio > 30:
+                negative_factors += 1
         
-        # Profitability
-        roe_percent = roe * 100 if roe and roe < 1 else roe if roe else 0
-        if roe_percent > 15:
-            positive_factors += 1
-        elif roe_percent < 5:
-            negative_factors += 1
+        # Profitability - safe comparison
+        if roe and isinstance(roe, (int, float)):
+            roe_percent = roe * 100 if roe < 1 else roe
+            if roe_percent > 15:
+                positive_factors += 1
+            elif roe_percent < 5:
+                negative_factors += 1
         
-        # Dividend
-        if dividend_yield > 3:
-            positive_factors += 1
+        # Dividend - safe comparison
+        if dividend_yield and isinstance(dividend_yield, (int, float)):
+            if dividend_yield > 3:
+                positive_factors += 1
         
-        # Financial strength
-        if debt_to_equity < 50:
-            positive_factors += 1
-        elif debt_to_equity > 100:
-            negative_factors += 1
+        # Financial strength - safe comparison
+        if debt_to_equity and isinstance(debt_to_equity, (int, float)):
+            if debt_to_equity < 50:
+                positive_factors += 1
+            elif debt_to_equity > 100:
+                negative_factors += 1
         
         # Generate recommendation
         if positive_factors >= 3 and negative_factors == 0:

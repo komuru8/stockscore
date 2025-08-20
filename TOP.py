@@ -950,7 +950,7 @@ def update_stock_data(symbols, per_threshold, pbr_threshold, roe_threshold, divi
                     roe_threshold=roe_threshold,
                     dividend_multiplier=dividend_multiplier
                 )
-                st.success("✅ Enhanced スコア設定を更新しました / Enhanced score criteria updated")
+
             elif hasattr(st.session_state.analyzer, 'update_criteria'):
                 # Basic Analyzer method
                 st.session_state.analyzer.update_criteria(
@@ -959,7 +959,7 @@ def update_stock_data(symbols, per_threshold, pbr_threshold, roe_threshold, divi
                     roe_threshold=roe_threshold,
                     dividend_multiplier=dividend_multiplier
                 )
-                st.success("✅ Basic スコア設定を更新しました / Basic score criteria updated")
+
             else:
                 st.warning("⚠️ スコア更新メソッドが見つかりません / Score update method not found")
         except Exception as criteria_error:
@@ -973,8 +973,7 @@ def update_stock_data(symbols, per_threshold, pbr_threshold, roe_threshold, divi
         total_symbols = len(symbols)
         all_results = {}
         
-        # Show processing plan
-        st.info(f"📊 処理開始: {total_symbols}銘柄をBasic Analyzerで分析 / Starting: {total_symbols} stocks with Basic Analyzer")
+
         
         # Use Enhanced analyzer if properly initialized, fallback to Basic
         if not hasattr(st.session_state.analyzer, 'analyze_stocks'):
