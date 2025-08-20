@@ -957,19 +957,33 @@ def update_stock_data(symbols, per_threshold, pbr_threshold, roe_threshold, divi
         st.info(f"🔧 デバッグ: {len(symbols)} 銘柄の処理を開始 / Debug: Starting to process {len(symbols)} symbols")
         status_text.text(f"処理開始: {', '.join(symbols[:5])}" + ("..." if len(symbols) > 5 else ""))
         
-        # Update scoring criteria
+        # Update scoring criteria with method compatibility
         status_text.text("設定を更新中... / Updating criteria...")
         try:
-            # Update scoring criteria (Basic Analyzer)
-            st.session_state.analyzer.update_criteria(
-                per_threshold=per_threshold,
-                pbr_threshold=pbr_threshold,
-                roe_threshold=roe_threshold,
-                dividend_multiplier=dividend_multiplier
-            )
-            st.success("✅ スコア設定を更新しました / Score criteria updated")
+            # Check which method is available and use appropriate one
+            if hasattr(st.session_state.analyzer, 'update_scoring_criteria'):
+                # Enhanced Analyzer method
+                st.session_state.analyzer.update_scoring_criteria(
+                    per_threshold=per_threshold,
+                    pbr_threshold=pbr_threshold,
+                    roe_threshold=roe_threshold,
+                    dividend_multiplier=dividend_multiplier
+                )
+                st.success("✅ Enhanced スコア設定を更新しました / Enhanced score criteria updated")
+            elif hasattr(st.session_state.analyzer, 'update_criteria'):
+                # Basic Analyzer method
+                st.session_state.analyzer.update_criteria(
+                    per_threshold=per_threshold,
+                    pbr_threshold=pbr_threshold,
+                    roe_threshold=roe_threshold,
+                    dividend_multiplier=dividend_multiplier
+                )
+                st.success("✅ Basic スコア設定を更新しました / Basic score criteria updated")
+            else:
+                st.warning("⚠️ スコア更新メソッドが見つかりません / Score update method not found")
         except Exception as criteria_error:
             st.error(f"❌ スコア設定エラー / Criteria error: {str(criteria_error)}")
+            st.write(f"Available methods: {[m for m in dir(st.session_state.analyzer) if 'update' in m.lower()]}")
             return
         
         progress_bar.progress(5)
@@ -995,9 +1009,11 @@ def update_stock_data(symbols, per_threshold, pbr_threshold, roe_threshold, divi
                 st.session_state.using_enhanced = False
         
         try:
-            status_text.text("Basic Analyzer でバッチ処理開始... / Starting Basic batch processing...")
+            analyzer_type = "Enhanced" if st.session_state.using_enhanced else "Basic"
+            status_text.text(f"{analyzer_type} Analyzer でバッチ処理開始... / Starting {analyzer_type} batch processing...")
             
-            st.write(f"🔧 使用中アナライザー: Basic StockAnalyzer")
+            analyzer_type = "Enhanced" if st.session_state.using_enhanced else "Basic"
+            st.write(f"🔧 使用中アナライザー: {analyzer_type} StockAnalyzer")
             st.write(f"🔧 処理対象銘柄: {symbols}")
             st.write(f"🔧 Analyzer methods: {[m for m in dir(st.session_state.analyzer) if not m.startswith('_')]}")
             
