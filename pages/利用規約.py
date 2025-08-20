@@ -217,24 +217,7 @@ def main():
     The service provider assumes no responsibility for any damages incurred by users through the use of this service.
     """)
     
-    st.markdown("---")
-    
-    # Contact Information
-    st.header("📞 お問い合わせ / Contact Information")
-    
-    st.markdown("""
-    本サービスに関するお問い合わせは、以下までご連絡ください：
-    
-    For inquiries about this service, please contact:
-    
-    **Email**: support@stockanalysis.app (例)
-    **Website**: https://stockanalysis.app (例)
-    """)
-    
-    # Back to main page button
-    st.markdown("---")
-    if st.button("🏠 TOPに戻る / Back to TOP", type="primary"):
-        st.switch_page("TOP.py")
+
 
 if __name__ == "__main__":
     main()
