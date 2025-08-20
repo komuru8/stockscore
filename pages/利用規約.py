@@ -84,8 +84,15 @@ def main():
     
     st.sidebar.markdown("---")
     
-    # Add main menu items to sidebar
+    # Add main menu items to sidebar with consistent spacing
     st.sidebar.markdown("### " + ("メニュー" if st.session_state.language == 'ja' else "Menu"))
+    st.sidebar.markdown("""
+    <style>
+    .stButton > button {
+        margin: 4px 0 8px 0 !important;
+    }
+    </style>
+    """, unsafe_allow_html=True)
     
     # TOP page link
     if st.sidebar.button("🏠 TOP", use_container_width=True):
@@ -98,7 +105,7 @@ def main():
         padding: 8px 12px; 
         border-radius: 6px; 
         border-left: 4px solid #2196f3;
-        margin: 2px 0;
+        margin: 4px 0 8px 0;
         color: #1976d2;
         font-weight: 500;
     ">
