@@ -21,7 +21,7 @@ st.set_page_config(
     page_title="TOP - StockScore",
     page_icon="🎯",
     layout="wide",
-    initial_sidebar_state="expanded"
+    initial_sidebar_state="collapsed"
 )
 
 # Initialize session state with proper error handling
@@ -579,8 +579,14 @@ def main():
             st.session_state.language = 'en' if st.session_state.language == 'ja' else 'ja'
             st.rerun()
     
-    # Display StockScore logo image
-    st.image("attached_assets/ChatGPT Image Aug 20, 2025, 11_00_06 PM_1755699205709.png", width=400)
+    # Display StockScore logo image with reduced size and spacing
+    st.image("attached_assets/ChatGPT Image Aug 20, 2025, 11_00_06 PM_1755699205709.png", width=250)
+    
+    # Mobile-friendly sidebar toggle button
+    if st.button("📱 モード選択・設定" if st.session_state.language == 'ja' else "📱 Mode & Settings", 
+                help="サイドバーを開く / Open sidebar", use_container_width=False):
+        st.sidebar.info("👈 " + ("左のメニューからモードを選択してください" if st.session_state.language == 'ja' 
+                                else "Please select mode from the left menu"))
     
     # Sidebar configuration with menu items
     st.sidebar.header("" if st.session_state.language == 'ja' else "")
