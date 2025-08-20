@@ -587,7 +587,7 @@ def main():
     # Sidebar configuration
     st.sidebar.header("" if st.session_state.language == 'ja' else "")
     
-    # User mode selection (moved to top)
+    # User mode selection dropdown (moved to top)
     st.sidebar.subheader(get_text('user_mode_selection'))
     mode_options = {
         get_text('beginner_mode'): 'beginner',
@@ -606,11 +606,41 @@ def main():
         st.session_state.user_mode = mode_options[selected_mode]
         st.rerun()
     
-    # Mode description
+    # Mode description and settings appear below selection
     if st.session_state.user_mode == 'beginner':
         st.sidebar.info(get_text('beginner_description'))
     elif st.session_state.user_mode == 'intermediate':
         st.sidebar.info(get_text('intermediate_description'))
+        
+        # Show settings for intermediate mode
+        st.sidebar.markdown("**設定項目 / Settings**")
+        
+        # Key financial metrics for intermediate mode
+        per_threshold = st.sidebar.slider(
+            "PER閾値" if st.session_state.language == 'ja' else "P/E Ratio Threshold",
+            min_value=5, max_value=30, value=15, step=1
+        )
+        
+        pbr_threshold = st.sidebar.slider(
+            "PBR閾値" if st.session_state.language == 'ja' else "P/B Ratio Threshold",
+            min_value=0.5, max_value=3.0, value=1.0, step=0.1
+        )
+        
+        roe_threshold = st.sidebar.slider(
+            "ROE閾値 (%)" if st.session_state.language == 'ja' else "ROE Threshold (%)",
+            min_value=5, max_value=25, value=10, step=1
+        )
+        
+        dividend_threshold = st.sidebar.slider(
+            "配当利回り閾値 (%)" if st.session_state.language == 'ja' else "Dividend Yield Threshold (%)",
+            min_value=1.0, max_value=8.0, value=3.0, step=0.5
+        )
+    else:
+        # Default values for beginner mode
+        per_threshold = 15
+        pbr_threshold = 1.0
+        roe_threshold = 10
+        dividend_threshold = 3.0
     
     # Always use simple view
     view_mode = get_text('simple_view')
