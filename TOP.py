@@ -628,10 +628,8 @@ def main():
                 st.success("キャッシュをクリアしました / Cache cleared")
                 st.rerun()
     
-    # Display title with StockScore logo image
-    st.image("attached_assets/ChatGPT Image Aug 19, 2025, 09_36_17 PM_1755698010632.png", width=300)
-    
-    # Sidebar configuration
+    # Sidebar configuration with StockScore logo at the top
+    st.sidebar.image("attached_assets/ChatGPT Image Aug 19, 2025, 09_36_17 PM_1755698010632.png", width=250)
     st.sidebar.header("" if st.session_state.language == 'ja' else "")
     
     # User mode selection
