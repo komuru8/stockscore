@@ -1380,6 +1380,22 @@ def create_circular_score(score, size=100):
     """
     return svg
 
+def format_percentage(value):
+    """Format percentage values correctly"""
+    if value == 'N/A' or value is None:
+        return 'N/A'
+    try:
+        # Convert to float
+        num_val = float(value)
+        # If value is greater than 1, assume it's already a percentage
+        if num_val > 1:
+            return f"{num_val:.1f}%"
+        else:
+            # If value is less than 1, convert decimal to percentage
+            return f"{num_val * 100:.1f}%"
+    except (ValueError, TypeError):
+        return 'N/A'
+
 def display_simple_view(df):
     """Display simple table view of results"""
     st.subheader("銘柄一覧" if st.session_state.language == 'ja' else "Stock List")
