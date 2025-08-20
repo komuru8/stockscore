@@ -573,23 +573,6 @@ def main():
     if 'show_hamburger_menu' not in st.session_state:
         st.session_state.show_hamburger_menu = False
     
-    # Modern header with glass morphism effect
-    st.markdown("""
-    <div style="
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 15px 25px;
-        margin: -30px -20px 20px -20px;
-        background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
-        border-radius: 0 0 25px 25px;
-        backdrop-filter: blur(20px);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-    ">
-    </div>
-    """, unsafe_allow_html=True)
-    
     # Header with language selector and hamburger menu
     col1, col2, col3 = st.columns([5, 2, 2])
     with col2:
@@ -645,37 +628,11 @@ def main():
                 st.success("キャッシュをクリアしました / Cache cleared")
                 st.rerun()
     
-    # Modern stylish title with enhanced design
+    # Display title with emoji icon - reduced top spacing
     st.markdown(f"""
-    <div style="
-        display: flex; 
-        align-items: center; 
-        justify-content: center;
-        margin-top: -30px; 
-        margin-bottom: 30px;
-        padding: 20px;
-        background: linear-gradient(135deg, rgba(37, 99, 235, 0.1) 0%, rgba(16, 185, 129, 0.1) 100%);
-        border-radius: 20px;
-        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-        backdrop-filter: blur(10px);
-        border: 1px solid rgba(255, 255, 255, 0.2);
-    ">
-        <div style="
-            font-size: 3.5rem; 
-            margin-right: 20px;
-            filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.2));
-        ">🎯</div>
-        <h1 style="
-            margin: 0; 
-            font-size: 3rem; 
-            font-weight: 800; 
-            background: linear-gradient(135deg, #2563eb 0%, #10b981 50%, #8b5cf6 100%); 
-            -webkit-background-clip: text; 
-            -webkit-text-fill-color: transparent; 
-            background-clip: text;
-            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            letter-spacing: -1px;
-        ">
+    <div style="display: flex; align-items: center; margin-top: -20px; margin-bottom: 15px;">
+        <div style="font-size: 3rem; margin-right: 15px;">🎯</div>
+        <h1 style="margin: 0; font-size: 2.5rem; font-weight: 700; background: linear-gradient(135deg, #2563eb 0%, #10b981 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">
             StockScore
         </h1>
     </div>
@@ -806,24 +763,9 @@ def main():
             min_value=10, max_value=80, value=30, step=5
         )
     
-    # Stock discovery section with modern styling
-    st.markdown("""
-    <div style="
-        margin: 30px 0;
-        padding: 25px;
-        background: linear-gradient(135deg, rgba(59, 130, 246, 0.05) 0%, rgba(16, 185, 129, 0.05) 100%);
-        border-radius: 20px;
-        border: 1px solid rgba(255, 255, 255, 0.3);
-        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
-    ">
-        <h3 style="
-            margin: 0 0 20px 0;
-            color: #1e293b;
-            font-weight: 700;
-            font-size: 1.5rem;
-        ">📍 """ + ("株式検索方法を選択" if st.session_state.language == 'ja' else "Choose Stock Discovery Method") + """</h3>
-    </div>
-    """, unsafe_allow_html=True)
+    # Stock discovery section with market selection
+    st.markdown("---")
+    st.subheader("📍 " + ("株式検索方法を選択" if st.session_state.language == 'ja' else "Choose Stock Discovery Method"))
     
     # Market selection integrated into discovery section
     col1, col2, col3 = st.columns([2, 2, 2])
@@ -863,102 +805,24 @@ def main():
         else:
             stock_count = int(selected_count_option)
     
-    # Add comprehensive modern CSS styling
+    # Add custom CSS for enhanced button styling
     st.markdown("""
     <style>
-    /* Global app styling */
-    .main .block-container {
-        background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
-        min-height: 100vh;
-    }
-    
-    /* Enhanced button styling */
     div[data-testid="column"] > div > div > div > button {
         height: 120px;
-        border-radius: 20px;
-        border: 2px solid transparent;
-        background: linear-gradient(135deg, #ffffff 0%, #f1f5f9 100%);
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        border-radius: 15px;
+        border: 2px solid #e1e5e9;
+        background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%);
+        transition: all 0.3s ease;
         font-size: 14px !important;
         font-weight: 600;
         text-align: center;
-        position: relative;
-        overflow: hidden;
     }
-    
-    div[data-testid="column"] > div > div > div > button:before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: -100%;
-        width: 100%;
-        height: 100%;
-        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
-        transition: left 0.5s;
-    }
-    
-    div[data-testid="column"] > div > div > div > button:hover:before {
-        left: 100%;
-    }
-    
     div[data-testid="column"] > div > div > div > button:hover {
-        border: 2px solid #3b82f6;
-        background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
-        transform: translateY(-4px) scale(1.02);
-        box-shadow: 0 12px 40px rgba(59, 130, 246, 0.2);
-    }
-    
-    /* Sidebar enhancements */
-    .css-1d391kg {
-        background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
-        border-radius: 15px;
-        padding: 20px;
-        margin: 10px;
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
-    }
-    
-    /* Selectbox styling */
-    div[data-baseweb="select"] {
-        border-radius: 12px;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    }
-    
-    /* Metric styling */
-    div[data-testid="metric-container"] {
-        background: linear-gradient(135deg, #ffffff 0%, #f9fafb 100%);
-        border-radius: 15px;
-        padding: 15px;
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
-        border: 1px solid rgba(255, 255, 255, 0.5);
-    }
-    
-    /* Info/success/warning boxes */
-    .stAlert {
-        border-radius: 15px;
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-        backdrop-filter: blur(10px);
-    }
-    
-    /* Expander styling */
-    div[data-testid="stExpander"] {
-        border-radius: 15px;
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
-        border: none;
-        background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
-    }
-    
-    /* Progress bars */
-    .stProgress > div > div > div {
-        border-radius: 10px;
-        background: linear-gradient(90deg, #3b82f6, #10b981);
-    }
-    
-    /* Table styling */
-    .dataframe {
-        border-radius: 15px;
-        overflow: hidden;
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        border-color: #2563eb;
+        background: linear-gradient(135deg, #eff6ff 0%, #f0f9ff 100%);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(37, 99, 235, 0.15);
     }
     </style>
     """, unsafe_allow_html=True)
