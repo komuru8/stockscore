@@ -8,6 +8,7 @@ from stock_analyzer import StockAnalyzer
 
 try:
     from enhanced_stock_analyzer import EnhancedStockAnalyzer
+    from relative_scoring_engine import RelativeScoringEngine
     ENHANCED_ANALYZER_AVAILABLE = True
 except ImportError as e:
     print(f"Enhanced analyzer import failed: {e}")
@@ -39,6 +40,10 @@ if 'analyzer' not in st.session_state:
         # Fallback to basic analyzer
         st.session_state.analyzer = StockAnalyzer()
         st.session_state.using_enhanced = False
+
+# Initialize relative scoring engine
+if 'relative_scorer' not in st.session_state:
+    st.session_state.relative_scorer = RelativeScoringEngine()
 if 'last_update' not in st.session_state:
     st.session_state.last_update = None
 if 'stock_data' not in st.session_state:
@@ -992,6 +997,24 @@ def update_stock_data(symbols, per_threshold, pbr_threshold, roe_threshold, divi
             status_text.text("データ分析中... / Analyzing data...")
             all_results = st.session_state.analyzer.analyze_stocks(symbols)
             
+            # Apply relative scoring to all results
+            for symbol, result in all_results.items():
+                if result and result is not None:
+                    # Use relative scoring engine for consistent evaluation
+                    relative_score = st.session_state.relative_scorer.calculate_score(
+                        result, 
+                        mode='beginner' if user_mode == '👶 初級者' else 'intermediate'
+                    )
+                    
+                    # Update result with relative scoring data
+                    result.update({
+                        'relative_score': relative_score,
+                        'total_score': relative_score['total_score'],
+                        'recommendation': relative_score['recommendation'],
+                        'rank': relative_score['rank'],
+                        'color': relative_score['color']
+                    })
+            
             # Simple progress feedback without debug details
             
             # Calculate estimated time (2-3 seconds per stock on average)
@@ -1265,6 +1288,10 @@ def display_results(view_mode, market):
                     
                     # Price and recommendation
                     st.markdown(f"**{stock['Current Price']}**")
+                    # Display rank and recommendation with color
+                    rank_color = data[stock['Symbol']].get('color', '#666666') if stock['Symbol'] in data else '#666666'
+                    rank = data[stock['Symbol']].get('rank', 'N/A') if stock['Symbol'] in data else 'N/A'
+                    st.markdown(f"<div style='font-size: 1.2em; font-weight: bold; color: {rank_color};'>ランク {rank}</div>", unsafe_allow_html=True)
                     st.markdown(f"<div style='font-size: 0.9em; font-weight: bold;'>{stock['Recommendation']}</div>", unsafe_allow_html=True)
                     
                     # Stock analysis explanation - only show in expander

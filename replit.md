@@ -95,8 +95,21 @@ Performance Priorities: Remove stock count limitations, implement intelligent ca
 - Complete fundamental analysis data collection (10+ metrics)
 - Comprehensive stock data: price, volume, market cap, historical data
 - Full fundamental metrics: PER, PBR, ROE, ROA, dividend yield, growth rates, margins, ratios
+- **NEW**: Relative scoring system with proper score distribution and 5-tier evaluation
 
 ### Technical Implementation
 - **Basic Analyzer**: StockAnalyzer with DataFetcher - Proven stable, handles all required data
 - **Enhanced Analyzer**: EnhancedStockAnalyzer with EnhancedDataFetcher - Advanced features, may have integration complexity
-- **Current Focus**: Ensuring UI data display reliability while maintaining all advanced backend functionality
+- **Relative Scoring Engine**: New system implementing user-specified requirements:
+  - Mode-based evaluation: Beginner (2 metrics x 50 points), Intermediate (10 metrics x 10 points)
+  - 5-tier scoring: 非常に悪い(0点), 悪い(2点), 普通(5点), 良い(8点), 非常に良い(10点)
+  - Relative comparison against baseline values with ±20%, ±10% thresholds
+  - Missing data handling: "normal" score (50% of max points)
+  - Visual enhancements: S/A/B/C/D ranks, color coding, progress bars with time estimation
+
+### Recent Changes (August 20, 2025)
+- **Progress Enhancement**: Added percentage display and real-time remaining time estimation for 50+ stock analysis
+- **NoneType Error Resolution**: Complete type safety implementation across all comparison operations
+- **Score Distribution Fix**: Eliminated uniform 100-point scores, implemented proper relative evaluation
+- **Investment Recommendations**: 🚀強い買い推奨(80+), ✅買い推奨(70+), ➖中立(60+), ⚠️慎重(40+), ❌非推奨(<40)
+- **UI Improvements**: Rank display with color coding, enhanced featured recommendations section

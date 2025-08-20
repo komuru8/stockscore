@@ -163,23 +163,24 @@ class EnhancedStockAnalyzer:
         
         # Volatility risk
         volatility = stock_data.get('volatility', 0)
-        if volatility > 40:
-            risk_factors.append('high_volatility')
-        elif volatility > 25:
-            risk_factors.append('medium_volatility')
+        if volatility and isinstance(volatility, (int, float)):
+            if volatility > 40:
+                risk_factors.append('high_volatility')
+            elif volatility > 25:
+                risk_factors.append('medium_volatility')
         
         # Valuation risk
         pe_ratio = stock_data.get('pe_ratio')
-        if pe_ratio and pe_ratio > 30:
+        if pe_ratio and isinstance(pe_ratio, (int, float)) and pe_ratio > 30:
             risk_factors.append('high_pe')
         
         # Financial strength risk
         debt_to_equity = stock_data.get('debt_to_equity')
-        if debt_to_equity and debt_to_equity > 70:
+        if debt_to_equity and isinstance(debt_to_equity, (int, float)) and debt_to_equity > 70:
             risk_factors.append('high_debt')
         
         current_ratio = stock_data.get('current_ratio')
-        if current_ratio and current_ratio < 1.0:
+        if current_ratio and isinstance(current_ratio, (int, float)) and current_ratio < 1.0:
             risk_factors.append('liquidity_concern')
         
         # Determine overall risk
