@@ -1,13 +1,118 @@
 import streamlit as st
+import sys
+import os
+
+# Add parent directory to path to import from main app
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 # Set page configuration
 st.set_page_config(
     page_title="利用規約 - StockScore",
     page_icon="📋",
-    layout="wide"
+    layout="wide",
+    initial_sidebar_state="expanded"
 )
 
+# Initialize session state
+if 'language' not in st.session_state:
+    st.session_state.language = 'ja'
+if 'user_mode' not in st.session_state:
+    st.session_state.user_mode = 'beginner'
+
+def get_text(key, lang=None):
+    """Get localized text - simplified version for terms page"""
+    if lang is None:
+        lang = st.session_state.language
+    
+    texts = {
+        'user_mode_selection': {
+            'ja': 'ユーザーモード',
+            'en': 'User Mode'
+        },
+        'beginner_mode': {
+            'ja': '初級者',
+            'en': 'Beginner'
+        },
+        'intermediate_mode': {
+            'ja': '中級者',
+            'en': 'Intermediate'
+        },
+        'beginner_description': {
+            'ja': 'AI推奨スコア中心、直感的な「買い/見送り」判定',
+            'en': 'AI-focused scoring with intuitive buy/hold decisions'
+        },
+        'intermediate_description': {
+            'ja': '10指標によるスクリーニング、重み付け調整可能',
+            'en': '10-metric screening with customizable weightings'
+        },
+        'terms': {
+            'ja': '利用規約',
+            'en': 'Terms'
+        }
+    }
+    
+    return texts.get(key, {}).get(lang, key)
+
 def main():
+    # Add sidebar menu (same as main app)
+    st.sidebar.header("" if st.session_state.language == 'ja' else "")
+    
+    # User mode selection
+    st.sidebar.subheader(get_text('user_mode_selection'))
+    mode_options = {
+        get_text('beginner_mode'): 'beginner',
+        get_text('intermediate_mode'): 'intermediate'
+    }
+    
+    current_mode_display = next(k for k, v in mode_options.items() if v == st.session_state.user_mode)
+    selected_mode = st.sidebar.selectbox(
+        "モード選択" if st.session_state.language == 'ja' else "Mode Selection",
+        options=list(mode_options.keys()),
+        index=list(mode_options.keys()).index(current_mode_display),
+        help="投資経験に応じてモードを選択してください" if st.session_state.language == 'ja' else "Select mode based on your investment experience"
+    )
+    
+    if mode_options[selected_mode] != st.session_state.user_mode:
+        st.session_state.user_mode = mode_options[selected_mode]
+        st.rerun()
+    
+    # Mode description
+    if st.session_state.user_mode == 'beginner':
+        st.sidebar.info(get_text('beginner_description'))
+    elif st.session_state.user_mode == 'intermediate':
+        st.sidebar.info(get_text('intermediate_description'))
+    
+    st.sidebar.markdown("---")
+    
+    # Add main menu items to sidebar
+    st.sidebar.markdown("### " + ("メニュー" if st.session_state.language == 'ja' else "Menu"))
+    
+    # TOP page link
+    if st.sidebar.button("🏠 TOP", use_container_width=True):
+        st.switch_page("TOP.py")
+    
+    # Terms link (current page - shows as active)
+    st.sidebar.markdown("📋 " + get_text('terms') + " *(現在のページ / Current Page)*")
+    
+    # API Status placeholder
+    if st.sidebar.button("🔧 " + ("APIステータス" if st.session_state.language == 'ja' else "API Status"), 
+                        use_container_width=True):
+        st.sidebar.info("メインページでご確認ください / Please check on main page")
+    
+    # Cache Clear placeholder
+    if st.sidebar.button("🗑️ " + ("キャッシュクリア" if st.session_state.language == 'ja' else "Clear Cache"), 
+                        use_container_width=True):
+        st.sidebar.info("メインページでご確認ください / Please check on main page")
+    
+    st.sidebar.markdown("---")
+    
+    # Language switcher at bottom of sidebar
+    current_lang = "🌐 English" if st.session_state.language == 'ja' else "🌐 日本語"
+    if st.sidebar.button(current_lang, key="lang_toggle", help="Switch Language / 言語切り替え", 
+                        use_container_width=True):
+        st.session_state.language = 'en' if st.session_state.language == 'ja' else 'ja'
+        st.rerun()
+
     st.title("📋 利用規約・免責事項 / Terms of Service & Disclaimer")
     
     st.markdown("---")
@@ -129,7 +234,7 @@ def main():
     # Back to main page button
     st.markdown("---")
     if st.button("🏠 TOPに戻る / Back to TOP", type="primary"):
-        st.switch_page("app.py")
+        st.switch_page("TOP.py")
 
 if __name__ == "__main__":
     main()
