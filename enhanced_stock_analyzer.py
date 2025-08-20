@@ -62,17 +62,31 @@ class EnhancedStockAnalyzer:
         try:
             # Calculate additional metrics if historical data is available
             price_history = stock_data.get('price_history', [])
-            if len(price_history) > 1:
-                enhanced.update(self._calculate_technical_metrics(price_history))
+            if price_history and len(price_history) > 1:
+                try:
+                    enhanced.update(self._calculate_technical_metrics(price_history))
+                except Exception as e:
+                    self.logger.error(f"Error calculating technical metrics: {e}")
             
             # Calculate financial ratios and scores
-            enhanced.update(self._calculate_financial_ratios(stock_data))
+            try:
+                enhanced.update(self._calculate_financial_ratios(stock_data))
+            except Exception as e:
+                self.logger.error(f"Error calculating financial ratios: {e}")
             
             # Risk assessment
-            enhanced['risk_level'] = self._assess_risk_level(stock_data)
+            try:
+                enhanced['risk_level'] = self._assess_risk_level(stock_data)
+            except Exception as e:
+                self.logger.error(f"Error assessing risk level: {e}")
+                enhanced['risk_level'] = 'Unknown'
             
             # Investment recommendation
-            enhanced['recommendation'] = self._generate_recommendation(stock_data)
+            try:
+                enhanced['recommendation'] = self._generate_recommendation(stock_data)
+            except Exception as e:
+                self.logger.error(f"Error generating recommendation: {e}")
+                enhanced['recommendation'] = 'Analysis incomplete'
             
         except Exception as e:
             self.logger.error(f"Error enhancing stock data: {e}")

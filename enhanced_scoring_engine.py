@@ -9,18 +9,18 @@ class EnhancedScoringEngine:
     def __init__(self):
         self.logger = logging.getLogger(__name__)
         
-        # Default thresholds - can be updated
+        # Improved thresholds with more realistic scoring distribution
         self.thresholds = {
-            'pe_ratio': {'excellent': 15, 'good': 20, 'fair': 25},
-            'pb_ratio': {'excellent': 1.0, 'good': 1.5, 'fair': 2.0},
-            'roe': {'excellent': 20, 'good': 15, 'fair': 10},
-            'roa': {'excellent': 10, 'good': 7, 'fair': 5},
-            'dividend_yield': {'excellent': 4, 'good': 3, 'fair': 2},
-            'profit_margins': {'excellent': 20, 'good': 15, 'fair': 10},
-            'debt_to_equity': {'excellent': 30, 'good': 50, 'fair': 70},
-            'current_ratio': {'excellent': 2.0, 'good': 1.5, 'fair': 1.2},
-            'earnings_growth': {'excellent': 15, 'good': 10, 'fair': 5},
-            'revenue_growth': {'excellent': 10, 'good': 7, 'fair': 5}
+            'pe_ratio': {'excellent': 12, 'good': 18, 'fair': 25, 'poor': 35},
+            'pb_ratio': {'excellent': 0.8, 'good': 1.2, 'fair': 1.8, 'poor': 2.5},
+            'roe': {'excellent': 25, 'good': 18, 'fair': 12, 'poor': 8},
+            'roa': {'excellent': 12, 'good': 8, 'fair': 5, 'poor': 3},
+            'dividend_yield': {'excellent': 5, 'good': 3.5, 'fair': 2.5, 'poor': 1.5},
+            'profit_margins': {'excellent': 25, 'good': 18, 'fair': 12, 'poor': 8},
+            'debt_to_equity': {'excellent': 25, 'good': 40, 'fair': 60, 'poor': 100},
+            'current_ratio': {'excellent': 2.5, 'good': 2.0, 'fair': 1.5, 'poor': 1.0},
+            'earnings_growth': {'excellent': 20, 'good': 12, 'fair': 8, 'poor': 3},
+            'revenue_growth': {'excellent': 15, 'good': 10, 'fair': 6, 'poor': 2}
         }
         
         # Scoring weights
@@ -86,27 +86,31 @@ class EnhancedScoringEngine:
         
         scores = []
         
-        # P/E Ratio scoring
-        if pe_ratio is not None and pe_ratio > 0:
+        # P/E Ratio scoring (lower is better)
+        if pe_ratio is not None and isinstance(pe_ratio, (int, float)) and pe_ratio > 0:
             if pe_ratio <= self.thresholds['pe_ratio']['excellent']:
-                scores.append(100)
+                scores.append(95)
             elif pe_ratio <= self.thresholds['pe_ratio']['good']:
-                scores.append(80)
+                scores.append(75)
             elif pe_ratio <= self.thresholds['pe_ratio']['fair']:
-                scores.append(60)
+                scores.append(55)
+            elif pe_ratio <= self.thresholds['pe_ratio']['poor']:
+                scores.append(35)
             else:
-                scores.append(30)
+                scores.append(15)
         
-        # P/B Ratio scoring
-        if pb_ratio is not None and pb_ratio > 0:
+        # P/B Ratio scoring (lower is better)
+        if pb_ratio is not None and isinstance(pb_ratio, (int, float)) and pb_ratio > 0:
             if pb_ratio <= self.thresholds['pb_ratio']['excellent']:
-                scores.append(100)
+                scores.append(95)
             elif pb_ratio <= self.thresholds['pb_ratio']['good']:
-                scores.append(80)
+                scores.append(75)
             elif pb_ratio <= self.thresholds['pb_ratio']['fair']:
-                scores.append(60)
+                scores.append(55)
+            elif pb_ratio <= self.thresholds['pb_ratio']['poor']:
+                scores.append(35)
             else:
-                scores.append(30)
+                scores.append(15)
         
         return np.mean(scores) if scores else None
     
@@ -122,25 +126,29 @@ class EnhancedScoringEngine:
         if roe is not None and isinstance(roe, (int, float)):
             roe_percent = roe * 100 if roe < 1 else roe
             if roe_percent >= self.thresholds['roe']['excellent']:
-                scores.append(100)
+                scores.append(95)
             elif roe_percent >= self.thresholds['roe']['good']:
-                scores.append(80)
+                scores.append(75)
             elif roe_percent >= self.thresholds['roe']['fair']:
-                scores.append(60)
+                scores.append(55)
+            elif roe_percent >= self.thresholds['roe']['poor']:
+                scores.append(35)
             else:
-                scores.append(30)
+                scores.append(15)
         
         # ROA scoring
         if roa is not None and isinstance(roa, (int, float)):
             roa_percent = roa * 100 if roa < 1 else roa
             if roa_percent >= self.thresholds['roa']['excellent']:
-                scores.append(100)
+                scores.append(95)
             elif roa_percent >= self.thresholds['roa']['good']:
-                scores.append(80)
+                scores.append(75)
             elif roa_percent >= self.thresholds['roa']['fair']:
-                scores.append(60)
+                scores.append(55)
+            elif roa_percent >= self.thresholds['roa']['poor']:
+                scores.append(35)
             else:
-                scores.append(30)
+                scores.append(15)
         
         # Profit margins scoring
         if profit_margins is not None and isinstance(profit_margins, (int, float)):
@@ -251,17 +259,17 @@ class EnhancedScoringEngine:
         return yield_score
     
     def _generate_assessment(self, score: float, components: Dict) -> str:
-        """Generate human-readable assessment"""
+        """Generate human-readable assessment with investment recommendations"""
         if score >= 80:
-            grade = "Excellent"
+            grade = "🚀 強い買い推奨 / Strong Buy"
         elif score >= 70:
-            grade = "Good"
+            grade = "✅ 買い推奨 / Buy"
         elif score >= 60:
-            grade = "Fair"
+            grade = "➖ 中立・保有 / Hold"
         elif score >= 40:
-            grade = "Below Average"
+            grade = "⚠️ 慎重 / Caution"
         else:
-            grade = "Poor"
+            grade = "❌ 非推奨 / Not Recommended"
         
         # Identify strongest and weakest areas
         valid_components = {k: v for k, v in components.items() if v is not None}
@@ -278,6 +286,7 @@ class EnhancedScoringEngine:
         return {
             'total_score': round(total_score, 1),
             'assessment': assessment,
+            'recommendation': self._get_investment_recommendation(total_score),
             'component_scores': {k: round(v, 1) if v is not None else None for k, v in components.items()},
             'score_breakdown': {
                 'valuation': components.get('valuation_score'),
@@ -287,6 +296,19 @@ class EnhancedScoringEngine:
                 'dividend': components.get('dividend_score')
             }
         }
+    
+    def _get_investment_recommendation(self, score: float) -> str:
+        """Get investment recommendation based on score"""
+        if score >= 80:
+            return "🚀 強い買い推奨"
+        elif score >= 70:
+            return "✅ 買い推奨"
+        elif score >= 60:
+            return "➖ 中立・保有"
+        elif score >= 40:
+            return "⚠️ 慎重"
+        else:
+            return "❌ 非推奨"
     
     def update_thresholds(self, **kwargs):
         """Update scoring thresholds"""

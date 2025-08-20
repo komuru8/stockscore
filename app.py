@@ -994,12 +994,33 @@ def update_stock_data(symbols, per_threshold, pbr_threshold, roe_threshold, divi
             
             # Simple progress feedback without debug details
             
-            # Update progress incrementally
+            # Calculate estimated time (2-3 seconds per stock on average)
+            estimated_time_per_stock = 2.5
+            total_estimated_time = len(symbols) * estimated_time_per_stock
+            start_time = time.time()
+            
+            # Update progress with time estimation
             for idx in range(total_symbols):
-                progress = 5 + (85 * (idx + 1) // total_symbols)
-                progress_bar.progress(progress)
-                status_text.text(f"処理中 {idx + 1}/{total_symbols} / Processing {idx + 1}/{total_symbols}")
-                time.sleep(0.1)  # Quick UI feedback
+                current_progress = 5 + (85 * (idx + 1) // total_symbols)
+                progress_bar.progress(current_progress)
+                
+                # Calculate remaining time
+                elapsed_time = time.time() - start_time
+                if idx > 0:
+                    avg_time_per_stock = elapsed_time / idx
+                    remaining_stocks = total_symbols - idx
+                    estimated_remaining = remaining_stocks * avg_time_per_stock
+                else:
+                    estimated_remaining = total_estimated_time
+                
+                # Format time display
+                if estimated_remaining > 60:
+                    time_display = f"{estimated_remaining/60:.1f}分"
+                else:
+                    time_display = f"{estimated_remaining:.0f}秒"
+                
+                status_text.text(f"進捗 {current_progress}% | 残り約{time_display} | {idx + 1}/{total_symbols}銘柄")
+                time.sleep(0.1)
             
         except Exception as batch_error:
             st.error(f"❌ バッチ処理エラー / Batch processing error: {str(batch_error)}")
