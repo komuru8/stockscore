@@ -1226,6 +1226,12 @@ def display_results(view_mode, market):
     df = pd.DataFrame(df_data)
     df = df.sort_values('Score', ascending=False)
     
+    # First show the stock table
+    display_simple_view(df)
+    
+    # Then show the investment decision results below the table
+    st.markdown("---")
+    
     # Display summary metrics
     st.subheader(get_text('portfolio_overview'))
     col1, col2, col3, col4 = st.columns(4)
