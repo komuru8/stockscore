@@ -1226,17 +1226,7 @@ def display_results(view_mode, market):
     df = pd.DataFrame(df_data)
     df = df.sort_values('Score', ascending=False)
     
-    # Results table - show first
-    if view_mode == get_text('simple_view'):
-        if st.session_state.get('user_mode', '初級者') == '中級者':
-            display_intermediate_view(df)
-        else:
-            display_simple_view(df)
-    else:
-        display_detailed_view(df, data)
-    
-    # Then show the investment decision results below the table
-    st.markdown("---")
+    # Show investment decision results first
     st.subheader("💡 " + ("投資判定結果" if st.session_state.language == 'ja' else "Investment Decision Results"))
     
     # Display summary metrics
@@ -1349,7 +1339,18 @@ def display_results(view_mode, market):
                     with st.expander("詳細分析を見る" if st.session_state.language == 'ja' else "See Detailed Analysis"):
                         st.write(analysis)
 
-    # Table is already displayed above
+    # Now show the full stock list below featured recommendations
+    st.markdown("---")
+    st.subheader("📊 " + ("銘柄一覧" if st.session_state.language == 'ja' else "Stock List"))
+    
+    # Results table - show after featured recommendations
+    if view_mode == get_text('simple_view'):
+        if st.session_state.get('user_mode', '初級者') == '中級者':
+            display_intermediate_view(df)
+        else:
+            display_simple_view(df)
+    else:
+        display_detailed_view(df, data)
 
 def create_circular_score(score, size=100):
     """Create circular score visualization using SVG"""
