@@ -613,10 +613,10 @@ def main():
     
     current_mode_display = next(k for k, v in mode_options.items() if v == st.session_state.user_mode)
     selected_mode = st.sidebar.selectbox(
-        "モード選択 / Mode Selection",
+        "モード選択" if st.session_state.language == 'ja' else "Mode Selection",
         options=list(mode_options.keys()),
         index=list(mode_options.keys()).index(current_mode_display),
-        help="投資経験に応じてモードを選択してください"
+        help="投資経験に応じてモードを選択してください" if st.session_state.language == 'ja' else "Select mode based on your investment experience"
     )
     
     if mode_options[selected_mode] != st.session_state.user_mode:
@@ -671,27 +671,27 @@ def main():
         
         # Core valuation metrics
         per_threshold = st.sidebar.slider(
-            "PER閾値 / PER Threshold",
+            "PER閾値" if st.session_state.language == 'ja' else "PER Threshold",
             min_value=5, max_value=50, value=15, step=5
         )
         
         pbr_threshold = st.sidebar.slider(
-            "PBR閾値 / PBR Threshold",
+            "PBR閾値" if st.session_state.language == 'ja' else "PBR Threshold",
             min_value=0.5, max_value=3.0, value=1.0, step=0.1
         )
         
         roe_threshold = st.sidebar.slider(
-            "ROE閾値 (%) / ROE Threshold (%)",
+            "ROE閾値 (%)" if st.session_state.language == 'ja' else "ROE Threshold (%)",
             min_value=5, max_value=25, value=10, step=1
         )
         
         roa_threshold = st.sidebar.slider(
-            "ROA閾値 (%) / ROA Threshold (%)",
+            "ROA閾値 (%)" if st.session_state.language == 'ja' else "ROA Threshold (%)",
             min_value=2, max_value=15, value=5, step=1
         )
         
         dividend_threshold = st.sidebar.slider(
-            "配当利回り閾値 (%) / Dividend Yield Threshold (%)",
+            "配当利回り閾値 (%)" if st.session_state.language == 'ja' else "Dividend Yield Threshold (%)",
             min_value=1.0, max_value=8.0, value=3.0, step=0.5
         )
         
@@ -700,29 +700,29 @@ def main():
         
         # Growth metrics
         sales_growth_threshold = st.sidebar.slider(
-            "売上成長率閾値 (%) / Sales Growth Threshold (%)",
+            "売上成長率閾値 (%)" if st.session_state.language == 'ja' else "Sales Growth Threshold (%)",
             min_value=0, max_value=20, value=5, step=1
         )
         
         eps_growth_threshold = st.sidebar.slider(
-            "EPS成長率閾値 (%) / EPS Growth Threshold (%)",
+            "EPS成長率閾値 (%)" if st.session_state.language == 'ja' else "EPS Growth Threshold (%)",
             min_value=0, max_value=25, value=10, step=1
         )
         
         # Profitability metrics
         operating_margin_threshold = st.sidebar.slider(
-            "営業利益率閾値 (%) / Operating Margin Threshold (%)",
+            "営業利益率閾値 (%)" if st.session_state.language == 'ja' else "Operating Margin Threshold (%)",
             min_value=5, max_value=30, value=10, step=1
         )
         
         # Financial health metrics
         equity_ratio_threshold = st.sidebar.slider(
-            "自己資本比率閾値 (%) / Equity Ratio Threshold (%)",
+            "自己資本比率閾値 (%)" if st.session_state.language == 'ja' else "Equity Ratio Threshold (%)",
             min_value=20, max_value=80, value=40, step=5
         )
         
         payout_ratio_threshold = st.sidebar.slider(
-            "配当性向閾値 (%) / Payout Ratio Threshold (%)",
+            "配当性向閾値 (%)" if st.session_state.language == 'ja' else "Payout Ratio Threshold (%)",
             min_value=10, max_value=80, value=30, step=5
         )
     
@@ -840,7 +840,7 @@ def main():
         symbols = []
     
     # Enhanced API test button showing failover status
-    if st.sidebar.button("🔧 API ステータス / API Status", type="secondary"):
+    if st.sidebar.button("🔧 " + ("APIステータス" if st.session_state.language == 'ja' else "API Status"), type="secondary"):
         st.sidebar.write("📊 データソースの接続状況を確認中... / Checking data source connections...")
         
         # Test Yahoo Finance API
