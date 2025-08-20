@@ -598,54 +598,22 @@ def main():
             st.session_state.show_hamburger_menu = not st.session_state.show_hamburger_menu
             st.rerun()
     
-    # Hamburger dropdown menu
+    # Simple hamburger dropdown menu
     if st.session_state.show_hamburger_menu:
-        # Create a styled container for the dropdown menu
-        st.markdown("""
-        <style>
-        .hamburger-menu {
-            position: fixed;
-            top: 80px;
-            right: 20px;
-            background: white;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            padding: 15px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
-            z-index: 1000;
-            min-width: 200px;
-        }
-        </style>
-        """, unsafe_allow_html=True)
-        
-        # Menu container
         with st.container():
-            st.markdown('<div class="hamburger-menu">', unsafe_allow_html=True)
-            
-            # Menu items in columns
-            menu_col1, menu_col2 = st.columns(2)
-            
-            with menu_col1:
-                if st.button("🔧 " + ("APIステータス" if st.session_state.language == 'ja' else "API Status"), 
-                           key='menu_api_status', use_container_width=True):
-                    st.session_state.show_hamburger_menu = False
-                    # Display API status information
-                    with st.expander("📊 API Status", expanded=True):
-                        show_api_status()
-                    st.rerun()
-            
-            with menu_col2:
-                if st.button("📋 " + get_text('terms'), 
-                           key='menu_terms', use_container_width=True):
-                    st.session_state.show_hamburger_menu = False
-                    st.switch_page("pages/利用規約.py")
-            
-            st.markdown('</div>', unsafe_allow_html=True)
-            
-            # Close menu when clicking elsewhere
-            if st.button("×", key='close_menu', help="メニューを閉じる" if st.session_state.language == 'ja' else "Close Menu"):
+            # Simple menu items
+            if st.button("🔧 " + ("APIステータス" if st.session_state.language == 'ja' else "API Status"), 
+                       key='menu_api_status', use_container_width=True):
                 st.session_state.show_hamburger_menu = False
+                # Display API status information
+                with st.expander("📊 API Status", expanded=True):
+                    show_api_status()
                 st.rerun()
+            
+            if st.button("📋 " + get_text('terms'), 
+                       key='menu_terms', use_container_width=True):
+                st.session_state.show_hamburger_menu = False
+                st.switch_page("pages/利用規約.py")
     
     # Display title with emoji icon instead of SVG - reduced top spacing
     st.markdown(f"""
@@ -892,7 +860,7 @@ def main():
         
     else:
         # Show message to select an action button
-        st.info("上記のアクションボタンから検索方法を選択してください。\nPlease select a discovery method from the action buttons above.")
+        st.info("上記のアクションボタンから検索方法を選択してください。")
         symbols = []
     
     # Cache clear button (moved here from removed API status section)  
