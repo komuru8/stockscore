@@ -861,15 +861,14 @@ def main():
     
     # Update data button - enhanced with caching and intelligent request control
     if symbols:
-        # Show enhanced analyzer info if available
-        if hasattr(st.session_state, 'using_enhanced') and st.session_state.using_enhanced:
-            st.info("🔧 Enhanced Analyzer使用中: 30分キャッシュ + ランダム間隔制御でサーバー負荷軽減 / Using Enhanced Analyzer with 30min cache + random interval control")
+        # Show analyzer status
+        st.info("🔧 Basic Analyzer使用中: 安定性重視でシンプル処理 / Using Basic Analyzer with stability focus")
         
-        # Show cache status
+        # Show cache status if available  
         if hasattr(st.session_state.analyzer, 'data_fetcher') and hasattr(st.session_state.analyzer.data_fetcher, 'cache'):
             cache_size = len(st.session_state.analyzer.data_fetcher.cache)
             if cache_size > 0:
-                st.success(f"📊 キャッシュ済み: {cache_size} 銘柄（30分間有効）/ Cached: {cache_size} stocks (valid for 30min)")
+                st.success(f"📊 キャッシュ済み: {cache_size} 銘柄 / Cached: {cache_size} stocks")
         
         # Enhanced update with proper batch management
         col1, col2 = st.columns(2)
@@ -923,21 +922,13 @@ def update_stock_data(symbols, per_threshold, pbr_threshold, roe_threshold, divi
         # Update scoring criteria
         status_text.text("設定を更新中... / Updating criteria...")
         try:
-            # Use appropriate update method based on analyzer type
-            if hasattr(st.session_state.analyzer, 'update_scoring_criteria'):
-                st.session_state.analyzer.update_scoring_criteria(
-                    per_threshold=per_threshold,
-                    pbr_threshold=pbr_threshold,
-                    roe_threshold=roe_threshold,
-                    dividend_multiplier=dividend_multiplier
-                )
-            else:
-                st.session_state.analyzer.update_criteria(
-                    per_threshold=per_threshold,
-                    pbr_threshold=pbr_threshold,
-                    roe_threshold=roe_threshold,
-                    dividend_multiplier=dividend_multiplier
-                )
+            # Update scoring criteria (Basic Analyzer)
+            st.session_state.analyzer.update_criteria(
+                per_threshold=per_threshold,
+                pbr_threshold=pbr_threshold,
+                roe_threshold=roe_threshold,
+                dividend_multiplier=dividend_multiplier
+            )
             st.success("✅ スコア設定を更新しました / Score criteria updated")
         except Exception as criteria_error:
             st.error(f"❌ スコア設定エラー / Criteria error: {str(criteria_error)}")
@@ -949,42 +940,53 @@ def update_stock_data(symbols, per_threshold, pbr_threshold, roe_threshold, divi
         total_symbols = len(symbols)
         all_results = {}
         
-        # Calculate cached vs new requests
-        cached_count = 0
-        if hasattr(st.session_state.analyzer, 'data_fetcher'):
-            for symbol in symbols:
-                if hasattr(st.session_state.analyzer.data_fetcher, '_is_cached') and st.session_state.analyzer.data_fetcher._is_cached(symbol):
-                    cached_count += 1
+        # Show processing plan
+        st.info(f"📊 処理開始: {total_symbols}銘柄をBasic Analyzerで分析 / Starting: {total_symbols} stocks with Basic Analyzer")
         
-        new_requests = total_symbols - cached_count
-        st.info(f"📊 処理予定: キャッシュ利用 {cached_count} + 新規取得 {new_requests} = 計{total_symbols}銘柄 / Processing: {cached_count} cached + {new_requests} new = {total_symbols} total")
+        # Force using basic analyzer for reliability - Enhanced has integration issues
+        st.session_state.using_enhanced = False
+        if not hasattr(st.session_state.analyzer, 'analyze_stocks'):
+            st.error("Analyzer missing analyze_stocks method - reinitializing")
+            st.session_state.analyzer = StockAnalyzer()
         
-        # Reliable batch processing with comprehensive error handling
         try:
-            analyzer_type = "Enhanced" if st.session_state.using_enhanced else "Basic"
-            status_text.text(f"{analyzer_type} Analyzer でバッチ処理開始... / Starting {analyzer_type} batch processing...")
+            status_text.text("Basic Analyzer でバッチ処理開始... / Starting Basic batch processing...")
             
-            # Add debug info about the analyzer
-            st.write(f"🔧 使用中アナライザー: {analyzer_type}")
+            st.write(f"🔧 使用中アナライザー: Basic StockAnalyzer")
             st.write(f"🔧 処理対象銘柄: {symbols}")
+            st.write(f"🔧 Analyzer methods: {[m for m in dir(st.session_state.analyzer) if not m.startswith('_')]}")
             
-            # Use the analyzer's batch processing
+            # Use the analyzer's batch processing with error catching
+            status_text.text("analyze_stocks呼び出し中... / Calling analyze_stocks...")
             all_results = st.session_state.analyzer.analyze_stocks(symbols)
             
             # Log the raw results for debugging
             st.write(f"🔧 Raw results type: {type(all_results)}")
             st.write(f"🔧 Raw results keys: {list(all_results.keys()) if isinstance(all_results, dict) else 'Not a dict'}")
             
+            # Check each result
+            for symbol in symbols:
+                if symbol in all_results:
+                    result = all_results[symbol]
+                    if result:
+                        st.write(f"✅ {symbol}: Score {result.get('total_score', 'N/A')}")
+                    else:
+                        st.write(f"❌ {symbol}: No data")
+                else:
+                    st.write(f"❌ {symbol}: Missing from results")
+            
             # Update progress incrementally
             for idx in range(total_symbols):
                 progress = 5 + (85 * (idx + 1) // total_symbols)
                 progress_bar.progress(progress)
                 status_text.text(f"処理中 {idx + 1}/{total_symbols} / Processing {idx + 1}/{total_symbols}")
-                time.sleep(0.2)  # Quick UI feedback
+                time.sleep(0.1)  # Quick UI feedback
             
         except Exception as batch_error:
             st.error(f"❌ バッチ処理エラー / Batch processing error: {str(batch_error)}")
             st.write(f"Error details: {type(batch_error).__name__}: {str(batch_error)}")
+            import traceback
+            st.text(traceback.format_exc())
             
             # Fallback to individual processing
             st.info("🔄 個別処理にフォールバック / Falling back to individual processing")
@@ -992,29 +994,31 @@ def update_stock_data(symbols, per_threshold, pbr_threshold, roe_threshold, divi
             
             for idx, symbol in enumerate(symbols):
                 status_text.text(f"個別処理 {idx + 1}/{total_symbols}: {symbol}")
+                st.write(f"処理中: {symbol}")
                 
                 try:
-                    # Try direct data fetcher if available
-                    if hasattr(st.session_state.analyzer, 'data_fetcher'):
-                        # Use appropriate method based on analyzer type
-                        if hasattr(st.session_state.analyzer.data_fetcher, 'get_stock_data'):
-                            data = st.session_state.analyzer.data_fetcher.get_stock_data(symbol)
-                        elif hasattr(st.session_state.analyzer.data_fetcher, 'get_stock_info'):
+                    # Try single stock analysis first
+                    single_result = st.session_state.analyzer.analyze_stocks([symbol])
+                    if single_result and symbol in single_result and single_result[symbol]:
+                        all_results[symbol] = single_result[symbol]
+                        st.write(f"✅ {symbol}: 成功")
+                    else:
+                        # Try direct data fetcher as backup
+                        if hasattr(st.session_state.analyzer, 'data_fetcher'):
                             data = st.session_state.analyzer.data_fetcher.get_stock_info(symbol)
-                        else:
-                            data = None
-                            
-                        if data:
-                            # Simple scoring for fallback
-                            all_results[symbol] = {
-                                **data,
-                                'total_score': 50,  # Default score
-                                'assessment': 'Basic Analysis'
-                            }
+                            if data:
+                                all_results[symbol] = {
+                                    **data,
+                                    'total_score': 50,
+                                    'assessment': 'Basic Analysis'
+                                }
+                                st.write(f"✅ {symbol}: データフェッチャーで成功")
+                            else:
+                                all_results[symbol] = None
+                                st.write(f"❌ {symbol}: データなし")
                         else:
                             all_results[symbol] = None
-                    else:
-                        all_results[symbol] = None
+                            st.write(f"❌ {symbol}: データフェッチャーなし")
                     
                     progress = 5 + (85 * (idx + 1) // total_symbols)
                     progress_bar.progress(progress)
