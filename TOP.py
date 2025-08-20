@@ -1263,7 +1263,7 @@ def display_results(view_mode, market):
             delta=None
         )
     
-    # Investment recommendations overview - adjust for user mode
+    # Simple recommendation summary
     if st.session_state.user_mode == 'beginner':
         recommendation_counts = {
             "🟢 おすすめ" if st.session_state.language == 'ja' else "🟢 Recommended": len(df[df['Score'] >= 80]),
@@ -1278,27 +1278,12 @@ def display_results(view_mode, market):
             "❌ 非推奨" if st.session_state.language == 'ja' else "❌ Not Recommended": len(df[df['Score'] < 40])
         }
     
-    # Create horizontal bar chart for recommendation levels
-    rec_data = []
-    for level, count in recommendation_counts.items():
-        rec_data.append({'Level': level, 'Count': count})
-    rec_df = pd.DataFrame(rec_data)
-    
-    fig = px.bar(
-        rec_df,
-        x='Count',
-        y='Level',
-        orientation='h',
-        color='Count',
-        color_continuous_scale=['#ff4444', '#ff8800', '#ffaa00', '#00aa00'],
-        title="投資推奨レベル別分析" if st.session_state.language == 'ja' else "Investment Recommendation Analysis"
-    )
-    fig.update_layout(
-        showlegend=False,
-        yaxis={'categoryorder': 'array', 'categoryarray': list(recommendation_counts.keys())[::-1]}
-    )
-    
-    st.plotly_chart(fig, use_container_width=True)
+    # Display as simple text summary instead of large chart
+    st.markdown("**推奨レベル別銘柄数:**" if st.session_state.language == 'ja' else "**Stock Count by Recommendation Level:**")
+    rec_cols = st.columns(len(recommendation_counts))
+    for i, (level, count) in enumerate(recommendation_counts.items()):
+        with rec_cols[i]:
+            st.metric(level, count, label_visibility="visible")
     
     # Featured Recommendations Section
     st.subheader("🌟 " + ("推奨銘柄ピックアップ" if st.session_state.language == 'ja' else "Featured Recommendations"))
