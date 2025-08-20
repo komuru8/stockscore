@@ -4,11 +4,13 @@ import plotly.express as px
 import plotly.graph_objects as go
 from datetime import datetime, timedelta
 import time
+from stock_analyzer import StockAnalyzer
+
 try:
     from enhanced_stock_analyzer import EnhancedStockAnalyzer
     ENHANCED_ANALYZER_AVAILABLE = True
-except ImportError:
-    from stock_analyzer import StockAnalyzer
+except ImportError as e:
+    print(f"Enhanced analyzer import failed: {e}")
     ENHANCED_ANALYZER_AVAILABLE = False
 from data_fetcher import DataFetcher
 import os
@@ -21,12 +23,20 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Initialize session state
+# Initialize session state with proper error handling
 if 'analyzer' not in st.session_state:
-    if ENHANCED_ANALYZER_AVAILABLE:
-        st.session_state.analyzer = EnhancedStockAnalyzer()
-        st.session_state.using_enhanced = True
-    else:
+    try:
+        if ENHANCED_ANALYZER_AVAILABLE:
+            st.session_state.analyzer = EnhancedStockAnalyzer()
+            st.session_state.using_enhanced = True
+            print("✅ Enhanced analyzer initialized")
+        else:
+            st.session_state.analyzer = StockAnalyzer()
+            st.session_state.using_enhanced = False
+            print("✅ Basic analyzer initialized")
+    except Exception as init_error:
+        print(f"Analyzer initialization error: {init_error}")
+        # Fallback to basic analyzer
         st.session_state.analyzer = StockAnalyzer()
         st.session_state.using_enhanced = False
 if 'last_update' not in st.session_state:
@@ -877,9 +887,18 @@ def main():
         # Disable auto-update to prevent server overload issues
         # Auto-update disabled due to server stability concerns
         
-        # Display results
+        # Display results with debugging
+        st.write(f"🔧 Session stock_data keys: {list(st.session_state.stock_data.keys()) if st.session_state.stock_data else 'Empty'}")
+        
         if st.session_state.stock_data:
-            display_results(view_mode, market)
+            valid_data = {k: v for k, v in st.session_state.stock_data.items() if v is not None}
+            st.write(f"🔧 Valid data count: {len(valid_data)}")
+            
+            if valid_data:
+                display_results(view_mode, market)
+            else:
+                st.warning("データは取得されましたが、有効な結果がありません。/ Data was fetched but no valid results found.")
+                st.json(st.session_state.stock_data)
         else:
             st.info("データを取得するには「データ更新」ボタンをクリックしてください。\nClick 'Update Data' button to fetch stock data.")
     else:
@@ -940,33 +959,60 @@ def update_stock_data(symbols, per_threshold, pbr_threshold, roe_threshold, divi
         new_requests = total_symbols - cached_count
         st.info(f"📊 処理予定: キャッシュ利用 {cached_count} + 新規取得 {new_requests} = 計{total_symbols}銘柄 / Processing: {cached_count} cached + {new_requests} new = {total_symbols} total")
         
-        # Optimized batch processing with enhanced failover
+        # Reliable batch processing with comprehensive error handling
         try:
-            status_text.text("Enhanced Analyzer でバッチ処理開始... / Starting Enhanced batch processing...")
+            analyzer_type = "Enhanced" if st.session_state.using_enhanced else "Basic"
+            status_text.text(f"{analyzer_type} Analyzer でバッチ処理開始... / Starting {analyzer_type} batch processing...")
             
-            # Use the enhanced analyzer's batch processing
+            # Add debug info about the analyzer
+            st.write(f"🔧 使用中アナライザー: {analyzer_type}")
+            st.write(f"🔧 処理対象銘柄: {symbols}")
+            
+            # Use the analyzer's batch processing
             all_results = st.session_state.analyzer.analyze_stocks(symbols)
+            
+            # Log the raw results for debugging
+            st.write(f"🔧 Raw results type: {type(all_results)}")
+            st.write(f"🔧 Raw results keys: {list(all_results.keys()) if isinstance(all_results, dict) else 'Not a dict'}")
             
             # Update progress incrementally
             for idx in range(total_symbols):
                 progress = 5 + (85 * (idx + 1) // total_symbols)
                 progress_bar.progress(progress)
-                if idx < total_symbols - 1:
-                    status_text.text(f"処理中 {idx + 1}/{total_symbols} / Processing {idx + 1}/{total_symbols}")
-                    time.sleep(0.5)  # Shorter delay for UI feedback
+                status_text.text(f"処理中 {idx + 1}/{total_symbols} / Processing {idx + 1}/{total_symbols}")
+                time.sleep(0.2)  # Quick UI feedback
             
         except Exception as batch_error:
             st.error(f"❌ バッチ処理エラー / Batch processing error: {str(batch_error)}")
-            # Fallback to individual processing if batch fails
-            st.info("個別処理にフォールバック / Falling back to individual processing")
+            st.write(f"Error details: {type(batch_error).__name__}: {str(batch_error)}")
+            
+            # Fallback to individual processing
+            st.info("🔄 個別処理にフォールバック / Falling back to individual processing")
+            all_results = {}
             
             for idx, symbol in enumerate(symbols):
-                status_text.text(f"個別処理 {idx + 1}/{total_symbols}: {symbol} / Individual processing {idx + 1}/{total_symbols}: {symbol}")
+                status_text.text(f"個別処理 {idx + 1}/{total_symbols}: {symbol}")
                 
                 try:
-                    single_result = st.session_state.analyzer.analyze_stocks([symbol])
-                    if single_result and symbol in single_result:
-                        all_results.update(single_result)
+                    # Try direct data fetcher if available
+                    if hasattr(st.session_state.analyzer, 'data_fetcher'):
+                        # Use appropriate method based on analyzer type
+                        if hasattr(st.session_state.analyzer.data_fetcher, 'get_stock_data'):
+                            data = st.session_state.analyzer.data_fetcher.get_stock_data(symbol)
+                        elif hasattr(st.session_state.analyzer.data_fetcher, 'get_stock_info'):
+                            data = st.session_state.analyzer.data_fetcher.get_stock_info(symbol)
+                        else:
+                            data = None
+                            
+                        if data:
+                            # Simple scoring for fallback
+                            all_results[symbol] = {
+                                **data,
+                                'total_score': 50,  # Default score
+                                'assessment': 'Basic Analysis'
+                            }
+                        else:
+                            all_results[symbol] = None
                     else:
                         all_results[symbol] = None
                     
@@ -974,7 +1020,7 @@ def update_stock_data(symbols, per_threshold, pbr_threshold, roe_threshold, divi
                     progress_bar.progress(progress)
                     
                 except Exception as stock_error:
-                    st.error(f"❌ {symbol} エラー / Error: {str(stock_error)}")
+                    st.error(f"❌ {symbol} 個別処理エラー: {str(stock_error)}")
                     all_results[symbol] = None
         
         progress_bar.progress(90)
@@ -998,7 +1044,18 @@ def update_stock_data(symbols, per_threshold, pbr_threshold, roe_threshold, divi
                 test_symbol = symbols[0]
                 st.write(f"🔍 {test_symbol} 単体テスト開始...")
                 try:
-                    test_data = st.session_state.analyzer.data_fetcher.get_stock_info(test_symbol)
+                    # Check if data_fetcher exists and what method to use
+                    if hasattr(st.session_state.analyzer, 'data_fetcher'):
+                        if hasattr(st.session_state.analyzer.data_fetcher, 'get_stock_data'):
+                            test_data = st.session_state.analyzer.data_fetcher.get_stock_data(test_symbol)
+                        elif hasattr(st.session_state.analyzer.data_fetcher, 'get_stock_info'):
+                            test_data = st.session_state.analyzer.data_fetcher.get_stock_info(test_symbol)
+                        else:
+                            st.error("No suitable data fetching method found")
+                            test_data = None
+                    else:
+                        st.error("No data_fetcher found in analyzer")
+                        test_data = None
                     if test_data:
                         st.success(f"✅ {test_symbol} データ取得成功: {test_data.get('company_name', 'Unknown')}")
                         st.json(test_data)
