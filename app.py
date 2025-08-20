@@ -974,11 +974,18 @@ def update_stock_data(symbols, per_threshold, pbr_threshold, roe_threshold, divi
         # Show processing plan
         st.info(f"📊 処理開始: {total_symbols}銘柄をBasic Analyzerで分析 / Starting: {total_symbols} stocks with Basic Analyzer")
         
-        # Force using basic analyzer for reliability - Enhanced has integration issues
-        st.session_state.using_enhanced = False
+        # Use Enhanced analyzer if properly initialized, fallback to Basic
         if not hasattr(st.session_state.analyzer, 'analyze_stocks'):
-            st.error("Analyzer missing analyze_stocks method - reinitializing")
-            st.session_state.analyzer = StockAnalyzer()
+            st.error("Analyzer missing analyze_stocks method - reinitializing with Enhanced")
+            try:
+                from enhanced_stock_analyzer import EnhancedStockAnalyzer
+                st.session_state.analyzer = EnhancedStockAnalyzer()
+                st.session_state.using_enhanced = True
+                st.success("✅ Enhanced Analyzer再初期化成功")
+            except Exception as e:
+                st.warning(f"Enhanced Analyzer initialization failed: {e}")
+                st.session_state.analyzer = StockAnalyzer()
+                st.session_state.using_enhanced = False
         
         try:
             status_text.text("Basic Analyzer でバッチ処理開始... / Starting Basic batch processing...")
