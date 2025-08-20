@@ -831,9 +831,20 @@ def main():
     # Add main menu items to sidebar (moved below user mode)
     st.sidebar.markdown("### " + ("メニュー" if st.session_state.language == 'ja' else "Menu"))
     
-    # TOP page link
-    if st.sidebar.button("🏠 TOP", use_container_width=True):
-        st.rerun()
+    # TOP page link (current page - styled as active/disabled)
+    st.sidebar.markdown(f"""
+    <div style="
+        background-color: #e8f5e8; 
+        padding: 8px 12px; 
+        border-radius: 6px; 
+        border-left: 4px solid #4caf50;
+        margin: 2px 0;
+        color: #2e7d32;
+        font-weight: 500;
+    ">
+        🏠 TOP
+    </div>
+    """, unsafe_allow_html=True)
     
     # Terms link
     if st.sidebar.button("📋 " + get_text('terms'), use_container_width=True):

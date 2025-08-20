@@ -91,8 +91,20 @@ def main():
     if st.sidebar.button("🏠 TOP", use_container_width=True):
         st.switch_page("TOP.py")
     
-    # Terms link (current page - shows as active)
-    st.sidebar.markdown("📋 " + get_text('terms') + " *(現在のページ / Current Page)*")
+    # Terms link (current page - styled as active/disabled)
+    st.sidebar.markdown(f"""
+    <div style="
+        background-color: #e3f2fd; 
+        padding: 8px 12px; 
+        border-radius: 6px; 
+        border-left: 4px solid #2196f3;
+        margin: 2px 0;
+        color: #1976d2;
+        font-weight: 500;
+    ">
+        📋 {get_text('terms')}
+    </div>
+    """, unsafe_allow_html=True)
     
     # API Status placeholder
     if st.sidebar.button("🔧 " + ("APIステータス" if st.session_state.language == 'ja' else "API Status"), 
