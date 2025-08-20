@@ -9,6 +9,9 @@ maxUploadSize = 200
 [browser]
 gatherUsageStats = false
 
+[client]
+showSidebarNavigation = false
+
 [theme]
 primaryColor = "#FF6B6B"
 backgroundColor = "#FFFFFF"
