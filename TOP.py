@@ -706,6 +706,14 @@ def main():
     st.markdown("---")
     st.subheader("📍 " + ("株式検索方法を選択" if st.session_state.language == 'ja' else "Choose Stock Discovery Method"))
     
+    # Mobile-friendly sidebar toggle button (moved above market selection)
+    if st.button("📱 モード選択・設定" if st.session_state.language == 'ja' else "📱 Mode & Settings", 
+                help="サイドバーを開閉 / Toggle sidebar", use_container_width=False):
+        # Toggle sidebar state by creating a visual cue for mobile users
+        pass
+    
+    st.markdown("")  # Add spacing
+    
     # Market selection integrated into discovery section
     col1, col2, col3 = st.columns([2, 2, 2])
     with col1:
@@ -798,12 +806,7 @@ def main():
             help="ランダムに選択された銘柄を表示" if st.session_state.language == 'ja' else "Show randomly selected stocks"
         )
     
-    # Mobile-friendly sidebar toggle button (moved below search method selection)
-    st.markdown("")  # Add spacing
-    if st.button("📱 モード選択・設定" if st.session_state.language == 'ja' else "📱 Mode & Settings", 
-                help="サイドバーを開閉 / Toggle sidebar", use_container_width=False):
-        # Toggle sidebar state by creating a visual cue for mobile users
-        pass
+
     
     # Handle action button clicks with auto-execution
     selected_method = handle_action_buttons(popularity_button, dividend_button, theme_button, random_button, market, stock_count)
