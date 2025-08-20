@@ -569,15 +569,8 @@ def get_theme_options(market):
         }
 
 def main():
-    # Clean header with language switcher in top-right corner
-    col1, col2 = st.columns([8, 1])
-    
-    with col2:
-        # Simple language toggle button in top-right
-        current_lang = "🌐 EN" if st.session_state.language == 'ja' else "🌐 JP"
-        if st.button(current_lang, key="lang_toggle", help="Switch Language / 言語切り替え"):
-            st.session_state.language = 'en' if st.session_state.language == 'ja' else 'ja'
-            st.rerun()
+    # Clean header without language switcher (moved to sidebar)
+    st.markdown("")  # Add spacing
     
     # Display StockScore logo image with reduced size and spacing
     st.image("attached_assets/ChatGPT Image Aug 20, 2025, 11_00_06 PM_1755699205709.png", width=250)
@@ -851,6 +844,15 @@ def main():
         st.session_state.stock_data = {}
         st.session_state.last_update = None
         st.sidebar.success("キャッシュをクリアしました / Cache cleared")
+    
+    st.sidebar.markdown("---")
+    
+    # Language switcher at bottom of sidebar
+    current_lang = "🌐 English" if st.session_state.language == 'ja' else "🌐 日本語"
+    if st.sidebar.button(current_lang, key="lang_toggle", help="Switch Language / 言語切り替え", 
+                        use_container_width=True):
+        st.session_state.language = 'en' if st.session_state.language == 'ja' else 'ja'
+        st.rerun()
     
     # Manual update button for additional control (optional)
     if symbols and not selected_method:  # Only show manual button if no auto-execution happened
