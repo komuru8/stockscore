@@ -94,68 +94,125 @@ class RelativeScoringEngine:
             return self._get_error_result()
     
     def _calculate_metric_score(self, stock_data: Dict, metric: str, max_points: int) -> float:
-        """Calculate score for individual metric using relative comparison"""
+        """Calculate score for individual metric using linear interpolation"""
         try:
             value = stock_data.get(metric)
             
-            # Handle missing data - return "normal" score (5 points for 10-point max, 25 for 50-point max)
+            # Handle missing data - return neutral score (5 points for 10-point max, 25 for 50-point max)
             if value is None or not isinstance(value, (int, float)):
-                return max_points * 0.5  # Normal score (50% of max)
-            
-            baseline = self.baselines.get(metric)
-            direction = self.metric_directions.get(metric, 'higher_better')
-            
-            if baseline is None:
-                return max_points * 0.5  # Fallback to normal
+                return max_points * 0.5  # Neutral score (50% of max)
             
             # Convert percentage values if needed (for decimal values < 1)
             if metric in ['roe', 'roa', 'dividend_yield', 'operating_margin', 'revenue_growth', 'eps_growth', 'equity_ratio', 'payout_ratio']:
                 if value < 1:  # Convert decimal to percentage
                     value = value * 100
             
-            # Calculate score based on metric direction
-            if direction == 'lower_better':
-                # PER, PBR - lower values are better
-                relative_performance = (baseline - value) / baseline
-            elif direction == 'higher_better':
-                # ROE, ROA, etc. - higher values are better
-                relative_performance = (value - baseline) / baseline
-            elif direction == 'optimal_range':
-                # Payout ratio - optimal range 30-50%
+            # Calculate score based on specific metric rules
+            if metric == 'pe_ratio':
+                return self._calculate_per_score(value, max_points)
+            elif metric == 'pb_ratio':
+                return self._calculate_pbr_score(value, max_points)
+            elif metric == 'dividend_yield':
+                return self._calculate_dividend_yield_score(value, max_points)
+            elif metric in ['revenue_growth', 'eps_growth']:
+                return self._calculate_growth_score(value, max_points)
+            elif metric in ['roe', 'roa', 'operating_margin', 'equity_ratio']:
+                return self._calculate_ratio_score(value, max_points, metric)
+            elif metric == 'payout_ratio':
                 return self._calculate_payout_ratio_score(value, max_points)
             else:
-                # Default to higher_better
-                relative_performance = (value - baseline) / baseline
-            
-            # Apply 5-tier scoring system based on relative performance
-            if relative_performance >= 0.20:      # +20% or better
-                return max_points * 1.0          # 非常に良い: 10点 (100%) or 50点
-            elif relative_performance >= 0.10:    # +10% to +20%
-                return max_points * 0.8          # 良い: 8点 (80%) or 40点
-            elif relative_performance >= -0.10:   # ±10%
-                return max_points * 0.5          # 普通: 5点 (50%) or 25点
-            elif relative_performance >= -0.20:   # -10% to -20%
-                return max_points * 0.2          # 悪い: 2点 (20%) or 10点
-            else:                                 # -20% or worse
-                return max_points * 0.0          # 非常に悪い: 0点 or 0点
+                # Fallback to baseline comparison
+                baseline = self.baselines.get(metric, 0)
+                if value >= baseline:
+                    return max_points
+                else:
+                    return max_points * (value / baseline) if baseline > 0 else max_points * 0.5
                 
         except Exception as e:
             self.logger.error(f"Error calculating score for {metric}: {e}")
-            return max_points * 0.5  # Return normal score on error
+            return max_points * 0.5  # Return neutral score on error
+    
+    def _calculate_per_score(self, value: float, max_points: int) -> float:
+        """Calculate PER score with linear interpolation"""
+        baseline = 15.0  # PER baseline
+        if value <= baseline:
+            return max_points  # Full points for PER <= baseline
+        elif value >= baseline * 2:  # PER >= 30
+            return 0  # Zero points for PER >= 2x baseline
+        else:
+            # Linear interpolation between baseline and 2x baseline
+            ratio = (baseline * 2 - value) / baseline
+            return max_points * ratio
+    
+    def _calculate_pbr_score(self, value: float, max_points: int) -> float:
+        """Calculate PBR score with linear interpolation"""
+        if value <= 1.0:
+            return max_points  # Full points for PBR <= 1.0
+        elif value >= 3.0:  # Upper limit
+            return 0  # Zero points for PBR >= 3.0
+        else:
+            # Linear interpolation between 1.0 and 3.0
+            ratio = (3.0 - value) / 2.0
+            return max_points * ratio
+    
+    def _calculate_dividend_yield_score(self, value: float, max_points: int) -> float:
+        """Calculate dividend yield score"""
+        baseline = 2.0  # 2% baseline
+        upper_limit = 5.0  # 5% upper limit
+        if value < baseline:
+            return 0  # Zero points below baseline
+        elif value >= upper_limit:
+            return max_points  # Full points at 5% or above
+        else:
+            # Linear interpolation between baseline and upper limit
+            ratio = (value - baseline) / (upper_limit - baseline)
+            return max_points * ratio
+    
+    def _calculate_growth_score(self, value: float, max_points: int) -> float:
+        """Calculate growth score (EPS/Revenue growth)"""
+        baseline = 5.0  # 5% baseline growth
+        if value < 0:  # Negative growth
+            return 0
+        elif value == 0:  # No growth
+            return max_points * 0.5  # 50% of max points
+        elif value >= baseline:
+            return max_points  # Full points for baseline growth or better
+        else:
+            # Linear interpolation between 0% and baseline
+            ratio = value / baseline
+            return max_points * (0.5 + 0.5 * ratio)  # Scale from 50% to 100%
+    
+    def _calculate_ratio_score(self, value: float, max_points: int, metric: str) -> float:
+        """Calculate score for ratio metrics (ROE, ROA, Operating Margin, Equity Ratio)"""
+        baseline = self.baselines.get(metric, 10.0)
+        if value >= baseline:
+            return max_points  # Full points for meeting baseline
+        elif value <= 0:
+            return 0  # Zero points for non-positive values
+        else:
+            # Linear interpolation from 0 to baseline
+            ratio = value / baseline
+            return max_points * ratio
     
     def _calculate_payout_ratio_score(self, value: float, max_points: int) -> float:
         """Calculate payout ratio score with optimal range logic"""
         # Optimal range: 30-50%
         if 30 <= value <= 50:
-            return max_points * 1.0  # 非常に良い: 100%
-        elif 25 <= value < 30 or 50 < value <= 60:
-            return max_points * 0.8  # 良い: 80%
-        elif 20 <= value < 25 or 60 < value <= 70:
-            return max_points * 0.5  # 普通: 50%
-        elif 15 <= value < 20 or 70 < value <= 80:
-            return max_points * 0.2  # 悪い: 20%
-        else:  # < 15% or > 80%
-            return max_points * 0.0  # 非常に悪い: 0%
+            return max_points  # Full points for optimal range
+        elif value < 30:
+            # Linear scale from 0 to 30%
+            if value <= 0:
+                return max_points * 0.5  # Neutral for no dividends
+            else:
+                ratio = value / 30.0
+                return max_points * (0.5 + 0.5 * ratio)  # Scale from 50% to 100%
+        else:  # value > 50
+            # Linear decline from 50% to 100%
+            if value >= 100:
+                return 0  # Unsustainable
+            else:
+                ratio = (100 - value) / 50.0
+                return max_points * ratio
     
     def _generate_assessment(self, score: float) -> str:
         """Generate human-readable assessment"""
@@ -184,30 +241,30 @@ class RelativeScoringEngine:
             return "❌ 非推奨"
     
     def _get_rank(self, score: float) -> str:
-        """Get rank based on score"""
+        """Get rank based on score (updated boundaries)"""
         if score >= 90:
-            return "S"
-        elif score >= 80:
-            return "A"
+            return "S"  # 90-100点（非常に優秀）
+        elif score >= 75:
+            return "A"  # 75-89点（優秀）
         elif score >= 60:
-            return "B"
+            return "B"  # 60-74点（平均以上）
         elif score >= 40:
-            return "C"
+            return "C"  # 40-59点（平均以下）
         else:
-            return "D"
+            return "D"  # 0-39点（推奨度低い）
     
     def _get_color_scale(self, score: float) -> str:
         """Get color code for visualization (green to red scale)"""
         if score >= 90:
-            return "#2E7D32"  # Dark Green - S rank
-        elif score >= 80:
-            return "#4CAF50"  # Green - A rank
+            return "#1B5E20"  # 濃い緑 - S rank
+        elif score >= 75:
+            return "#4CAF50"  # 緑 - A rank
         elif score >= 60:
-            return "#8BC34A"  # Light Green - B rank  
+            return "#FFEB3B"  # 黄色 - B rank  
         elif score >= 40:
-            return "#FF9800"  # Orange - C rank
+            return "#FF9800"  # オレンジ - C rank
         else:
-            return "#F44336"  # Red - D rank
+            return "#F44336"  # 赤 - D rank
     
     def _get_error_result(self) -> Dict:
         """Return error result"""
