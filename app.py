@@ -1161,7 +1161,7 @@ def display_results(view_mode, market):
                     'Rank': rank,
                     'Recommendation': info.get('recommendation', 'N/A'),
                     'PER': info.get('pe_ratio', 'N/A'),
-                    'Dividend Yield': info.get('dividend_yield', 'N/A'),
+                    'Dividend Yield': format_percentage(info.get('dividend_yield', 'N/A')),
                     'Current Price': info.get('current_price', 'N/A')
                 })
             else:
@@ -1175,14 +1175,14 @@ def display_results(view_mode, market):
                     'Current Price': info.get('current_price', 'N/A'),
                     'PER': info.get('pe_ratio', 'N/A'),
                     'PBR': info.get('pb_ratio', 'N/A'),
-                    'ROE': info.get('roe', 'N/A'),
-                    'ROA': info.get('roa', 'N/A'),
-                    'Dividend Yield': info.get('dividend_yield', 'N/A'),
-                    'Revenue Growth': info.get('revenue_growth', 'N/A'),
-                    'EPS Growth': info.get('eps_growth', 'N/A'),
-                    'Operating Margin': info.get('operating_margin', 'N/A'),
-                    'Equity Ratio': info.get('equity_ratio', 'N/A'),
-                    'Payout Ratio': info.get('payout_ratio', 'N/A')
+                    'ROE': format_percentage(info.get('roe', 'N/A')),
+                    'ROA': format_percentage(info.get('roa', 'N/A')),
+                    'Dividend Yield': format_percentage(info.get('dividend_yield', 'N/A')),
+                    'Revenue Growth': format_percentage(info.get('revenue_growth', 'N/A')),
+                    'EPS Growth': format_percentage(info.get('eps_growth', 'N/A')),
+                    'Operating Margin': format_percentage(info.get('operating_margin', 'N/A')),
+                    'Equity Ratio': format_percentage(info.get('equity_ratio', 'N/A')),
+                    'Payout Ratio': format_percentage(info.get('payout_ratio', 'N/A'))
                 })
     
     if not df_data:
@@ -1406,7 +1406,10 @@ def display_simple_view(df):
         if col in table_df.columns:
             table_df[col] = pd.to_numeric(table_df[col], errors='coerce')
             if col in ['ROE', 'ROA', 'Dividend Yield', 'Revenue Growth', 'EPS Growth', 'Operating Margin', 'Equity Ratio', 'Payout Ratio']:
-                table_df[col] = table_df[col].apply(lambda x: f"{x:.1f}%" if pd.notna(x) else "N/A")
+                # Apply proper percentage formatting that handles both decimal and percentage values
+                table_df[col] = table_df[col].apply(
+                    lambda x: f"{x * 100:.1f}%" if pd.notna(x) and x <= 1.0 else f"{x:.1f}%" if pd.notna(x) else "N/A"
+                )
             else:
                 table_df[col] = table_df[col].apply(lambda x: f"{x:.2f}" if pd.notna(x) else "N/A")
     
@@ -1550,7 +1553,10 @@ def display_intermediate_view(df):
         if col in table_df.columns:
             table_df[col] = pd.to_numeric(table_df[col], errors='coerce')
             if col in ['ROE', 'ROA', 'Dividend Yield', 'Revenue Growth', 'EPS Growth', 'Operating Margin', 'Equity Ratio', 'Payout Ratio']:
-                table_df[col] = table_df[col].apply(lambda x: f"{x:.1f}%" if pd.notna(x) else "N/A")
+                # Apply proper percentage formatting that handles both decimal and percentage values
+                table_df[col] = table_df[col].apply(
+                    lambda x: f"{x * 100:.1f}%" if pd.notna(x) and x <= 1.0 else f"{x:.1f}%" if pd.notna(x) else "N/A"
+                )
             else:
                 table_df[col] = table_df[col].apply(lambda x: f"{x:.2f}" if pd.notna(x) else "N/A")
     
