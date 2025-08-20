@@ -574,7 +574,7 @@ def main():
         st.session_state.show_hamburger_menu = False
     
     # Header with language selector and hamburger menu
-    col1, col2, col3 = st.columns([6, 2, 1])
+    col1, col2, col3 = st.columns([5, 2, 2])
     with col2:
         # Language dropdown
         language_options = {
@@ -593,7 +593,7 @@ def main():
             st.rerun()
     
     with col3:
-        # Simple dropdown menu like language selector
+        # Simple dropdown menu like language selector with wider column
         menu_options = {
             "🔧 APIステータス" if st.session_state.language == 'ja' else "🔧 API Status": "api_status",
             "📋 " + get_text('terms'): "terms",
