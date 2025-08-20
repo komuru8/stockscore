@@ -67,6 +67,9 @@ class EnhancedScoringEngine:
                 for component, score in valid_components.items()
             ) / total_weight * 100
             
+            # Ensure score is between 0-100
+            weighted_score = max(0, min(100, weighted_score))
+            
             # Generate overall assessment
             assessment = self._generate_assessment(weighted_score, component_scores)
             
@@ -116,7 +119,7 @@ class EnhancedScoringEngine:
         scores = []
         
         # ROE scoring
-        if roe is not None:
+        if roe is not None and isinstance(roe, (int, float)):
             roe_percent = roe * 100 if roe < 1 else roe
             if roe_percent >= self.thresholds['roe']['excellent']:
                 scores.append(100)
@@ -128,7 +131,7 @@ class EnhancedScoringEngine:
                 scores.append(30)
         
         # ROA scoring
-        if roa is not None:
+        if roa is not None and isinstance(roa, (int, float)):
             roa_percent = roa * 100 if roa < 1 else roa
             if roa_percent >= self.thresholds['roa']['excellent']:
                 scores.append(100)
@@ -140,7 +143,7 @@ class EnhancedScoringEngine:
                 scores.append(30)
         
         # Profit margins scoring
-        if profit_margins is not None:
+        if profit_margins is not None and isinstance(profit_margins, (int, float)):
             margins_percent = profit_margins * 100 if profit_margins < 1 else profit_margins
             if margins_percent >= self.thresholds['profit_margins']['excellent']:
                 scores.append(100)
@@ -161,7 +164,7 @@ class EnhancedScoringEngine:
         scores = []
         
         # Debt-to-equity scoring (lower is better)
-        if debt_to_equity is not None:
+        if debt_to_equity is not None and isinstance(debt_to_equity, (int, float)):
             if debt_to_equity <= self.thresholds['debt_to_equity']['excellent']:
                 scores.append(100)
             elif debt_to_equity <= self.thresholds['debt_to_equity']['good']:
@@ -172,7 +175,7 @@ class EnhancedScoringEngine:
                 scores.append(30)
         
         # Current ratio scoring
-        if current_ratio is not None:
+        if current_ratio is not None and isinstance(current_ratio, (int, float)):
             if current_ratio >= self.thresholds['current_ratio']['excellent']:
                 scores.append(100)
             elif current_ratio >= self.thresholds['current_ratio']['good']:
@@ -192,7 +195,7 @@ class EnhancedScoringEngine:
         scores = []
         
         # Earnings growth scoring
-        if earnings_growth is not None:
+        if earnings_growth is not None and isinstance(earnings_growth, (int, float)):
             growth_percent = earnings_growth * 100 if earnings_growth < 1 else earnings_growth
             if growth_percent >= self.thresholds['earnings_growth']['excellent']:
                 scores.append(100)
@@ -204,7 +207,7 @@ class EnhancedScoringEngine:
                 scores.append(30)
         
         # Revenue growth scoring
-        if revenue_growth is not None:
+        if revenue_growth is not None and isinstance(revenue_growth, (int, float)):
             growth_percent = revenue_growth * 100 if revenue_growth < 1 else revenue_growth
             if growth_percent >= self.thresholds['revenue_growth']['excellent']:
                 scores.append(100)
@@ -235,7 +238,7 @@ class EnhancedScoringEngine:
             yield_score = 0
         
         # Adjust for payout ratio sustainability
-        if payout_ratio is not None:
+        if payout_ratio is not None and isinstance(payout_ratio, (int, float)):
             payout_percent = payout_ratio * 100 if payout_ratio < 1 else payout_ratio
             if payout_percent > 100:  # Unsustainable
                 yield_score *= 0.5

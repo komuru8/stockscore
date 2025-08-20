@@ -902,36 +902,16 @@ def main():
         # Disable auto-update to prevent server overload issues
         # Auto-update disabled due to server stability concerns
         
-        # Force immediate test of analyzer functionality  
-        st.write("🧪 即座テスト: Analyzerが動作するかテスト")
+        # Clean interface without test buttons
         
-        if st.button("🧪 単体テスト", key="single_test"):
-            st.write("単体テスト開始...")
-            try:
-                test_result = st.session_state.analyzer.analyze_stocks(['AAPL'])
-                st.write(f"テスト結果: {test_result}")
-                if 'AAPL' in test_result and test_result['AAPL']:
-                    st.success("✅ Analyzerは正常に動作しています")
-                    st.json(test_result['AAPL'])
-                else:
-                    st.error("❌ Analyzerの結果が空です")
-            except Exception as test_e:
-                st.error(f"❌ テストエラー: {test_e}")
-                import traceback
-                st.text(traceback.format_exc())
-        
-        # Display results with debugging
-        st.write(f"🔧 Session stock_data keys: {list(st.session_state.stock_data.keys()) if st.session_state.stock_data else 'Empty'}")
-        
+        # Display results cleanly
         if st.session_state.stock_data:
             valid_data = {k: v for k, v in st.session_state.stock_data.items() if v is not None}
-            st.write(f"🔧 Valid data count: {len(valid_data)}")
             
             if valid_data:
                 display_results(view_mode, market)
             else:
-                st.warning("データは取得されましたが、有効な結果がありません。/ Data was fetched but no valid results found.")
-                st.json(st.session_state.stock_data)
+                st.warning("有効なデータが取得できませんでした。別の銘柄をお試しください。/ No valid data found. Please try different stocks.")
         else:
             st.info("データを取得するには「データ更新」ボタンをクリックしてください。\nClick 'Update Data' button to fetch stock data.")
     else:
@@ -949,12 +929,8 @@ def update_stock_data(symbols, per_threshold, pbr_threshold, roe_threshold, divi
         progress_bar = st.progress(0)
         status_text = st.empty()
         
-        # Debug info - IMMEDIATE DISPLAY
-        st.write("🔧 update_stock_data関数が呼ばれました！")
-        st.write(f"🔧 処理対象: {symbols}")
-        st.write(f"🔧 Analyzer: {type(st.session_state.analyzer).__name__}")
-        
-        st.info(f"🔧 デバッグ: {len(symbols)} 銘柄の処理を開始 / Debug: Starting to process {len(symbols)} symbols")
+        # Clean UI - removed debug output
+        st.info(f"📊 {len(symbols)} 銘柄の分析を開始 / Starting analysis of {len(symbols)} stocks")
         status_text.text(f"処理開始: {', '.join(symbols[:5])}" + ("..." if len(symbols) > 5 else ""))
         
         # Update scoring criteria with method compatibility
@@ -1012,33 +988,11 @@ def update_stock_data(symbols, per_threshold, pbr_threshold, roe_threshold, divi
             analyzer_type = "Enhanced" if st.session_state.using_enhanced else "Basic"
             status_text.text(f"{analyzer_type} Analyzer でバッチ処理開始... / Starting {analyzer_type} batch processing...")
             
-            analyzer_type = "Enhanced" if st.session_state.using_enhanced else "Basic"
-            st.write(f"🔧 使用中アナライザー: {analyzer_type} StockAnalyzer")
-            st.write(f"🔧 処理対象銘柄: {symbols}")
-            st.write(f"🔧 Analyzer methods: {[m for m in dir(st.session_state.analyzer) if not m.startswith('_')]}")
-            
             # Use the analyzer's batch processing with error catching
-            status_text.text("analyze_stocks呼び出し中... / Calling analyze_stocks...")
-            
-            # FORCE IMMEDIATE FEEDBACK
-            st.write("⚡ analyze_stocks関数を今すぐ呼び出します")
+            status_text.text("データ分析中... / Analyzing data...")
             all_results = st.session_state.analyzer.analyze_stocks(symbols)
-            st.write("⚡ analyze_stocks関数が完了しました")
             
-            # Log the raw results for debugging
-            st.write(f"🔧 Raw results type: {type(all_results)}")
-            st.write(f"🔧 Raw results keys: {list(all_results.keys()) if isinstance(all_results, dict) else 'Not a dict'}")
-            
-            # Check each result
-            for symbol in symbols:
-                if symbol in all_results:
-                    result = all_results[symbol]
-                    if result:
-                        st.write(f"✅ {symbol}: Score {result.get('total_score', 'N/A')}")
-                    else:
-                        st.write(f"❌ {symbol}: No data")
-                else:
-                    st.write(f"❌ {symbol}: Missing from results")
+            # Simple progress feedback without debug details
             
             # Update progress incrementally
             for idx in range(total_symbols):
@@ -1103,43 +1057,11 @@ def update_stock_data(symbols, per_threshold, pbr_threshold, roe_threshold, divi
         valid_results = [r for r in all_results.values() if r and 'total_score' in r]
         status_text.text(f"分析完了: {len(valid_results)}/{total_symbols} 銘柄 / Analysis complete: {len(valid_results)}/{total_symbols} stocks")
         
-        # Debug: Show what we got
-        st.info(f"🔧 デバッグ: 取得データ {len(all_results)} 件, 有効データ {len(valid_results)} 件")
+        # Clean status display
         if len(valid_results) == 0:
-            st.error("⚠️ 有効なデータが取得できませんでした。")
-            
-            # Test single stock to debug
-            if symbols:
-                test_symbol = symbols[0]
-                st.write(f"🔍 {test_symbol} 単体テスト開始...")
-                try:
-                    # Check if data_fetcher exists and what method to use
-                    if hasattr(st.session_state.analyzer, 'data_fetcher'):
-                        if hasattr(st.session_state.analyzer.data_fetcher, 'get_stock_data'):
-                            test_data = st.session_state.analyzer.data_fetcher.get_stock_data(test_symbol)
-                        elif hasattr(st.session_state.analyzer.data_fetcher, 'get_stock_info'):
-                            test_data = st.session_state.analyzer.data_fetcher.get_stock_info(test_symbol)
-                        else:
-                            st.error("No suitable data fetching method found")
-                            test_data = None
-                    else:
-                        st.error("No data_fetcher found in analyzer")
-                        test_data = None
-                    if test_data:
-                        st.success(f"✅ {test_symbol} データ取得成功: {test_data.get('company_name', 'Unknown')}")
-                        st.json(test_data)
-                    else:
-                        st.error(f"❌ {test_symbol} データ取得失敗")
-                except Exception as test_e:
-                    st.error(f"❌ テストエラー: {test_e}")
-            
-            # Show sample of what we got
-            if all_results:
-                sample_key = list(all_results.keys())[0]
-                sample_data = all_results[sample_key]
-                st.write(f"サンプルデータ ({sample_key}): {sample_data}")
+            st.warning("データの取得に失敗しました。しばらく時間を置いてから再試行してください。/ Data fetch failed. Please try again later.")
         else:
-            st.success(f"✅ {len(valid_results)} 銘柄のデータを正常に取得しました")
+            st.success(f"✅ {len(valid_results)} 銘柄のデータを取得しました / Successfully fetched {len(valid_results)} stocks")
         
         # Show notification for high-scoring stocks
         high_scoring = [stock for stock in all_results if all_results.get(stock) and all_results[stock].get('total_score', 0) >= 80]
