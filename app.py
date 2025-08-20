@@ -572,8 +572,15 @@ def main():
     # Clean header without language switcher (moved to sidebar)
     st.markdown("")  # Add spacing
     
-    # Display StockScore logo image with reduced size and spacing
-    st.image("attached_assets/ChatGPT Image Aug 20, 2025, 11_00_06 PM_1755699205709.png", width=250)
+    # Display title with emoji icon - reduced top spacing
+    st.markdown(f"""
+    <div style="display: flex; align-items: center; margin-top: -20px; margin-bottom: 15px;">
+        <div style="font-size: 3rem; margin-right: 15px;">🎯</div>
+        <h1 style="margin: 0; font-size: 2.5rem; font-weight: 700; background: linear-gradient(135deg, #2563eb 0%, #10b981 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">
+            StockScore
+        </h1>
+    </div>
+    """, unsafe_allow_html=True)
     
 
     
