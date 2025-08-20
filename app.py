@@ -628,8 +628,15 @@ def main():
                 st.success("キャッシュをクリアしました / Cache cleared")
                 st.rerun()
     
-    # Display title with StockScore logo image
-    st.image("attached_assets/ChatGPT Image Aug 19, 2025, 09_36_17 PM_1755698010632.png", width=300)
+    # Display title with emoji icon - reduced top spacing
+    st.markdown(f"""
+    <div style="display: flex; align-items: center; margin-top: -20px; margin-bottom: 15px;">
+        <div style="font-size: 3rem; margin-right: 15px;">🎯</div>
+        <h1 style="margin: 0; font-size: 2.5rem; font-weight: 700; background: linear-gradient(135deg, #2563eb 0%, #10b981 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">
+            StockScore
+        </h1>
+    </div>
+    """, unsafe_allow_html=True)
     
     # Sidebar configuration
     st.sidebar.header("" if st.session_state.language == 'ja' else "")
