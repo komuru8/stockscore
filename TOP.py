@@ -1000,9 +1000,10 @@ def update_stock_data(symbols, per_threshold, pbr_threshold, roe_threshold, divi
             for symbol, result in all_results.items():
                 if result and result is not None:
                     # Use relative scoring engine for consistent evaluation
+                    current_mode = st.session_state.get('user_mode', '中級者')
                     relative_score = st.session_state.relative_scorer.calculate_score(
                         result, 
-                        mode='beginner' if user_mode == '👶 初級者' else 'intermediate'
+                        mode='beginner' if current_mode == '👶 初級者' else 'intermediate'
                     )
                     
                     # Update result with relative scoring data
@@ -1151,7 +1152,7 @@ def display_results(view_mode, market):
             relative_data = info.get('relative_score', {})
             rank = info.get('rank', 'N/A')
             
-            if st.session_state.user_mode == 'beginner':
+            if st.session_state.get('user_mode', '中級者') == '👶 初級者':
                 # Simplified data for beginners (2 metrics only)
                 df_data.append({
                     'Symbol': symbol,
