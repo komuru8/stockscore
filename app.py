@@ -4,7 +4,12 @@ import plotly.express as px
 import plotly.graph_objects as go
 from datetime import datetime, timedelta
 import time
-from stock_analyzer import StockAnalyzer
+try:
+    from enhanced_stock_analyzer import EnhancedStockAnalyzer
+    ENHANCED_ANALYZER_AVAILABLE = True
+except ImportError:
+    from stock_analyzer import StockAnalyzer
+    ENHANCED_ANALYZER_AVAILABLE = False
 from data_fetcher import DataFetcher
 import os
 
@@ -18,7 +23,12 @@ st.set_page_config(
 
 # Initialize session state
 if 'analyzer' not in st.session_state:
-    st.session_state.analyzer = StockAnalyzer()
+    if ENHANCED_ANALYZER_AVAILABLE:
+        st.session_state.analyzer = EnhancedStockAnalyzer()
+        st.session_state.using_enhanced = True
+    else:
+        st.session_state.analyzer = StockAnalyzer()
+        st.session_state.using_enhanced = False
 if 'last_update' not in st.session_state:
     st.session_state.last_update = None
 if 'stock_data' not in st.session_state:
@@ -812,24 +822,39 @@ def main():
         st.info("上記のアクションボタンから検索方法を選択してください。\nPlease select a discovery method from the action buttons above.")
         symbols = []
     
-    # Quick test button for debugging
-    if st.sidebar.button("🔧 API テスト / API Test", type="secondary"):
-        st.sidebar.write("Testing yfinance connection...")
-        test_symbols = ["7203.T", "AAPL", "MSFT"]
+    # Enhanced API test button showing failover status
+    if st.sidebar.button("🔧 API ステータス / API Status", type="secondary"):
+        st.sidebar.write("Testing data sources...")
+        
+        # Test basic connection
+        test_symbols = ["7203.T", "AAPL"]
         for symbol in test_symbols:
             try:
                 import yfinance as yf
                 ticker = yf.Ticker(symbol)
                 info = ticker.info
                 if info and info.get('regularMarketPrice'):
-                    st.sidebar.success(f"✅ {symbol}: {info.get('longName', 'N/A')}")
+                    st.sidebar.success(f"✅ Yahoo: {symbol}")
                 else:
-                    st.sidebar.error(f"❌ {symbol}: No data")
+                    st.sidebar.error(f"❌ Yahoo: {symbol}")
             except Exception as e:
-                st.sidebar.error(f"❌ {symbol}: {str(e)}")
+                st.sidebar.error(f"❌ Yahoo: {symbol} - {str(e)}")
+        
+        # Show enhanced analyzer status
+        if hasattr(st.session_state, 'using_enhanced') and st.session_state.using_enhanced:
+            st.sidebar.info("🔧 Enhanced Analyzer: Active")
+            if hasattr(st.session_state.analyzer, 'get_api_status'):
+                status = st.session_state.analyzer.get_api_status()
+                st.sidebar.json(status)
+        else:
+            st.sidebar.info("🔧 Basic Analyzer: Active")
     
     # Update data button - only show if symbols are selected, with strict limits to prevent 502 errors
     if symbols:
+        # Show enhanced analyzer info if available
+        if hasattr(st.session_state, 'using_enhanced') and st.session_state.using_enhanced:
+            st.info("🔧 Enhanced Analyzer使用中: Yahoo Finance + Finnhub フェイルオーバー / Using Enhanced Analyzer with Yahoo Finance + Finnhub failover")
+        
         st.warning("⚠️ サーバー負荷軽減のため、現在は最大5銘柄までの検索に制限しています。/ Limited to max 5 stocks to prevent server overload.")
         
         # Always limit to 5 stocks maximum to prevent 502 Bad Gateway errors
@@ -880,12 +905,21 @@ def update_stock_data(symbols, per_threshold, pbr_threshold, roe_threshold, divi
         # Update scoring criteria
         status_text.text("設定を更新中... / Updating criteria...")
         try:
-            st.session_state.analyzer.update_criteria(
-                per_threshold=per_threshold,
-                pbr_threshold=pbr_threshold,
-                roe_threshold=roe_threshold,
-                dividend_multiplier=dividend_multiplier
-            )
+            # Use appropriate update method based on analyzer type
+            if hasattr(st.session_state.analyzer, 'update_scoring_criteria'):
+                st.session_state.analyzer.update_scoring_criteria(
+                    per_threshold=per_threshold,
+                    pbr_threshold=pbr_threshold,
+                    roe_threshold=roe_threshold,
+                    dividend_multiplier=dividend_multiplier
+                )
+            else:
+                st.session_state.analyzer.update_criteria(
+                    per_threshold=per_threshold,
+                    pbr_threshold=pbr_threshold,
+                    roe_threshold=roe_threshold,
+                    dividend_multiplier=dividend_multiplier
+                )
             st.success("✅ スコア設定を更新しました / Score criteria updated")
         except Exception as criteria_error:
             st.error(f"❌ スコア設定エラー / Criteria error: {str(criteria_error)}")

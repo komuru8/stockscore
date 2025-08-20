@@ -56,9 +56,11 @@ User Modes: 👶 Beginner (simplified AI scoring), 🧑‍💼 Intermediate (10-
 
 ## External Dependencies
 
-### APIs and Data Sources
+### APIs and Data Sources  
 - **Yahoo Finance API**: Primary data source accessed through `yfinance` library for stock prices, historical data, and fundamental metrics
+- **Finnhub API**: Secondary/failover data source for enhanced reliability when Yahoo Finance experiences 502 errors
 - **Real-time Data**: Live market data for current stock prices and trading information
+- **Failover Configuration**: Automatic switching from Yahoo Finance to Finnhub when primary source fails, with 1-hour cooldown before retry
 
 ### Python Libraries
 - **Streamlit**: Web application framework for the user interface
