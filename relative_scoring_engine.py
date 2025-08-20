@@ -10,31 +10,45 @@ class RelativeScoringEngine:
     def __init__(self):
         self.logger = logging.getLogger(__name__)
         
-        # Baseline values for comparison (market average values)
+        # Baseline values for comparison (recommended standards)
         self.baselines = {
-            'pe_ratio': 20.0,        # Market average PER
-            'pb_ratio': 1.5,         # Market average PBR
-            'roe': 12.0,             # Market average ROE (%)
-            'roa': 6.0,              # Market average ROA (%)
-            'dividend_yield': 2.5,   # Market average dividend yield (%)
-            'profit_margins': 15.0,  # Market average profit margin (%)
-            'debt_to_equity': 50.0,  # Market average D/E ratio
-            'current_ratio': 1.8,    # Market average current ratio
-            'earnings_growth': 8.0,  # Market average earnings growth (%)
-            'revenue_growth': 6.0    # Market average revenue growth (%)
+            'pe_ratio': 15.0,           # PER baseline (lower is better)
+            'pb_ratio': 1.0,            # PBR baseline (lower is better) 
+            'roe': 15.0,                # ROE baseline (higher is better)
+            'roa': 8.0,                 # ROA baseline (higher is better)
+            'dividend_yield': 3.0,      # Dividend yield baseline (higher is better)
+            'revenue_growth': 10.0,     # Revenue growth baseline (higher is better)
+            'eps_growth': 10.0,         # EPS growth baseline (higher is better) 
+            'operating_margin': 15.0,   # Operating margin baseline (higher is better)
+            'equity_ratio': 50.0,       # Equity ratio baseline (higher is better)
+            'payout_ratio': 40.0        # Payout ratio baseline (optimal range 30-50%)
         }
         
-        # Mode configurations
+        # Define evaluation direction for each metric
+        self.metric_directions = {
+            'pe_ratio': 'lower_better',      # 小さい方が良い
+            'pb_ratio': 'lower_better',      # 小さい方が良い
+            'roe': 'higher_better',          # 大きい方が良い
+            'roa': 'higher_better',          # 大きい方が良い
+            'dividend_yield': 'higher_better', # 大きい方が良い
+            'revenue_growth': 'higher_better', # 大きい方が良い
+            'eps_growth': 'higher_better',     # 大きい方が良い
+            'operating_margin': 'higher_better', # 大きい方が良い
+            'equity_ratio': 'higher_better',    # 大きい方が良い
+            'payout_ratio': 'optimal_range'     # 最適レンジ（30-50%）
+        }
+        
+        # Mode configurations (exact as specified)
         self.mode_configs = {
             'beginner': {
-                'metrics': ['pe_ratio', 'dividend_yield'],
+                'metrics': ['pe_ratio', 'dividend_yield'],  # PER・配当利回り
                 'max_points_per_metric': 50,
                 'total_points': 100
             },
             'intermediate': {
                 'metrics': ['pe_ratio', 'pb_ratio', 'roe', 'roa', 'dividend_yield', 
-                           'profit_margins', 'debt_to_equity', 'current_ratio', 
-                           'earnings_growth', 'revenue_growth'],
+                           'revenue_growth', 'eps_growth', 'operating_margin', 
+                           'equity_ratio', 'payout_ratio'],  # All 10 metrics
                 'max_points_per_metric': 10,
                 'total_points': 100
             }
@@ -89,20 +103,28 @@ class RelativeScoringEngine:
                 return max_points * 0.5  # Normal score (50% of max)
             
             baseline = self.baselines.get(metric)
+            direction = self.metric_directions.get(metric, 'higher_better')
+            
             if baseline is None:
                 return max_points * 0.5  # Fallback to normal
             
-            # Convert percentage values if needed
-            if metric in ['roe', 'roa', 'dividend_yield', 'profit_margins', 'earnings_growth', 'revenue_growth']:
+            # Convert percentage values if needed (for decimal values < 1)
+            if metric in ['roe', 'roa', 'dividend_yield', 'operating_margin', 'revenue_growth', 'eps_growth', 'equity_ratio', 'payout_ratio']:
                 if value < 1:  # Convert decimal to percentage
                     value = value * 100
             
-            # Calculate relative performance
-            if metric in ['pe_ratio', 'pb_ratio', 'debt_to_equity']:
-                # Lower is better metrics
+            # Calculate score based on metric direction
+            if direction == 'lower_better':
+                # PER, PBR - lower values are better
                 relative_performance = (baseline - value) / baseline
+            elif direction == 'higher_better':
+                # ROE, ROA, etc. - higher values are better
+                relative_performance = (value - baseline) / baseline
+            elif direction == 'optimal_range':
+                # Payout ratio - optimal range 30-50%
+                return self._calculate_payout_ratio_score(value, max_points)
             else:
-                # Higher is better metrics
+                # Default to higher_better
                 relative_performance = (value - baseline) / baseline
             
             # Apply 5-tier scoring system based on relative performance
@@ -120,6 +142,20 @@ class RelativeScoringEngine:
         except Exception as e:
             self.logger.error(f"Error calculating score for {metric}: {e}")
             return max_points * 0.5  # Return normal score on error
+    
+    def _calculate_payout_ratio_score(self, value: float, max_points: int) -> float:
+        """Calculate payout ratio score with optimal range logic"""
+        # Optimal range: 30-50%
+        if 30 <= value <= 50:
+            return max_points * 1.0  # 非常に良い: 100%
+        elif 25 <= value < 30 or 50 < value <= 60:
+            return max_points * 0.8  # 良い: 80%
+        elif 20 <= value < 25 or 60 < value <= 70:
+            return max_points * 0.5  # 普通: 50%
+        elif 15 <= value < 20 or 70 < value <= 80:
+            return max_points * 0.2  # 悪い: 20%
+        else:  # < 15% or > 80%
+            return max_points * 0.0  # 非常に悪い: 0%
     
     def _generate_assessment(self, score: float) -> str:
         """Generate human-readable assessment"""
@@ -161,17 +197,17 @@ class RelativeScoringEngine:
             return "D"
     
     def _get_color_scale(self, score: float) -> str:
-        """Get color code for visualization"""
-        if score >= 80:
-            return "#4CAF50"  # Green - Excellent
-        elif score >= 70:
-            return "#8BC34A"  # Light Green - Good
+        """Get color code for visualization (green to red scale)"""
+        if score >= 90:
+            return "#2E7D32"  # Dark Green - S rank
+        elif score >= 80:
+            return "#4CAF50"  # Green - A rank
         elif score >= 60:
-            return "#FFC107"  # Yellow - Hold
+            return "#8BC34A"  # Light Green - B rank  
         elif score >= 40:
-            return "#FF9800"  # Orange - Caution
+            return "#FF9800"  # Orange - C rank
         else:
-            return "#F44336"  # Red - Poor
+            return "#F44336"  # Red - D rank
     
     def _get_error_result(self) -> Dict:
         """Return error result"""

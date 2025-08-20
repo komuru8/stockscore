@@ -1148,27 +1148,33 @@ def display_results(view_mode, market):
             if st.session_state.language == 'ja' and symbol.endswith('.T'):
                 company_name = get_japanese_company_name(symbol, company_name)
             
+            # Get relative score data
+            relative_data = info.get('relative_score', {})
+            rank = info.get('rank', 'N/A')
+            
             if st.session_state.user_mode == 'beginner':
-                # Simplified data for beginners
+                # Simplified data for beginners (2 metrics only)
                 df_data.append({
                     'Symbol': symbol,
                     'Company': company_name,
                     'Score': info.get('total_score', 0),
-                    'Recommendation': get_simple_recommendation(info.get('total_score', 0)),
-                    'PER': info.get('per', 'N/A'),
+                    'Rank': rank,
+                    'Recommendation': info.get('recommendation', 'N/A'),
+                    'PER': info.get('pe_ratio', 'N/A'),
                     'Dividend Yield': info.get('dividend_yield', 'N/A'),
                     'Current Price': info.get('current_price', 'N/A')
                 })
             else:
-                # Full data for intermediate/advanced users with all 10 metrics
+                # Full data for intermediate users with all 10 metrics
                 df_data.append({
                     'Symbol': symbol,
                     'Company': company_name,
                     'Score': info.get('total_score', 0),
-                    'Recommendation': get_recommendation(info.get('total_score', 0)),
+                    'Rank': rank,
+                    'Recommendation': info.get('recommendation', 'N/A'),
                     'Current Price': info.get('current_price', 'N/A'),
-                    'PER': info.get('per', 'N/A'),
-                    'PBR': info.get('pbr', 'N/A'),
+                    'PER': info.get('pe_ratio', 'N/A'),
+                    'PBR': info.get('pb_ratio', 'N/A'),
                     'ROE': info.get('roe', 'N/A'),
                     'ROA': info.get('roa', 'N/A'),
                     'Dividend Yield': info.get('dividend_yield', 'N/A'),
