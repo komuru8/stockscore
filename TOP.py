@@ -569,64 +569,15 @@ def get_theme_options(market):
         }
 
 def main():
-    # Initialize hamburger menu state
-    if 'show_hamburger_menu' not in st.session_state:
-        st.session_state.show_hamburger_menu = False
+    # Clean header with language switcher in top-right corner
+    col1, col2 = st.columns([8, 1])
     
-    # Header with language selector and hamburger menu
-    col1, col2, col3 = st.columns([5, 2, 2])
     with col2:
-        # Language dropdown
-        language_options = {
-            '🌐 日本語': 'ja',
-            '🌐 English': 'en'
-        }
-        current_lang_display = '🌐 日本語' if st.session_state.language == 'ja' else '🌐 English'
-        selected_lang = st.selectbox(
-            "Language",
-            options=list(language_options.keys()),
-            index=list(language_options.keys()).index(current_lang_display),
-            label_visibility="collapsed"
-        )
-        if language_options[selected_lang] != st.session_state.language:
-            st.session_state.language = language_options[selected_lang]
+        # Simple language toggle button in top-right
+        current_lang = "🌐 EN" if st.session_state.language == 'ja' else "🌐 JP"
+        if st.button(current_lang, key="lang_toggle", help="Switch Language / 言語切り替え"):
+            st.session_state.language = 'en' if st.session_state.language == 'ja' else 'ja'
             st.rerun()
-    
-    with col3:
-        # Simple dropdown menu with reordered items
-        menu_options = [
-            ("📋 " + get_text('terms'), "terms"),
-            ("🔧 APIステータス" if st.session_state.language == 'ja' else "🔧 API Status", "api_status"),
-            ("🗑️ キャッシュクリア" if st.session_state.language == 'ja' else "🗑️ Clear Cache", "clear_cache")
-        ]
-        
-        selected_menu = st.selectbox(
-            "Menu",
-            options=["☰ Menu" if st.session_state.language == 'en' else "☰ メニュー"] + [option[0] for option in menu_options],
-            index=0,
-            key='hamburger_menu',
-            label_visibility="collapsed"
-        )
-        
-        # Handle menu selection
-        if selected_menu not in ["☰ Menu", "☰ メニュー"]:
-            # Find the action for the selected menu item
-            action = None
-            for option_text, option_action in menu_options:
-                if option_text == selected_menu:
-                    action = option_action
-                    break
-            
-            if action == "terms":
-                st.switch_page("pages/利用規約.py")
-            elif action == "api_status":
-                with st.expander("📊 API Status", expanded=True):
-                    show_api_status()
-            elif action == "clear_cache":
-                st.session_state.stock_data = {}
-                st.session_state.last_update = None
-                st.success("キャッシュをクリアしました / Cache cleared")
-                st.rerun()
     
     # Display title with emoji icon - reduced top spacing
     st.markdown(f"""
@@ -638,8 +589,31 @@ def main():
     </div>
     """, unsafe_allow_html=True)
     
-    # Sidebar configuration
+    # Sidebar configuration with menu items
     st.sidebar.header("" if st.session_state.language == 'ja' else "")
+    
+    # Add main menu items to sidebar
+    st.sidebar.markdown("### " + ("メニュー" if st.session_state.language == 'ja' else "Menu"))
+    
+    # Terms link
+    if st.sidebar.button("📋 " + get_text('terms'), use_container_width=True):
+        st.switch_page("pages/利用規約.py")
+    
+    # API Status
+    if st.sidebar.button("🔧 " + ("APIステータス" if st.session_state.language == 'ja' else "API Status"), 
+                        use_container_width=True):
+        with st.sidebar:
+            with st.expander("📊 API Status", expanded=True):
+                show_api_status()
+    
+    # Cache Clear
+    if st.sidebar.button("🗑️ " + ("キャッシュクリア" if st.session_state.language == 'ja' else "Clear Cache"), 
+                        use_container_width=True):
+        st.session_state.stock_data = {}
+        st.session_state.last_update = None
+        st.sidebar.success("キャッシュをクリアしました / Cache cleared")
+    
+    st.sidebar.markdown("---")
     
     # User mode selection
     st.sidebar.subheader(get_text('user_mode_selection'))
