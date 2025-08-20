@@ -12,6 +12,7 @@ Visual Design: Circular score indicators for featured recommendations, table for
 Language Support: Full Japanese/English bilingual interface with dropdown language selector. Japanese company names displayed when Japanese language selected.
 Navigation: Simplified top navigation with only language selector and terms button. No page menu navigation.
 User Modes: 👶 Beginner (simplified AI scoring), 🧑‍💼 Intermediate (10-metric analysis).
+Performance Priorities: Remove stock count limitations, implement intelligent caching and random request intervals to handle server load efficiently rather than restricting functionality.
 
 ## System Architecture
 
@@ -33,7 +34,9 @@ User Modes: 👶 Beginner (simplified AI scoring), 🧑‍💼 Intermediate (10-
 
 ### Data Storage Solutions
 - **Session-based Storage**: Streamlit session state for temporary data persistence
-- **In-memory Caching**: Dictionary-based cache with time-based expiration
+- **Enhanced In-memory Caching**: 30-minute cache with timestamp-based expiration to reduce API calls
+- **Intelligent Request Control**: Random 1.5-3 second intervals between API requests to prevent rate limiting
+- **Cache-First Processing**: Prioritizes cached data over new API requests for improved performance
 - **No Persistent Database**: Application relies on external APIs for real-time data
 
 ### Configuration Management
@@ -75,6 +78,9 @@ User Modes: 👶 Beginner (simplified AI scoring), 🧑‍💼 Intermediate (10-
 - **Emerging Markets**: Additional market coverage for diversification
 
 ### Performance Considerations
-- **Rate Limiting**: Built-in delays and caching to respect API rate limits
+- **Intelligent Caching**: 30-minute cache system eliminates redundant API calls for recently fetched stocks
+- **Request Interval Control**: Random 1.5-3 second delays between API requests prevent bot detection and rate limiting
+- **Failover Architecture**: Automatic Yahoo Finance → Finnhub switching when primary API fails (1-hour cooldown)
+- **Batch Optimization**: Cache-first processing prioritizes local data over API requests
 - **Error Handling**: Comprehensive error handling for network failures and invalid stock symbols
-- **Cache Management**: Automatic cache expiry to balance performance with data freshness
+- **Cache Management**: Manual cache clearing option and automatic 30-minute expiry for data freshness

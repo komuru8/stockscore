@@ -287,29 +287,46 @@ class EnhancedDataFetcher:
             return None
     
     def get_multiple_stocks(self, symbols: List[str]) -> Dict[str, Optional[Dict]]:
-        """Get data for multiple stocks with enhanced failover"""
+        """Get data for multiple stocks with intelligent caching and request control"""
         results = {}
+        cache_hits = 0
+        api_requests = 0
         
-        # Process one stock at a time to prevent overload
+        self.logger.info(f"Processing {len(symbols)} symbols with cache optimization")
+        
+        # Process each symbol with cache-first approach
         for i, symbol in enumerate(symbols):
-            self.logger.info(f"Fetching {symbol} ({i+1}/{len(symbols)})")
-            
             try:
+                # Check cache first
+                cached_data = self._get_cached_result(symbol)
+                if cached_data:
+                    results[symbol] = cached_data
+                    cache_hits += 1
+                    self.logger.info(f"Cache hit for {symbol} ({i+1}/{len(symbols)})")
+                    continue
+                
+                # Make API request for uncached data
+                self.logger.info(f"API request for {symbol} ({i+1}/{len(symbols)})")
                 stock_data = self.get_stock_data(symbol)
                 results[symbol] = stock_data
+                api_requests += 1
                 
-                # Random delay between requests
+                # Intelligent delay: longer for API requests, shorter for cache hits
                 if i < len(symbols) - 1:
-                    delay = random.uniform(2, 4)  # 2-4 seconds
+                    if stock_data:  # Successful API request
+                        delay = random.uniform(1.5, 3.0)  # 1.5-3 seconds for API calls
+                    else:  # Failed request - shorter delay
+                        delay = random.uniform(0.5, 1.0)  # 0.5-1 second for failures
+                    
                     time.sleep(delay)
                     
             except Exception as e:
                 self.logger.error(f"Error processing {symbol}: {e}")
                 results[symbol] = None
         
-        # Log summary
+        # Log comprehensive summary
         successful = len([r for r in results.values() if r is not None])
-        self.logger.info(f"Fetched {successful}/{len(symbols)} stocks successfully")
+        self.logger.info(f"Batch complete: {successful}/{len(symbols)} successful, {cache_hits} cache hits, {api_requests} API requests")
         
         return results
     

@@ -849,31 +849,30 @@ def main():
         else:
             st.sidebar.info("🔧 Basic Analyzer: Active")
     
-    # Update data button - only show if symbols are selected, with strict limits to prevent 502 errors
+    # Update data button - enhanced with caching and intelligent request control
     if symbols:
         # Show enhanced analyzer info if available
         if hasattr(st.session_state, 'using_enhanced') and st.session_state.using_enhanced:
-            st.info("🔧 Enhanced Analyzer使用中: Yahoo Finance + Finnhub フェイルオーバー / Using Enhanced Analyzer with Yahoo Finance + Finnhub failover")
+            st.info("🔧 Enhanced Analyzer使用中: 30分キャッシュ + ランダム間隔制御でサーバー負荷軽減 / Using Enhanced Analyzer with 30min cache + random interval control")
         
-        st.warning("⚠️ サーバー負荷軽減のため、現在は最大5銘柄までの検索に制限しています。/ Limited to max 5 stocks to prevent server overload.")
+        # Show cache status
+        if hasattr(st.session_state.analyzer, 'data_fetcher') and hasattr(st.session_state.analyzer.data_fetcher, 'cache'):
+            cache_size = len(st.session_state.analyzer.data_fetcher.cache)
+            if cache_size > 0:
+                st.success(f"📊 キャッシュ済み: {cache_size} 銘柄（30分間有効）/ Cached: {cache_size} stocks (valid for 30min)")
         
-        # Always limit to 5 stocks maximum to prevent 502 Bad Gateway errors
-        if len(symbols) > 5:
-            col1, col2 = st.columns(2)
-            with col1:
-                if st.button("最初の5銘柄のみ分析 / First 5 Only", type="primary"):
-                    limited_symbols = symbols[:5]
-                    st.info(f"安定性優先で最初の5銘柄のみ分析: {', '.join(limited_symbols)}")
-                    update_stock_data(limited_symbols, per_threshold, pbr_threshold, roe_threshold, dividend_multiplier)
-            with col2:
-                if st.button("ランダム5銘柄 / Random 5", type="secondary"):
-                    import random
-                    random_symbols = random.sample(symbols, 5)
-                    st.info(f"ランダム選択5銘柄: {', '.join(random_symbols)}")
-                    update_stock_data(random_symbols, per_threshold, pbr_threshold, roe_threshold, dividend_multiplier)
-        else:
+        # Enhanced update with proper batch management
+        col1, col2 = st.columns(2)
+        with col1:
             if st.button(get_text('update_data'), type="primary"):
                 update_stock_data(symbols, per_threshold, pbr_threshold, roe_threshold, dividend_multiplier)
+        with col2:
+            if st.button("🗑️ キャッシュクリア / Clear Cache", type="secondary"):
+                if hasattr(st.session_state.analyzer, 'clear_cache'):
+                    st.session_state.analyzer.clear_cache()
+                    st.success("キャッシュをクリアしました / Cache cleared")
+                else:
+                    st.info("キャッシュ機能は利用できません / Cache not available")
         
         # Disable auto-update to prevent server overload issues
         # Auto-update disabled due to server stability concerns
@@ -927,47 +926,56 @@ def update_stock_data(symbols, per_threshold, pbr_threshold, roe_threshold, divi
         
         progress_bar.progress(5)
         
-        # Ultra-safe processing: only 1 stock at a time with long delays
+        # Intelligent batch processing with cache optimization
         total_symbols = len(symbols)
         all_results = {}
         
-        # Process one stock at a time to absolutely prevent server overload
-        st.info(f"📊 サーバー安定性のため1銘柄ずつ順番に処理します（計{total_symbols}銘柄）/ Processing 1 stock at a time for maximum stability ({total_symbols} total).")
+        # Calculate cached vs new requests
+        cached_count = 0
+        if hasattr(st.session_state.analyzer, 'data_fetcher'):
+            for symbol in symbols:
+                if hasattr(st.session_state.analyzer.data_fetcher, '_is_cached') and st.session_state.analyzer.data_fetcher._is_cached(symbol):
+                    cached_count += 1
         
-        # Process one stock at a time
-        for idx, symbol in enumerate(symbols):
-            status_text.text(f"銘柄 {idx + 1}/{total_symbols} 処理中: {symbol} / Processing stock {idx + 1}/{total_symbols}: {symbol}")
+        new_requests = total_symbols - cached_count
+        st.info(f"📊 処理予定: キャッシュ利用 {cached_count} + 新規取得 {new_requests} = 計{total_symbols}銘柄 / Processing: {cached_count} cached + {new_requests} new = {total_symbols} total")
+        
+        # Optimized batch processing with enhanced failover
+        try:
+            status_text.text("Enhanced Analyzer でバッチ処理開始... / Starting Enhanced batch processing...")
             
-            try:
-                st.write(f"🔍 {symbol} 分析開始...")
-                
-                # Process single stock with direct API call
-                single_result = st.session_state.analyzer.analyze_stocks([symbol])
-                
-                if single_result and symbol in single_result and single_result[symbol]:
-                    if 'total_score' in single_result[symbol]:
-                        st.success(f"✅ {symbol}: スコア {single_result[symbol]['total_score']:.1f}")
-                        all_results.update(single_result)
-                    else:
-                        st.warning(f"⚠️ {symbol}: データ不完全")
-                        all_results[symbol] = None
-                else:
-                    st.warning(f"⚠️ {symbol}: データ取得失敗")
-                    all_results[symbol] = None
-                
-                # Update progress
+            # Use the enhanced analyzer's batch processing
+            all_results = st.session_state.analyzer.analyze_stocks(symbols)
+            
+            # Update progress incrementally
+            for idx in range(total_symbols):
                 progress = 5 + (85 * (idx + 1) // total_symbols)
                 progress_bar.progress(progress)
-                
-                # Wait between stocks - long delay to prevent 502 errors
                 if idx < total_symbols - 1:
-                    status_text.text(f"次の銘柄まで3秒待機（サーバー負荷軽減）... / Waiting 3 seconds before next stock...")
-                    time.sleep(3.0)
+                    status_text.text(f"処理中 {idx + 1}/{total_symbols} / Processing {idx + 1}/{total_symbols}")
+                    time.sleep(0.5)  # Shorter delay for UI feedback
+            
+        except Exception as batch_error:
+            st.error(f"❌ バッチ処理エラー / Batch processing error: {str(batch_error)}")
+            # Fallback to individual processing if batch fails
+            st.info("個別処理にフォールバック / Falling back to individual processing")
+            
+            for idx, symbol in enumerate(symbols):
+                status_text.text(f"個別処理 {idx + 1}/{total_symbols}: {symbol} / Individual processing {idx + 1}/{total_symbols}: {symbol}")
+                
+                try:
+                    single_result = st.session_state.analyzer.analyze_stocks([symbol])
+                    if single_result and symbol in single_result:
+                        all_results.update(single_result)
+                    else:
+                        all_results[symbol] = None
                     
-            except Exception as stock_error:
-                st.error(f"❌ {symbol} でエラー / Error with {symbol}: {str(stock_error)}")
-                all_results[symbol] = None
-                continue
+                    progress = 5 + (85 * (idx + 1) // total_symbols)
+                    progress_bar.progress(progress)
+                    
+                except Exception as stock_error:
+                    st.error(f"❌ {symbol} エラー / Error: {str(stock_error)}")
+                    all_results[symbol] = None
         
         progress_bar.progress(90)
         
