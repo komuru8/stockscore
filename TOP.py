@@ -593,43 +593,19 @@ def main():
             st.rerun()
     
     with col3:
-        # Simple dropdown menu with reordered items
-        menu_options = [
-            ("📋 " + get_text('terms'), "terms"),
-            ("🔧 APIステータス" if st.session_state.language == 'ja' else "🔧 API Status", "api_status"),
-            ("🗑️ キャッシュクリア" if st.session_state.language == 'ja' else "🗑️ Clear Cache", "clear_cache")
-        ]
-        
-        selected_menu = st.selectbox(
-            "Menu",
-            options=["☰ Menu" if st.session_state.language == 'en' else "☰ メニュー"] + [option[0] for option in menu_options],
-            index=0,
-            key='hamburger_menu',
-            label_visibility="collapsed"
-        )
-        
-        # Handle menu selection
-        if selected_menu not in ["☰ Menu", "☰ メニュー"]:
-            # Find the action for the selected menu item
-            action = None
-            for option_text, option_action in menu_options:
-                if option_text == selected_menu:
-                    action = option_action
-                    break
-            
-            if action == "terms":
-                st.switch_page("pages/利用規約.py")
-            elif action == "api_status":
-                with st.expander("📊 API Status", expanded=True):
-                    show_api_status()
-            elif action == "clear_cache":
-                st.session_state.stock_data = {}
-                st.session_state.last_update = None
-                st.success("キャッシュをクリアしました / Cache cleared")
-                st.rerun()
+        # Simple dropdown menu with only Terms of Use
+        if st.button("📋 " + get_text('terms'), use_container_width=True):
+            st.switch_page("pages/利用規約.py")
     
-    # Display title with StockScore logo image
-    st.image("attached_assets/ChatGPT Image Aug 19, 2025, 09_36_17 PM_1755698010632.png", width=300)
+    # Display title with emoji icon instead of SVG - reduced top spacing
+    st.markdown(f"""
+    <div style="display: flex; align-items: center; margin-top: -20px; margin-bottom: 15px;">
+        <div style="font-size: 3rem; margin-right: 15px;">🎯</div>
+        <h1 style="margin: 0; font-size: 2.5rem; font-weight: 700; background: linear-gradient(135deg, #2563eb 0%, #10b981 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">
+            {get_text('title')}
+        </h1>
+    </div>
+    """, unsafe_allow_html=True)
     
     # Sidebar configuration
     st.sidebar.header("" if st.session_state.language == 'ja' else "")
@@ -869,7 +845,20 @@ def main():
         st.info("上記のアクションボタンから検索方法を選択してください。")
         symbols = []
     
-    # Cache clear functionality moved to hamburger menu
+    # API Status and Cache Clear moved to Streamlit's built-in settings menu
+    
+    # Add API Status to sidebar for easy access
+    with st.sidebar:
+        st.markdown("---")
+        st.subheader("🔧 " + ("APIステータス" if st.session_state.language == 'ja' else "API Status"))
+        show_api_status()
+        
+        st.markdown("---")
+        if st.button("🗑️ " + ("キャッシュクリア" if st.session_state.language == 'ja' else "Clear Cache"), 
+                    type="secondary", use_container_width=True):
+            st.session_state.stock_data = {}
+            st.session_state.last_update = None
+            st.success("キャッシュをクリアしました / Cache cleared")
     
     # Manual update button for additional control (optional)
     if symbols and not selected_method:  # Only show manual button if no auto-execution happened
