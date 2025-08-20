@@ -651,15 +651,15 @@ def main():
         st.sidebar.subheader("🎯 簡易設定")
         
         per_threshold = st.sidebar.slider(
-            "PER基準 / PER Standard",
+            "PER基準" if st.session_state.language == 'ja' else "PER Standard",
             min_value=10, max_value=30, value=15, step=5,
-            help="低いほど割安 / Lower is better value"
+            help="低いほど割安" if st.session_state.language == 'ja' else "Lower is better value"
         )
         
         dividend_threshold = st.sidebar.slider(
-            "配当利回り基準 (%) / Dividend Yield Standard (%)",
+            "配当利回り基準 (%)" if st.session_state.language == 'ja' else "Dividend Yield Standard (%)",
             min_value=2.0, max_value=6.0, value=3.5, step=0.5,
-            help="この値以上の配当利回りを評価 / Evaluate dividend yields above this value"
+            help="この値以上の配当利回りを評価" if st.session_state.language == 'ja' else "Evaluate dividend yields above this value"
         )
         
         # Convert to multiplier for backward compatibility with analyzer
