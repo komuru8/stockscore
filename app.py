@@ -1226,11 +1226,18 @@ def display_results(view_mode, market):
     df = pd.DataFrame(df_data)
     df = df.sort_values('Score', ascending=False)
     
-    # First show the stock table
-    display_simple_view(df)
+    # Results table - show first
+    if view_mode == get_text('simple_view'):
+        if st.session_state.get('user_mode', '初級者') == '中級者':
+            display_intermediate_view(df)
+        else:
+            display_simple_view(df)
+    else:
+        display_detailed_view(df, data)
     
     # Then show the investment decision results below the table
     st.markdown("---")
+    st.subheader("💡 " + ("投資判定結果" if st.session_state.language == 'ja' else "Investment Decision Results"))
     
     # Display summary metrics
     st.subheader(get_text('portfolio_overview'))
@@ -1268,14 +1275,12 @@ def display_results(view_mode, market):
     
     # Investment recommendations overview - adjust for user mode
     if st.session_state.user_mode == 'beginner':
-        st.subheader("💡 " + ("投資判定結果" if st.session_state.language == 'ja' else "Investment Decision Results"))
         recommendation_counts = {
             "🟢 おすすめ" if st.session_state.language == 'ja' else "🟢 Recommended": len(df[df['Score'] >= 80]),
             "🟡 様子見" if st.session_state.language == 'ja' else "🟡 Wait & See": len(df[(df['Score'] >= 60) & (df['Score'] < 80)]),
             "🔴 見送り" if st.session_state.language == 'ja' else "🔴 Skip": len(df[df['Score'] < 60])
         }
     else:
-        st.subheader("投資推奨レベル別銘柄数" if st.session_state.language == 'ja' else "Stock Count by Recommendation Level")
         recommendation_counts = {
             "🚀 強い買い" if st.session_state.language == 'ja' else "🚀 Strong Buy": len(df[df['Score'] >= 80]),
             "👀 ウォッチ" if st.session_state.language == 'ja' else "👀 Watch": len(df[(df['Score'] >= 60) & (df['Score'] < 80)]),
@@ -1344,15 +1349,7 @@ def display_results(view_mode, market):
                     with st.expander("詳細分析を見る" if st.session_state.language == 'ja' else "See Detailed Analysis"):
                         st.write(analysis)
 
-    
-    # Results table
-    if view_mode == get_text('simple_view'):
-        if st.session_state.get('user_mode', '初級者') == '中級者':
-            display_intermediate_view(df)
-        else:
-            display_simple_view(df)
-    else:
-        display_detailed_view(df, data)
+    # Table is already displayed above
 
 def create_circular_score(score, size=100):
     """Create circular score visualization using SVG"""
