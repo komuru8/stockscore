@@ -602,14 +602,14 @@ def main():
         
         selected_menu = st.selectbox(
             "Menu",
-            options=["☰"] + [option[0] for option in menu_options],
+            options=["☰ Menu" if st.session_state.language == 'en' else "☰ メニュー"] + [option[0] for option in menu_options],
             index=0,
             key='hamburger_menu',
             label_visibility="collapsed"
         )
         
         # Handle menu selection
-        if selected_menu != "☰":
+        if selected_menu not in ["☰ Menu", "☰ メニュー"]:
             # Find the action for the selected menu item
             action = None
             for option_text, option_action in menu_options:
