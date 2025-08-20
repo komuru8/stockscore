@@ -582,11 +582,7 @@ def main():
     # Display StockScore logo image with reduced size and spacing
     st.image("attached_assets/ChatGPT Image Aug 20, 2025, 11_00_06 PM_1755699205709.png", width=250)
     
-    # Mobile-friendly sidebar toggle button
-    if st.button("📱 モード選択・設定" if st.session_state.language == 'ja' else "📱 Mode & Settings", 
-                help="サイドバーを開閉 / Toggle sidebar", use_container_width=False):
-        # Toggle sidebar state by creating a visual cue for mobile users
-        pass
+
     
     # Sidebar configuration
     st.sidebar.header("" if st.session_state.language == 'ja' else "")
@@ -808,6 +804,13 @@ def main():
             use_container_width=True,
             help="ランダムに選択された銘柄を表示" if st.session_state.language == 'ja' else "Show randomly selected stocks"
         )
+    
+    # Mobile-friendly sidebar toggle button (moved below search method selection)
+    st.markdown("")  # Add spacing
+    if st.button("📱 モード選択・設定" if st.session_state.language == 'ja' else "📱 Mode & Settings", 
+                help="サイドバーを開閉 / Toggle sidebar", use_container_width=False):
+        # Toggle sidebar state by creating a visual cue for mobile users
+        pass
     
     # Handle action button clicks with auto-execution
     selected_method = handle_action_buttons(popularity_button, dividend_button, theme_button, random_button, market, stock_count)
