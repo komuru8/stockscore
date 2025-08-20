@@ -593,27 +593,35 @@ def main():
             st.rerun()
     
     with col3:
-        # Hamburger menu button
-        if st.button("☰", key='hamburger_btn', help="メニュー" if st.session_state.language == 'ja' else "Menu"):
-            st.session_state.show_hamburger_menu = not st.session_state.show_hamburger_menu
-            st.rerun()
-    
-    # Simple hamburger dropdown menu
-    if st.session_state.show_hamburger_menu:
-        with st.container():
-            # Simple menu items
-            if st.button("🔧 " + ("APIステータス" if st.session_state.language == 'ja' else "API Status"), 
-                       key='menu_api_status', use_container_width=True):
-                st.session_state.show_hamburger_menu = False
-                # Display API status information
+        # Simple dropdown menu like language selector
+        menu_options = {
+            "🔧 APIステータス" if st.session_state.language == 'ja' else "🔧 API Status": "api_status",
+            "📋 " + get_text('terms'): "terms",
+            "🗑️ キャッシュクリア" if st.session_state.language == 'ja' else "🗑️ Clear Cache": "clear_cache"
+        }
+        
+        selected_menu = st.selectbox(
+            "Menu",
+            options=["☰ メニュー" if st.session_state.language == 'ja' else "☰ Menu"] + list(menu_options.keys()),
+            index=0,
+            key='hamburger_menu',
+            label_visibility="collapsed"
+        )
+        
+        # Handle menu selection
+        if selected_menu != ("☰ メニュー" if st.session_state.language == 'ja' else "☰ Menu"):
+            action = menu_options[selected_menu]
+            
+            if action == "api_status":
                 with st.expander("📊 API Status", expanded=True):
                     show_api_status()
-                st.rerun()
-            
-            if st.button("📋 " + get_text('terms'), 
-                       key='menu_terms', use_container_width=True):
-                st.session_state.show_hamburger_menu = False
+            elif action == "terms":
                 st.switch_page("pages/利用規約.py")
+            elif action == "clear_cache":
+                st.session_state.stock_data = {}
+                st.session_state.last_update = None
+                st.success("キャッシュをクリアしました / Cache cleared")
+                st.rerun()
     
     # Display title with emoji icon instead of SVG - reduced top spacing
     st.markdown(f"""
@@ -863,11 +871,7 @@ def main():
         st.info("上記のアクションボタンから検索方法を選択してください。")
         symbols = []
     
-    # Cache clear button (moved here from removed API status section)  
-    if st.sidebar.button("🗑️ " + ("キャッシュクリア" if st.session_state.language == 'ja' else "Clear Cache"), type="secondary"):
-        st.session_state.stock_data = {}
-        st.session_state.last_update = None
-        st.sidebar.success("キャッシュをクリアしました / Cache cleared")
+    # Cache clear functionality moved to hamburger menu
     
     # Manual update button for additional control (optional)
     if symbols and not selected_method:  # Only show manual button if no auto-execution happened
