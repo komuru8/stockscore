@@ -831,6 +831,10 @@ def main():
     # Add main menu items to sidebar (moved below user mode)
     st.sidebar.markdown("### " + ("メニュー" if st.session_state.language == 'ja' else "Menu"))
     
+    # TOP page link
+    if st.sidebar.button("🏠 TOP", use_container_width=True):
+        st.rerun()
+    
     # Terms link
     if st.sidebar.button("📋 " + get_text('terms'), use_container_width=True):
         st.switch_page("pages/利用規約.py")
