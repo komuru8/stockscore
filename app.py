@@ -588,33 +588,10 @@ def main():
         st.sidebar.info("👈 " + ("左のメニューからモードを選択してください" if st.session_state.language == 'ja' 
                                 else "Please select mode from the left menu"))
     
-    # Sidebar configuration with menu items
+    # Sidebar configuration
     st.sidebar.header("" if st.session_state.language == 'ja' else "")
     
-    # Add main menu items to sidebar
-    st.sidebar.markdown("### " + ("メニュー" if st.session_state.language == 'ja' else "Menu"))
-    
-    # Terms link
-    if st.sidebar.button("📋 " + get_text('terms'), use_container_width=True):
-        st.switch_page("pages/利用規約.py")
-    
-    # API Status
-    if st.sidebar.button("🔧 " + ("APIステータス" if st.session_state.language == 'ja' else "API Status"), 
-                        use_container_width=True):
-        with st.sidebar:
-            with st.expander("📊 API Status", expanded=True):
-                show_api_status()
-    
-    # Cache Clear
-    if st.sidebar.button("🗑️ " + ("キャッシュクリア" if st.session_state.language == 'ja' else "Clear Cache"), 
-                        use_container_width=True):
-        st.session_state.stock_data = {}
-        st.session_state.last_update = None
-        st.sidebar.success("キャッシュをクリアしました / Cache cleared")
-    
-    st.sidebar.markdown("---")
-    
-    # User mode selection
+    # User mode selection (moved to top)
     st.sidebar.subheader(get_text('user_mode_selection'))
     mode_options = {
         get_text('beginner_mode'): 'beginner',
@@ -849,7 +826,28 @@ def main():
         st.info("上記のアクションボタンから検索方法を選択してください。")
         symbols = []
     
-    # Cache clear functionality moved to hamburger menu
+    st.sidebar.markdown("---")
+    
+    # Add main menu items to sidebar (moved below user mode)
+    st.sidebar.markdown("### " + ("メニュー" if st.session_state.language == 'ja' else "Menu"))
+    
+    # Terms link
+    if st.sidebar.button("📋 " + get_text('terms'), use_container_width=True):
+        st.switch_page("pages/利用規約.py")
+    
+    # API Status
+    if st.sidebar.button("🔧 " + ("APIステータス" if st.session_state.language == 'ja' else "API Status"), 
+                        use_container_width=True):
+        with st.sidebar:
+            with st.expander("📊 API Status", expanded=True):
+                show_api_status()
+    
+    # Cache Clear
+    if st.sidebar.button("🗑️ " + ("キャッシュクリア" if st.session_state.language == 'ja' else "Clear Cache"), 
+                        use_container_width=True):
+        st.session_state.stock_data = {}
+        st.session_state.last_update = None
+        st.sidebar.success("キャッシュをクリアしました / Cache cleared")
     
     # Manual update button for additional control (optional)
     if symbols and not selected_method:  # Only show manual button if no auto-execution happened
