@@ -89,7 +89,8 @@ def main():
     st.sidebar.markdown("""
     <style>
     .stButton > button {
-        margin: 2px 0 2px 0 !important;
+        margin: 0px 0 1px 0 !important;
+        height: 40px !important;
     }
     </style>
     """, unsafe_allow_html=True)
@@ -105,9 +106,13 @@ def main():
         padding: 8px 12px; 
         border-radius: 6px; 
         border-left: 4px solid #2196f3;
-        margin: 2px 0 2px 0;
+        margin: 0px 0 1px 0;
         color: #1976d2;
         font-weight: 500;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        box-sizing: border-box;
     ">
         📋 {get_text('terms')}
     </div>
