@@ -21,7 +21,7 @@ import os
 # Set page configuration
 st.set_page_config(
     page_title="TOP - StockScore",
-    page_icon="🎯",
+    page_icon="📈",
     layout="wide",
     initial_sidebar_state="auto"
 )
@@ -600,10 +600,9 @@ def main():
     # Clean header without language switcher (moved to sidebar)
     st.markdown("")  # Add spacing
     
-    # Display title with emoji icon - reduced top spacing
+    # Display title without emoji - clean design
     st.markdown(f"""
     <div style="display: flex; align-items: center; margin-top: -20px; margin-bottom: 15px;">
-        <div style="font-size: 3rem; margin-right: 15px;">🎯</div>
         <h1 style="margin: 0; font-size: 2.5rem; font-weight: 700; background: linear-gradient(135deg, #2563eb 0%, #10b981 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">
             StockScore
         </h1>
