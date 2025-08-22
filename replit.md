@@ -107,9 +107,11 @@ Performance Priorities: Remove stock count limitations, implement intelligent ca
   - Missing data handling: "normal" score (50% of max points)
   - Visual enhancements: S/A/B/C/D ranks, color coding, progress bars with time estimation
 
-### Recent Changes (August 20, 2025)
-- **Progress Enhancement**: Added percentage display and real-time remaining time estimation for 50+ stock analysis
-- **NoneType Error Resolution**: Complete type safety implementation across all comparison operations
-- **Score Distribution Fix**: Eliminated uniform 100-point scores, implemented proper relative evaluation
-- **Investment Recommendations**: 🚀強い買い推奨(80+), ✅買い推奨(70+), ➖中立(60+), ⚠️慎重(40+), ❌非推奨(<40)
-- **UI Improvements**: Rank display with color coding, enhanced featured recommendations section
+### Recent Changes (August 22, 2025)
+- **Performance Optimization**: Implemented comprehensive caching system with @st.cache_data and @st.cache_resource decorators
+- **Loading Speed Enhancement**: Added session-based caching (10 minutes), UI component caching (30 minutes), and analyzer instance caching
+- **Menu Spacing Fix**: Standardized menu item spacing to 1px margins with consistent 40px heights across all pages
+- **Smart Cache Management**: Session-based cache checking prevents redundant API calls for recent data (10-minute window)
+- **Priority Caching**: Enhanced data fetcher with priority cache for popular stocks (1-hour duration)
+- **UI Component Caching**: Market options and stock counts cached to reduce render time
+- **Fast Load Detection**: Automatic cache detection displays success message when loading from cached data

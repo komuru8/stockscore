@@ -4,6 +4,8 @@ import plotly.express as px
 import plotly.graph_objects as go
 from datetime import datetime, timedelta
 import time
+import pickle
+import hashlib
 from stock_analyzer import StockAnalyzer
 
 try:
@@ -24,34 +26,60 @@ st.set_page_config(
     initial_sidebar_state="auto"
 )
 
-# Initialize session state with proper error handling
-if 'analyzer' not in st.session_state:
+# Enhanced caching configuration
+@st.cache_data(ttl=1800)  # 30 minutes cache for static data
+def get_cached_analysis_results(symbols_hash, user_mode):
+    """Cache analysis results for faster loading"""
+    return None
+
+@st.cache_data(ttl=3600)  # 1 hour cache for UI data
+def get_cached_ui_data():
+    """Cache UI configuration data"""
+    return {}
+
+@st.cache_resource
+def get_analyzer_instance():
+    """Cache analyzer instance to avoid re-initialization"""
     try:
         if ENHANCED_ANALYZER_AVAILABLE:
-            st.session_state.analyzer = EnhancedStockAnalyzer()
-            st.session_state.using_enhanced = True
+            analyzer = EnhancedStockAnalyzer()
             print("✅ Enhanced analyzer initialized")
+            return analyzer, True
         else:
-            st.session_state.analyzer = StockAnalyzer()
-            st.session_state.using_enhanced = False
-            print("✅ Basic analyzer initialized")
+            analyzer = StockAnalyzer()
+            print("✅ Basic analyzer initialized") 
+            return analyzer, False
     except Exception as init_error:
         print(f"Analyzer initialization error: {init_error}")
-        # Fallback to basic analyzer
-        st.session_state.analyzer = StockAnalyzer()
-        st.session_state.using_enhanced = False
+        analyzer = StockAnalyzer()
+        return analyzer, False
 
-# Initialize relative scoring engine
+# Initialize session state with caching
+if 'analyzer' not in st.session_state:
+    st.session_state.analyzer, st.session_state.using_enhanced = get_analyzer_instance()
+
+# Initialize with caching optimization
+@st.cache_resource
+def get_relative_scorer():
+    """Cache relative scoring engine"""
+    return RelativeScoringEngine()
+
 if 'relative_scorer' not in st.session_state:
-    st.session_state.relative_scorer = RelativeScoringEngine()
-if 'last_update' not in st.session_state:
-    st.session_state.last_update = None
-if 'stock_data' not in st.session_state:
-    st.session_state.stock_data = {}
-if 'language' not in st.session_state:
-    st.session_state.language = 'ja'  # Default to Japanese
-if 'user_mode' not in st.session_state:
-    st.session_state.user_mode = 'beginner'  # Default to beginner mode
+    st.session_state.relative_scorer = get_relative_scorer()
+    
+# Initialize session state with memory optimization
+session_defaults = {
+    'last_update': None,
+    'stock_data': {},
+    'language': 'ja',
+    'user_mode': 'beginner',
+    'cached_symbols': [],
+    'cached_analysis_time': None
+}
+
+for key, default_value in session_defaults.items():
+    if key not in st.session_state:
+        st.session_state[key] = default_value
 
 
 
@@ -718,12 +746,21 @@ def main():
     # Market selection integrated into discovery section
     col1, col2, col3 = st.columns([2, 2, 2])
     with col1:
-        market_options = [
-            get_text('all_markets'),
-            get_text('japanese_stocks'),
-            get_text('us_stocks'),
-            get_text('emerging_stocks')
-        ]
+        # Use cached market options with fallback
+        try:
+            ui_data = get_ui_components()
+            if st.session_state.language == 'ja':
+                market_options = ui_data['market_options']
+            else:
+                market_options = ['All Markets (全て)', 'Japanese Stocks (日本株)', 'US Stocks (米国株)', 'Emerging Markets (新興国株)']
+        except:
+            market_options = [
+                get_text('all_markets'),
+                get_text('japanese_stocks'),
+                get_text('us_stocks'),
+                get_text('emerging_stocks')
+            ]
+        
         market = st.selectbox(
             "🌍 " + ("市場選択 / Market" if st.session_state.language == 'ja' else "Market / 市場選択"),
             market_options,
@@ -732,11 +769,11 @@ def main():
         )
     
     with col2:
-        # Number of stocks selection
-        stock_count_options = ["20", "50", "100", "200", "任意入力 / Custom"]
+        # Use cached UI components
+        ui_data = get_ui_components()
         selected_count_option = st.selectbox(
             "📊 " + ("検索銘柄数" if st.session_state.language == 'ja' else "Number of Stocks"),
-            stock_count_options,
+            ui_data['stock_counts'],
             index=0,
             help="分析する銘柄数を選択してください / Select number of stocks to analyze"
         )
@@ -943,12 +980,37 @@ def main():
         st.markdown("---")
         st.markdown("**" + ("アクションボタンを選択すると、ここに分析結果が表示されます。" if st.session_state.language == 'ja' else "Select an action button above to see analysis results here.") + "**")
 
+@st.cache_data(ttl=600)  # Cache for 10 minutes
+def get_default_stock_list():
+    """Get default popular stocks for quick loading"""
+    return ['7203.T', '6758.T', '9984.T', '4755.T', '8306.T']
+
+@st.cache_data(ttl=1800)  # Cache for 30 minutes  
+def get_ui_components():
+    """Cache UI component data to reduce render time"""
+    return {
+        'market_options': ['全て (All Markets)', '日本株 (Japanese Stocks)', '米国株 (US Stocks)', '新興国株 (Emerging Markets)'],
+        'stock_counts': ["20", "50", "100", "200", "任意入力 / Custom"],
+        'user_modes': ['👶 初級者', '🧑‍💼 中級者']
+    }
+
 def update_stock_data(symbols, per_threshold, pbr_threshold, roe_threshold, dividend_multiplier):
-    """Update stock data and scores with batch processing to prevent server overload"""
+    """Update stock data and scores with intelligent caching and batch processing"""
     progress_bar = None
     status_text = None
     
     try:
+        # Check cache first for exact same request
+        symbols_tuple = tuple(sorted(symbols))
+        current_hour = datetime.now().replace(minute=0, second=0, microsecond=0)
+        
+        # Check if we have recent data in session for the same symbols
+        if (st.session_state.get('cached_symbols') == symbols and 
+            st.session_state.get('cached_analysis_time') and
+            (datetime.now() - st.session_state.cached_analysis_time).total_seconds() < 600 and
+            st.session_state.get('stock_data')):
+            st.success(f"✅ セッションキャッシュから{len(st.session_state.stock_data)}銘柄を高速読み込み / Fast loaded from session cache")
+            return
         # Create progress indicators
         progress_bar = st.progress(0)
         status_text = st.empty()
@@ -1111,9 +1173,16 @@ def update_stock_data(symbols, per_threshold, pbr_threshold, roe_threshold, divi
         
         progress_bar.progress(90)
         
-        # Store results
+        # Store results and update cache
         st.session_state.stock_data = all_results
         st.session_state.last_update = datetime.now()
+        
+        # Update the cache with new results for future requests
+        if all_results:
+            # Store in session state for immediate access
+            st.session_state.cached_symbols = list(symbols)
+            st.session_state.cached_analysis_time = current_hour
+        
         progress_bar.progress(100)
         
         # Show summary

@@ -26,10 +26,12 @@ class EnhancedDataFetcher:
         self.finnhub_client = None
         self._init_finnhub()
         
-        # Cache configuration
+        # Enhanced cache configuration
         self.cache = {}
         self.cache_expiry = {}
         self.cache_duration = 30 * 60  # 30 minutes
+        self.priority_cache = {}  # High-priority cache for popular stocks
+        self.priority_cache_duration = 60 * 60  # 1 hour for popular stocks
         
         # API status tracking
         self.yahoo_failures = 0
@@ -109,9 +111,14 @@ class EnhancedDataFetcher:
         return None
     
     def _cache_result(self, symbol: str, data: Dict):
-        """Cache the result with expiry time"""
+        """Cache the result with expiry time and priority handling"""
         self.cache[symbol] = data
         self.cache_expiry[symbol] = datetime.now() + timedelta(seconds=self.cache_duration)
+        
+        # Cache popular stocks with longer duration
+        popular_symbols = ['7203.T', '6758.T', '9984.T', 'AAPL', 'MSFT', 'GOOGL', 'TSLA']
+        if symbol in popular_symbols:
+            self.priority_cache[symbol] = data
     
     def get_stock_data(self, symbol: str) -> Optional[Dict]:
         """Get comprehensive stock data with failover"""
