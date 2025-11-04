@@ -848,34 +848,34 @@ def main():
     </style>
     """, unsafe_allow_html=True)
     
-    # Create action buttons in a grid layout with flat icons
+    # Create action buttons in a grid layout with meaningful icons
     st.markdown("") # Add some spacing
     col1, col2, col3, col4 = st.columns(4, gap="medium")
     
     with col1:
         popularity_button = st.button(
-            "★\n\n" + ("人気ランキング" if st.session_state.language == 'ja' else "Popular\nRanking"),
+            "↑\n\n" + ("人気ランキング" if st.session_state.language == 'ja' else "Popular\nRanking"),
             use_container_width=True,
             help="市場で人気の銘柄を表示" if st.session_state.language == 'ja' else "Show popular stocks in the market"
         )
     
     with col2:
         dividend_button = st.button(
-            "▲\n\n" + ("高配当利回り" if st.session_state.language == 'ja' else "High\nDividend"),
+            "¥\n\n" + ("高配当利回り" if st.session_state.language == 'ja' else "High\nDividend"),
             use_container_width=True,
             help="高配当利回りの銘柄を表示" if st.session_state.language == 'ja' else "Show high dividend yield stocks"
         )
     
     with col3:
         theme_button = st.button(
-            "■\n\n" + ("テーマ別" if st.session_state.language == 'ja' else "By\nTheme"),
+            "#\n\n" + ("テーマ別" if st.session_state.language == 'ja' else "By\nTheme"),
             use_container_width=True,
             help="特定のテーマやセクターの銘柄を表示" if st.session_state.language == 'ja' else "Show stocks by specific themes or sectors"
         )
     
     with col4:
         random_button = st.button(
-            "◆\n\n" + ("ランダム選択" if st.session_state.language == 'ja' else "Random\nPick"),
+            "?\n\n" + ("ランダム選択" if st.session_state.language == 'ja' else "Random\nPick"),
             use_container_width=True,
             help="ランダムに選択された銘柄を表示" if st.session_state.language == 'ja' else "Show randomly selected stocks"
         )
