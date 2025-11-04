@@ -819,12 +819,12 @@ def main():
         else:
             stock_count = int(selected_count_option)
     
-    # Modern flat button styling - clean and simple
+    # Modern flat button styling with custom icons
     st.markdown("""
     <style>
     /* Action button styling - flat modern design */
     div[data-testid="column"] > div > div > div > button {
-        height: 110px;
+        height: 130px;
         border-radius: 12px;
         border: none;
         background: white;
@@ -845,38 +845,83 @@ def main():
         margin: 0;
         line-height: 1.4;
     }
+    .action-icon {
+        width: 40px;
+        height: 40px;
+        margin: 0 auto 8px auto;
+        display: block;
+    }
     </style>
     """, unsafe_allow_html=True)
     
-    # Create action buttons in a grid layout with meaningful icons
+    # Create action buttons with SVG flat icons
     st.markdown("") # Add some spacing
     col1, col2, col3, col4 = st.columns(4, gap="medium")
     
+    # SVG Icons
+    trending_up_icon = """
+    <svg class="action-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M23 6L13.5 15.5L8.5 10.5L1 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M17 6H23V12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+    """
+    
+    coin_icon = """
+    <svg class="action-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
+        <path d="M12 6V18M15 9C15 7.34315 13.6569 6 12 6C10.3431 6 9 7.34315 9 9C9 10.6569 10.3431 12 12 12C13.6569 12 15 13.3431 15 15C15 16.6569 13.6569 18 12 18C10.3431 18 9 16.6569 9 15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+    </svg>
+    """
+    
+    folder_icon = """
+    <svg class="action-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M22 19C22 19.5304 21.7893 20.0391 21.4142 20.4142C21.0391 20.7893 20.5304 21 20 21H4C3.46957 21 2.96086 20.7893 2.58579 20.4142C2.21071 20.0391 2 19.5304 2 19V5C2 4.46957 2.21071 3.96086 2.58579 3.58579C2.96086 3.21071 3.46957 3 4 3H9L11 6H20C20.5304 6 21.0391 6.21071 21.4142 6.58579C21.7893 6.96086 22 7.46957 22 8V19Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+    """
+    
+    shuffle_icon = """
+    <svg class="action-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M16 3H21V8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M4 20L21 3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M21 16V21H16" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M15 15L21 21" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M4 4L9 9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+    """
+    
     with col1:
+        st.markdown(trending_up_icon, unsafe_allow_html=True)
         popularity_button = st.button(
-            "↑\n\n" + ("人気ランキング" if st.session_state.language == 'ja' else "Popular\nRanking"),
+            ("人気ランキング" if st.session_state.language == 'ja' else "Popular\nRanking"),
             use_container_width=True,
+            key="popularity",
             help="市場で人気の銘柄を表示" if st.session_state.language == 'ja' else "Show popular stocks in the market"
         )
     
     with col2:
+        st.markdown(coin_icon, unsafe_allow_html=True)
         dividend_button = st.button(
-            "¥\n\n" + ("高配当利回り" if st.session_state.language == 'ja' else "High\nDividend"),
+            ("高配当利回り" if st.session_state.language == 'ja' else "High\nDividend"),
             use_container_width=True,
+            key="dividend",
             help="高配当利回りの銘柄を表示" if st.session_state.language == 'ja' else "Show high dividend yield stocks"
         )
     
     with col3:
+        st.markdown(folder_icon, unsafe_allow_html=True)
         theme_button = st.button(
-            "#\n\n" + ("テーマ別" if st.session_state.language == 'ja' else "By\nTheme"),
+            ("テーマ別" if st.session_state.language == 'ja' else "By\nTheme"),
             use_container_width=True,
+            key="theme",
             help="特定のテーマやセクターの銘柄を表示" if st.session_state.language == 'ja' else "Show stocks by specific themes or sectors"
         )
     
     with col4:
+        st.markdown(shuffle_icon, unsafe_allow_html=True)
         random_button = st.button(
-            "?\n\n" + ("ランダム選択" if st.session_state.language == 'ja' else "Random\nPick"),
+            ("ランダム選択" if st.session_state.language == 'ja' else "Random\nPick"),
             use_container_width=True,
+            key="random",
             help="ランダムに選択された銘柄を表示" if st.session_state.language == 'ja' else "Show randomly selected stocks"
         )
     
