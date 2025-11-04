@@ -597,15 +597,36 @@ def get_theme_options(market):
         }
 
 def main():
-    # Clean header without language switcher (moved to sidebar)
-    st.markdown("")  # Add spacing
+    # Modern header design with clean flat styling
+    st.markdown("""
+    <style>
+    .main-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        padding: 2rem;
+        border-radius: 16px;
+        margin: -1rem 0 2rem 0;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    }
+    .header-title {
+        color: white;
+        font-size: 3rem;
+        font-weight: 800;
+        margin: 0;
+        letter-spacing: -1px;
+    }
+    .header-subtitle {
+        color: rgba(255,255,255,0.9);
+        font-size: 1.1rem;
+        margin: 0.5rem 0 0 0;
+        font-weight: 400;
+    }
+    </style>
     
-    # Display title without emoji - clean design
-    st.markdown(f"""
-    <div style="display: flex; align-items: center; margin-top: -20px; margin-bottom: 15px;">
-        <h1 style="margin: 0; font-size: 2.5rem; font-weight: 700; background: linear-gradient(135deg, #2563eb 0%, #10b981 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">
-            StockScore
-        </h1>
+    <div class="main-header">
+        <div class="header-title">StockScore</div>
+        <div class="header-subtitle">
+    """ + ("データ駆動型の投資判断をサポート" if st.session_state.language == 'ja' else "Data-Driven Investment Analysis Platform") + """
+        </div>
     </div>
     """, unsafe_allow_html=True)
     
@@ -614,8 +635,8 @@ def main():
     # Sidebar configuration
     st.sidebar.header("" if st.session_state.language == 'ja' else "")
     
-    # User mode selection (moved to top)
-    st.sidebar.subheader(get_text('user_mode_selection'))
+    # User mode selection (moved to top) - flat design
+    st.sidebar.markdown("### " + get_text('user_mode_selection'))
     mode_options = {
         get_text('beginner_mode'): 'beginner',
         get_text('intermediate_mode'): 'intermediate'
@@ -658,7 +679,7 @@ def main():
     
     if st.session_state.user_mode == 'beginner':
         # Simplified criteria for beginners
-        st.sidebar.subheader("🎯 簡易設定")
+        st.sidebar.markdown("### 簡易設定" if st.session_state.language == 'ja' else "### Simple Settings")
         
         per_threshold = st.sidebar.slider(
             "PER基準" if st.session_state.language == 'ja' else "PER Standard",
@@ -736,9 +757,18 @@ def main():
             min_value=10, max_value=80, value=30, step=5
         )
     
-    # Stock discovery section with market selection
+    # Stock discovery section with market selection - modern flat design
     st.markdown("---")
-    st.subheader("📍 " + ("株式検索方法を選択" if st.session_state.language == 'ja' else "Choose Stock Discovery Method"))
+    st.markdown("""
+    <div style="padding: 1.5rem; background: #f8f9fa; border-radius: 12px; margin: 1rem 0;">
+        <h3 style="margin: 0 0 0.5rem 0; color: #1a202c; font-weight: 700;">
+    """ + ("株式検索" if st.session_state.language == 'ja' else "Stock Discovery") + """
+        </h3>
+        <p style="margin: 0; color: #4a5568; font-size: 0.95rem;">
+    """ + ("お好みの検索方法を選択してください" if st.session_state.language == 'ja' else "Choose your preferred discovery method") + """
+        </p>
+    </div>
+    """, unsafe_allow_html=True)
     
 
     
@@ -761,7 +791,7 @@ def main():
             ]
         
         market = st.selectbox(
-            "🌍 " + ("市場選択 / Market" if st.session_state.language == 'ja' else "Market / 市場選択"),
+            ("市場" if st.session_state.language == 'ja' else "Market"),
             market_options,
             index=0,
             help="分析したい市場を選択してください / Select the market to analyze"
@@ -771,7 +801,7 @@ def main():
         # Use cached UI components
         ui_data = get_ui_components()
         selected_count_option = st.selectbox(
-            "📊 " + ("検索銘柄数" if st.session_state.language == 'ja' else "Number of Stocks"),
+            ("銘柄数" if st.session_state.language == 'ja' else "Stock Count"),
             ui_data['stock_counts'],
             index=0,
             help="分析する銘柄数を選択してください / Select number of stocks to analyze"
@@ -789,56 +819,63 @@ def main():
         else:
             stock_count = int(selected_count_option)
     
-    # Add custom CSS for enhanced button styling
+    # Modern flat button styling - clean and simple
     st.markdown("""
     <style>
+    /* Action button styling - flat modern design */
     div[data-testid="column"] > div > div > div > button {
-        height: 120px;
-        border-radius: 15px;
-        border: 2px solid #e1e5e9;
-        background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%);
+        height: 110px;
+        border-radius: 12px;
+        border: none;
+        background: white;
         transition: all 0.3s ease;
-        font-size: 14px !important;
+        font-size: 15px !important;
         font-weight: 600;
         text-align: center;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        color: #2d3748 !important;
     }
     div[data-testid="column"] > div > div > div > button:hover {
-        border-color: #2563eb;
-        background: linear-gradient(135deg, #eff6ff 0%, #f0f9ff 100%);
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(37, 99, 235, 0.15);
+        background: #667eea;
+        color: white !important;
+        transform: translateY(-3px);
+        box-shadow: 0 8px 16px rgba(102, 126, 234, 0.25);
+    }
+    div[data-testid="column"] > div > div > div > button p {
+        margin: 0;
+        line-height: 1.4;
     }
     </style>
     """, unsafe_allow_html=True)
     
-    # Create action buttons in a grid layout
+    # Create action buttons in a grid layout with flat icons
     st.markdown("") # Add some spacing
     col1, col2, col3, col4 = st.columns(4, gap="medium")
     
     with col1:
         popularity_button = st.button(
-            "📈\n\n人気から\n探す" if st.session_state.language == 'ja' else "📈\n\nPopular\nRanking",
+            "★\n\n" + ("人気ランキング" if st.session_state.language == 'ja' else "Popular\nRanking"),
             use_container_width=True,
             help="市場で人気の銘柄を表示" if st.session_state.language == 'ja' else "Show popular stocks in the market"
         )
     
     with col2:
         dividend_button = st.button(
-            "💰\n\n配当利回り\nから探す" if st.session_state.language == 'ja' else "💰\n\nHigh\nDividend",
+            "▲\n\n" + ("高配当利回り" if st.session_state.language == 'ja' else "High\nDividend"),
             use_container_width=True,
             help="高配当利回りの銘柄を表示" if st.session_state.language == 'ja' else "Show high dividend yield stocks"
         )
     
     with col3:
         theme_button = st.button(
-            "🎯\n\nテーマ別\nに探す" if st.session_state.language == 'ja' else "🎯\n\nBy\nTheme",
+            "■\n\n" + ("テーマ別" if st.session_state.language == 'ja' else "By\nTheme"),
             use_container_width=True,
             help="特定のテーマやセクターの銘柄を表示" if st.session_state.language == 'ja' else "Show stocks by specific themes or sectors"
         )
     
     with col4:
         random_button = st.button(
-            "🎲\n\nランダム\nに探す" if st.session_state.language == 'ja' else "🎲\n\nRandom\nPick",
+            "◆\n\n" + ("ランダム選択" if st.session_state.language == 'ja' else "Random\nPick"),
             use_container_width=True,
             help="ランダムに選択された銘柄を表示" if st.session_state.language == 'ja' else "Show randomly selected stocks"
         )
@@ -864,7 +901,7 @@ def main():
     
     st.sidebar.markdown("---")
     
-    # Add main menu items to sidebar (moved below user mode) with consistent spacing
+    # Sidebar menu with flat design
     st.sidebar.markdown("### " + ("メニュー" if st.session_state.language == 'ja' else "Menu"))
     st.sidebar.markdown("""
     <style>
@@ -890,23 +927,23 @@ def main():
         align-items: center;
         box-sizing: border-box;
     ">
-        🏠 TOP
+        TOP
     </div>
     """, unsafe_allow_html=True)
     
     # Terms link
-    if st.sidebar.button("📋 " + get_text('terms'), use_container_width=True):
+    if st.sidebar.button(get_text('terms'), use_container_width=True):
         st.switch_page("pages/利用規約.py")
     
     # API Status
-    if st.sidebar.button("🔧 " + ("APIステータス" if st.session_state.language == 'ja' else "API Status"), 
+    if st.sidebar.button(("APIステータス" if st.session_state.language == 'ja' else "API Status"), 
                         use_container_width=True):
         with st.sidebar:
-            with st.expander("📊 API Status", expanded=True):
+            with st.expander("API Status", expanded=True):
                 show_api_status()
     
     # Cache Clear
-    if st.sidebar.button("🗑️ " + ("キャッシュクリア" if st.session_state.language == 'ja' else "Clear Cache"), 
+    if st.sidebar.button(("キャッシュクリア" if st.session_state.language == 'ja' else "Clear Cache"), 
                         use_container_width=True):
         st.session_state.stock_data = {}
         st.session_state.last_update = None
@@ -915,7 +952,7 @@ def main():
     st.sidebar.markdown("---")
     
     # Language switcher at bottom of sidebar
-    current_lang = "🌐 English" if st.session_state.language == 'ja' else "🌐 日本語"
+    current_lang = "English" if st.session_state.language == 'ja' else "日本語"
     if st.sidebar.button(current_lang, key="lang_toggle", help="Switch Language / 言語切り替え", 
                         use_container_width=True):
         st.session_state.language = 'en' if st.session_state.language == 'ja' else 'ja'
@@ -938,7 +975,7 @@ def main():
                 update_stock_data(symbols, per_threshold, pbr_threshold, roe_threshold, dividend_multiplier)
                     
         with col2:
-            if st.button("🗑️ キャッシュクリア / Clear Cache", type="secondary"):
+            if st.button(("キャッシュクリア" if st.session_state.language == 'ja' else "Clear Cache"), type="secondary"):
                 if hasattr(st.session_state.analyzer, 'clear_cache'):
                     st.session_state.analyzer.clear_cache()
                     st.success("キャッシュをクリアしました / Cache cleared")
@@ -949,10 +986,10 @@ def main():
     elif symbols:
         col1, col2 = st.columns(2)
         with col1:
-            if st.button("🔄 再取得 / Re-fetch", type="secondary"):
+            if st.button(("再取得" if st.session_state.language == 'ja' else "Re-fetch"), type="secondary"):
                 update_stock_data(symbols, per_threshold, pbr_threshold, roe_threshold, dividend_multiplier)
         with col2:
-            if st.button("🗑️ キャッシュクリア / Clear Cache", type="secondary"):
+            if st.button(("キャッシュクリア" if st.session_state.language == 'ja' else "Clear Cache"), type="secondary"):
                 if hasattr(st.session_state.analyzer, 'clear_cache'):
                     st.session_state.analyzer.clear_cache()
                     st.success("キャッシュをクリアしました / Cache cleared")
@@ -1279,11 +1316,17 @@ def display_results(view_mode, market):
     df = pd.DataFrame(df_data)
     df = df.sort_values('Score', ascending=False)
     
-    # Show investment decision results first
-    st.subheader("💡 " + ("投資判定結果" if st.session_state.language == 'ja' else "Investment Decision Results"))
+    # Show investment decision results first - modern flat design
+    st.markdown("""
+    <div style="padding: 1.2rem; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 12px; margin: 1.5rem 0;">
+        <h3 style="margin: 0; color: white; font-weight: 700;">
+    """ + ("投資判定結果" if st.session_state.language == 'ja' else "Investment Decision Results") + """
+        </h3>
+    </div>
+    """, unsafe_allow_html=True)
     
     # Display summary metrics
-    st.subheader(get_text('portfolio_overview'))
+    st.markdown("#### " + get_text('portfolio_overview'))
     col1, col2, col3, col4 = st.columns(4)
     
     with col1:
@@ -1338,8 +1381,14 @@ def display_results(view_mode, market):
         with rec_cols[i]:
             st.metric(level, count, label_visibility="visible")
     
-    # Featured Recommendations Section
-    st.subheader("🌟 " + ("推奨銘柄ピックアップ" if st.session_state.language == 'ja' else "Featured Recommendations"))
+    # Featured Recommendations Section - modern flat design
+    st.markdown("""
+    <div style="padding: 1rem; background: #f7fafc; border-left: 4px solid #667eea; border-radius: 8px; margin: 1.5rem 0;">
+        <h4 style="margin: 0; color: #2d3748; font-weight: 700;">
+    """ + ("推奨銘柄ピックアップ" if st.session_state.language == 'ja' else "Featured Recommendations") + """
+        </h4>
+    </div>
+    """, unsafe_allow_html=True)
     
     # Get top 3 recommendations
     top_recommendations = df.head(3)
@@ -1379,7 +1428,13 @@ def display_results(view_mode, market):
 
     # Now show the full stock list below featured recommendations
     st.markdown("---")
-    st.subheader("📊 " + ("銘柄一覧" if st.session_state.language == 'ja' else "Stock List"))
+    st.markdown("""
+    <div style="padding: 1rem; background: #f7fafc; border-left: 4px solid #667eea; border-radius: 8px; margin: 1.5rem 0;">
+        <h4 style="margin: 0; color: #2d3748; font-weight: 700;">
+    """ + ("銘柄一覧" if st.session_state.language == 'ja' else "Stock List") + """
+        </h4>
+    </div>
+    """, unsafe_allow_html=True)
     
     # Results table - show after featured recommendations
     if view_mode == get_text('simple_view'):
@@ -1779,10 +1834,10 @@ def display_intermediate_view(df):
 
 def display_detailed_view(df, data):
     """Display detailed view of results"""
-    st.subheader("詳細分析" if st.session_state.language == 'ja' else "Detailed Analysis")
+    st.markdown("#### " + ("詳細分析" if st.session_state.language == 'ja' else "Detailed Analysis"))
     
-    # Top performers
-    st.write("### 🚀 " + ("トップパフォーマー" if st.session_state.language == 'ja' else "Top Performers"))
+    # Top performers - flat design
+    st.markdown("### " + ("トップパフォーマー" if st.session_state.language == 'ja' else "Top Performers"))
     top_stocks = df.head(3)
     
     for _, stock in top_stocks.iterrows():
@@ -1829,8 +1884,8 @@ def display_detailed_view(df, data):
                         mini_circular_svg = create_circular_score(score, 60)
                         st.markdown(mini_circular_svg, unsafe_allow_html=True)
     
-    # Full detailed table
-    st.write("### 📊 " + ("全銘柄詳細" if st.session_state.language == 'ja' else "All Stocks Detail"))
+    # Full detailed table - flat design
+    st.markdown("### " + ("全銘柄詳細" if st.session_state.language == 'ja' else "All Stocks Detail"))
     
     # Enhanced table with better formatting
     display_columns = ['Symbol', 'Company', 'Score', 'Recommendation', 'Current Price', 'PER', 'PBR', 'ROE', 'Dividend Yield']
