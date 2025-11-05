@@ -234,18 +234,8 @@ def handle_action_buttons(popularity_button, dividend_button, theme_button, rand
             ]
             all_combined = japanese_stocks + us_stocks + emerging_stocks
             selected_symbols = all_combined[:stock_count]
-        
-    elif dividend_button:
-        # High dividend yield stocks by market
-        if market == get_text('all_markets'):
-            # Combine high dividend stocks from all markets
-            japanese_dividend = ["8306.T", "8411.T", "8316.T", "8591.T", "8604.T", "8630.T", "8725.T", "8766.T", "8795.T", "8830.T", "9501.T", "9613.T", "9962.T", "9983.T", "8001.T", "8031.T", "8053.T", "8058.T", "5020.T", "1605.T"]
-            us_dividend = ["T", "VZ", "XOM", "CVX", "KO", "PEP", "JNJ", "PG", "MO", "PM", "IBM", "MMM", "CAT", "GE", "F", "GM", "C", "BAC", "JPM", "WFC", "O", "MAIN", "STAG", "EPD", "ET", "KMI", "ENB", "TRP", "SPG", "REG"]
-            emerging_dividend = ["VALE", "PBR", "ITUB", "BBD", "ABEV", "SID", "UGP", "EWZ", "FMX", "CIG", "ERJ", "GOL", "AZUL", "BRFS", "JBS", "CACC", "PAC", "TV", "WIT", "005930.KS"]
-            all_dividend = japanese_dividend + us_dividend + emerging_dividend
-            selected_symbols = all_dividend[:stock_count]
         elif market == get_text('japanese_stocks'):
-            all_dividend_japanese = [
+            all_japanese_stocks = [
                 "7203.T", "6758.T", "9984.T", "8306.T", "6861.T", "9434.T", "4063.T", "6098.T",
                 "8035.T", "9432.T", "4519.T", "6367.T", "7267.T", "8031.T", "4568.T", "9020.T",
                 "6954.T", "1605.T", "6902.T", "7974.T", "4507.T", "9022.T", "6326.T", "6971.T",
@@ -300,6 +290,8 @@ def handle_action_buttons(popularity_button, dividend_button, theme_button, rand
             ]
             selected_symbols = all_emerging_stocks[:stock_count]
         
+        st.success("人気ランキング上位銘柄を選択しました" if st.session_state.language == 'ja' else "Selected top popular stocks")
+        
     elif dividend_button:
         # High dividend yield stocks by market
         if market == get_text('all_markets'):
@@ -339,6 +331,8 @@ def handle_action_buttons(popularity_button, dividend_button, theme_button, rand
                 "BRDT3.SA", "KLBN11.SA", "CIEL3.SA", "COGN3.SA", "YDUQ3.SA", "ARZZ3.SA", "MRFG3.SA"
             ]
             selected_symbols = all_dividend_emerging[:stock_count]
+            
+        st.success("高配当利回り銘柄を選択しました" if st.session_state.language == 'ja' else "Selected high dividend yield stocks")
         
     elif theme_button:
         # Show theme selection modal
@@ -353,6 +347,7 @@ def handle_action_buttons(popularity_button, dividend_button, theme_button, rand
             if st.button("このテーマで分析開始" if st.session_state.language == 'ja' else "Start Analysis with This Theme"):
                 theme_stocks = theme_options[selected_theme]
                 selected_symbols = theme_stocks[:stock_count]  # Use user-selected stock count
+                st.success(f"テーマ「{selected_theme}」から{len(selected_symbols)}銘柄を選択しました" if st.session_state.language == 'ja' else f"Selected {len(selected_symbols)} stocks for theme: {selected_theme}")
                 
     elif random_button:
         # Random selection from all available stocks using the expanded lists
@@ -419,6 +414,8 @@ def handle_action_buttons(popularity_button, dividend_button, theme_button, rand
                 "PETR4.SA", "WEGE3.SA", "MGLU3.SA", "B3SA3.SA", "RENT3.SA", "FLRY3.SA", "HAPV3.SA"
             ]
             selected_symbols = random.sample(all_symbols, min(stock_count, len(all_symbols)))
+            
+        st.success("ランダムに銘柄を選択しました" if st.session_state.language == 'ja' else "Randomly selected stocks")
         
     return selected_symbols
 
@@ -930,27 +927,21 @@ def main():
     
 
     
-    # Handle action button clicks - save selection to session state
+    # Handle action button clicks with auto-execution
     selected_method = handle_action_buttons(popularity_button, dividend_button, theme_button, random_button, market, stock_count)
     
-    # Save selection to session state instead of auto-executing
+    # Auto-execute data fetching when action button is pressed
     if selected_method:
-        st.session_state.selected_symbols = selected_method
-        st.session_state.selection_ready = True
-    
-    # Add Search button
-    if st.session_state.get('selection_ready', False):
-        if st.button("🔍 " + ("検索する" if st.session_state.language == 'ja' else "Search"), type="primary", use_container_width=True):
-            symbols = st.session_state.selected_symbols
-            # Automatically trigger data update
-            with st.spinner("データを取得中... / Fetching data..."):
-                update_stock_data(symbols, per_threshold, pbr_threshold, roe_threshold, dividend_multiplier)
-            # Clear selection after search
-            st.session_state.selection_ready = False
-            symbols = st.session_state.selected_symbols
-        else:
-            symbols = []
+        symbols = selected_method
+        st.success(f"✅ {len(symbols)}銘柄を自動取得中... / Auto-fetching {len(symbols)} stocks...")
+        
+        # Automatically trigger data update
+        with st.spinner("データを取得中... / Fetching data..."):
+            update_stock_data(symbols, per_threshold, pbr_threshold, roe_threshold, dividend_multiplier)
+        
     else:
+        # Show message to select an action button
+        st.info("上記のアクションボタンから検索方法を選択してください。")
         symbols = []
     
     st.sidebar.markdown("---")
