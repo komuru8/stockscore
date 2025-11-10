@@ -228,16 +228,10 @@ def get_text(key, lang=None):
     return texts.get(key, {}).get(lang, key)
 
 def handle_action_buttons(popularity_button, dividend_button, theme_button, random_button, market, stock_count=20):
-    """Handle action button clicks and store selection in session state (no immediate execution)"""
+    """Handle action button clicks and return selected symbols"""
     import random
     
-    # Initialize session state for selected action if not exists
-    if 'selected_action' not in st.session_state:
-        st.session_state.selected_action = None
-    if 'selected_symbols' not in st.session_state:
-        st.session_state.selected_symbols = None
-    if 'selection_label' not in st.session_state:
-        st.session_state.selection_label = None
+    selected_symbols = None
     
     if popularity_button:
         # Popular/high market cap stocks by market
@@ -326,10 +320,7 @@ def handle_action_buttons(popularity_button, dividend_button, theme_button, rand
             ]
             selected_symbols = all_emerging_stocks[:stock_count]
         
-        # Store selection in session state (no immediate execution)
-        st.session_state.selected_symbols = selected_symbols
-        st.session_state.selected_action = 'popularity'
-        st.session_state.selection_label = "人気ランキング" if st.session_state.language == 'ja' else "Popular Ranking"
+        st.success("人気ランキング上位銘柄を選択しました" if st.session_state.language == 'ja' else "Selected top popular stocks")
         
     elif dividend_button:
         # High dividend yield stocks by market
@@ -371,10 +362,7 @@ def handle_action_buttons(popularity_button, dividend_button, theme_button, rand
             ]
             selected_symbols = all_dividend_emerging[:stock_count]
             
-        # Store selection in session state (no immediate execution)
-        st.session_state.selected_symbols = selected_symbols
-        st.session_state.selected_action = 'dividend'
-        st.session_state.selection_label = "高配当利回り" if st.session_state.language == 'ja' else "High Dividend"
+        st.success("高配当利回り銘柄を選択しました" if st.session_state.language == 'ja' else "Selected high dividend yield stocks")
         
     elif theme_button:
         # Show theme selection modal
@@ -389,11 +377,7 @@ def handle_action_buttons(popularity_button, dividend_button, theme_button, rand
             if st.button("このテーマで分析開始" if st.session_state.language == 'ja' else "Start Analysis with This Theme"):
                 theme_stocks = theme_options[selected_theme]
                 selected_symbols = theme_stocks[:stock_count]  # Use user-selected stock count
-                
-                # Store selection in session state (no immediate execution)
-                st.session_state.selected_symbols = selected_symbols
-                st.session_state.selected_action = 'theme'
-                st.session_state.selection_label = f"{selected_theme}"
+                st.success(f"テーマ「{selected_theme}」から{len(selected_symbols)}銘柄を選択しました" if st.session_state.language == 'ja' else f"Selected {len(selected_symbols)} stocks for theme: {selected_theme}")
                 
     elif random_button:
         # Random selection from all available stocks using the expanded lists
@@ -461,10 +445,9 @@ def handle_action_buttons(popularity_button, dividend_button, theme_button, rand
             ]
             selected_symbols = random.sample(all_symbols, min(stock_count, len(all_symbols)))
             
-        # Store selection in session state (no immediate execution)
-        st.session_state.selected_symbols = selected_symbols
-        st.session_state.selected_action = 'random'
-        st.session_state.selection_label = "ランダム選択" if st.session_state.language == 'ja' else "Random Pick"
+        st.success("ランダムに銘柄を選択しました" if st.session_state.language == 'ja' else "Randomly selected stocks")
+        
+    return selected_symbols
 
 def generate_stock_analysis(stock):
     """Generate detailed stock analysis based on fundamentals and market position"""
