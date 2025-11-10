@@ -269,28 +269,25 @@ def handle_action_buttons(popularity_button, dividend_button, theme_button, rand
         st.session_state.pending_action = 'popularity'
         st.session_state.pending_market = market
         st.session_state.pending_stock_count = stock_count
-        st.rerun()
     elif dividend_button:
         st.session_state.show_confirm_dialog = True
         st.session_state.pending_action = 'dividend'
         st.session_state.pending_market = market
         st.session_state.pending_stock_count = stock_count
-        st.rerun()
     elif random_button:
         st.session_state.show_confirm_dialog = True
         st.session_state.pending_action = 'random'
         st.session_state.pending_market = market
         st.session_state.pending_stock_count = stock_count
-        st.rerun()
     
     # Show confirmation dialog only when flag is True
-    if st.session_state.show_confirm_dialog:
+    if st.session_state.get('show_confirm_dialog', False):
         confirm_search_dialog(
             st.session_state.get('pending_action', ''),
             st.session_state.get('pending_market', market),
             st.session_state.get('pending_stock_count', stock_count)
         )
-        return None  # Don't execute any actions while dialog is shown
+        return None  # Don't execute actions while dialog is open
     
     # Execute confirmed action
     if st.session_state.confirmed_action == 'popularity':
