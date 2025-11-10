@@ -45,6 +45,27 @@ st.set_page_config(
 # Using JavaScript to add meta tags to <head> for proper iOS home screen icon support
 import streamlit.components.v1 as components
 
+# Critical: Collapse the wrapper div that Streamlit creates around components.html
+# This prevents the iframe from adding unwanted top spacing
+st.markdown("""
+<style>
+    /* Target Streamlit's wrapper div for components.html to completely collapse it */
+    div[data-testid='stHtml'] {
+        margin: 0 !important;
+        padding: 0 !important;
+        height: 0 !important;
+        min-height: 0 !important;
+        line-height: 0 !important;
+    }
+    div[data-testid='stHtml'] iframe {
+        height: 0 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        display: block !important;
+    }
+</style>
+""", unsafe_allow_html=True)
+
 # Inject meta tags into <head> using JavaScript (iframe hidden with CSS)
 components.html("""
 <style>
