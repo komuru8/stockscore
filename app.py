@@ -41,129 +41,8 @@ st.set_page_config(
     initial_sidebar_state="auto"
 )
 
-# PWA and iOS icon meta tags injection
-# Using JavaScript to add meta tags to <head> for proper iOS home screen icon support
+# PWA and iOS icon meta tags - will be injected at bottom of page
 import streamlit.components.v1 as components
-
-# Critical: Collapse the wrapper div that Streamlit creates around components.html
-# This prevents the iframe from adding unwanted top spacing
-st.markdown("""
-<style>
-    /* Target Streamlit's wrapper div for components.html to completely collapse it */
-    div[data-testid='stHtml'] {
-        margin: 0 !important;
-        padding: 0 !important;
-        height: 0 !important;
-        min-height: 0 !important;
-        line-height: 0 !important;
-    }
-    div[data-testid='stHtml'] iframe {
-        height: 0 !important;
-        margin: 0 !important;
-        padding: 0 !important;
-        display: block !important;
-    }
-</style>
-""", unsafe_allow_html=True)
-
-# Inject meta tags into <head> using JavaScript (iframe hidden with CSS)
-components.html("""
-<style>
-    /* Completely hide the iframe to prevent any layout issues */
-    iframe[title*="streamlit"] {
-        display: none !important;
-        height: 0 !important;
-        width: 0 !important;
-        position: absolute !important;
-        top: -9999px !important;
-    }
-</style>
-<script>
-(function() {
-    // Wait for DOM to be ready
-    const addMetaTags = () => {
-        // Get parent document (escaping iframe)
-        const doc = window.parent.document;
-        
-        // Add PWA manifest
-        if (!doc.querySelector('link[rel="manifest"]')) {
-            const manifest = doc.createElement('link');
-            manifest.rel = 'manifest';
-            manifest.href = '/app/static/manifest.json';
-            doc.head.appendChild(manifest);
-        }
-        
-        // Add Apple Touch Icon (primary iOS home screen icon)
-        if (!doc.querySelector('link[rel="apple-touch-icon"]')) {
-            const appleTouchIcon = doc.createElement('link');
-            appleTouchIcon.rel = 'apple-touch-icon';
-            appleTouchIcon.sizes = '180x180';
-            appleTouchIcon.href = '/app/static/icons/apple-touch-icon.png';
-            doc.head.appendChild(appleTouchIcon);
-        }
-        
-        // Add additional icon sizes for iOS
-        const iconSizes = [
-            { size: '120x120', file: 'icon-120.png' },
-            { size: '152x152', file: 'icon-152.png' },
-            { size: '167x167', file: 'icon-167.png' }
-        ];
-        
-        iconSizes.forEach(icon => {
-            if (!doc.querySelector(`link[sizes="${icon.size}"]`)) {
-                const link = doc.createElement('link');
-                link.rel = 'apple-touch-icon';
-                link.sizes = icon.size;
-                link.href = `/app/static/icons/${icon.file}`;
-                doc.head.appendChild(link);
-            }
-        });
-        
-        // Add favicon links
-        if (!doc.querySelector('link[sizes="32x32"]')) {
-            const favicon32 = doc.createElement('link');
-            favicon32.rel = 'icon';
-            favicon32.type = 'image/png';
-            favicon32.sizes = '32x32';
-            favicon32.href = '/app/static/icons/favicon-32.png';
-            doc.head.appendChild(favicon32);
-        }
-        
-        if (!doc.querySelector('link[sizes="16x16"]')) {
-            const favicon16 = doc.createElement('link');
-            favicon16.rel = 'icon';
-            favicon16.type = 'image/png';
-            favicon16.sizes = '16x16';
-            favicon16.href = '/app/static/icons/favicon-16.png';
-            doc.head.appendChild(favicon16);
-        }
-        
-        // Add iOS meta tags
-        const metaTags = [
-            { name: 'apple-mobile-web-app-capable', content: 'yes' },
-            { name: 'apple-mobile-web-app-status-bar-style', content: 'black-translucent' },
-            { name: 'apple-mobile-web-app-title', content: 'StockScore' },
-            { name: 'theme-color', content: '#667eea' }
-        ];
-        
-        metaTags.forEach(tag => {
-            if (!doc.querySelector(`meta[name="${tag.name}"]`)) {
-                const meta = doc.createElement('meta');
-                meta.name = tag.name;
-                meta.content = tag.content;
-                doc.head.appendChild(meta);
-            }
-        });
-        
-        console.log('✅ iOS home screen icons and PWA manifest successfully injected');
-    };
-    
-    // Execute immediately and also after a short delay to ensure DOM is ready
-    addMetaTags();
-    setTimeout(addMetaTags, 100);
-})();
-</script>
-""", height=0)
 
 # Enhanced caching configuration
 @st.cache_data(ttl=1800)  # 30 minutes cache for static data
@@ -752,7 +631,7 @@ def main():
     <style>
     /* Minimal padding to position just below Replit menu bar */
     .block-container {
-        padding-top: 3rem !important;
+        padding-top: 2.75rem !important;
         padding-bottom: 0rem;
         margin-top: 0rem !important;
     }
@@ -761,17 +640,6 @@ def main():
     }
     .main > div {
         padding-top: 0rem !important;
-    }
-    /* Hide iframe component completely to prevent layout issues */
-    iframe[title*="streamlit"] {
-        display: none !important;
-        height: 0px !important;
-        width: 0px !important;
-        margin: 0px !important;
-        padding: 0px !important;
-        position: absolute !important;
-        top: -9999px !important;
-        left: -9999px !important;
     }
     .main-header {
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -2211,5 +2079,97 @@ def show_api_status():
     else:
         st.warning("💾 キャッシュデータなし / No cached data")
 
+# Inject iOS and PWA meta tags at bottom of page to avoid layout issues
+def inject_pwa_meta_tags():
+    """Inject PWA and iOS icon meta tags using JavaScript without affecting layout"""
+    # Critical: Collapse the wrapper div that Streamlit creates around components.html
+    st.markdown("""
+    <style>
+        /* Target Streamlit's wrapper div for components.html to completely collapse it */
+        div[data-testid='stHtml'] {
+            margin: 0 !important;
+            padding: 0 !important;
+            height: 0 !important;
+            min-height: 0 !important;
+            line-height: 0 !important;
+            overflow: hidden !important;
+        }
+        div[data-testid='stHtml'] iframe {
+            height: 0 !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            display: none !important;
+            position: absolute !important;
+            top: -9999px !important;
+        }
+    </style>
+    """, unsafe_allow_html=True)
+    
+    # Inject meta tags into <head> using JavaScript
+    components.html("""
+    <script>
+    (function() {
+        const addMetaTags = () => {
+            const doc = window.parent.document;
+            
+            // Add PWA manifest
+            if (!doc.querySelector('link[rel="manifest"]')) {
+                const manifest = doc.createElement('link');
+                manifest.rel = 'manifest';
+                manifest.href = '/app/static/manifest.json';
+                doc.head.appendChild(manifest);
+            }
+            
+            // Add Apple Touch Icon (primary iOS home screen icon)
+            if (!doc.querySelector('link[rel="apple-touch-icon"]')) {
+                const appleTouchIcon = doc.createElement('link');
+                appleTouchIcon.rel = 'apple-touch-icon';
+                appleTouchIcon.sizes = '180x180';
+                appleTouchIcon.href = '/app/static/icons/apple-touch-icon.png';
+                doc.head.appendChild(appleTouchIcon);
+            }
+            
+            // Add additional icon sizes for iOS
+            const iconSizes = [
+                { size: '120x120', file: 'icon-120.png' },
+                { size: '152x152', file: 'icon-152.png' },
+                { size: '167x167', file: 'icon-167.png' }
+            ];
+            
+            iconSizes.forEach(icon => {
+                if (!doc.querySelector(`link[sizes="${icon.size}"]`)) {
+                    const link = doc.createElement('link');
+                    link.rel = 'apple-touch-icon';
+                    link.sizes = icon.size;
+                    link.href = `/app/static/icons/${icon.file}`;
+                    doc.head.appendChild(link);
+                }
+            });
+            
+            // Add iOS meta tags
+            const metaTags = [
+                { name: 'apple-mobile-web-app-capable', content: 'yes' },
+                { name: 'apple-mobile-web-app-status-bar-style', content: 'black-translucent' },
+                { name: 'apple-mobile-web-app-title', content: 'StockScore' },
+                { name: 'theme-color', content: '#667eea' }
+            ];
+            
+            metaTags.forEach(tag => {
+                if (!doc.querySelector(`meta[name="${tag.name}"]`)) {
+                    const meta = doc.createElement('meta');
+                    meta.name = tag.name;
+                    meta.content = tag.content;
+                    doc.head.appendChild(meta);
+                }
+            });
+        };
+        
+        addMetaTags();
+        setTimeout(addMetaTags, 100);
+    })();
+    </script>
+    """, height=0)
+
 if __name__ == "__main__":
     main()
+    inject_pwa_meta_tags()
