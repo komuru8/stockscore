@@ -632,7 +632,7 @@ def main():
     <style>
     /* Add padding to position below Replit menu bar */
     .block-container {
-        padding-top: 3.5rem !important;
+        padding-top: 4.5rem !important;
         padding-bottom: 0rem;
         margin-top: 0rem !important;
     }
