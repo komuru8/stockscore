@@ -227,13 +227,59 @@ def get_text(key, lang=None):
     
     return texts.get(key, {}).get(lang, key)
 
+# Confirmation dialog decorator
+@st.dialog("検索を実行しますか？" if st.session_state.get('language', 'ja') == 'ja' else "Execute Search?")
+def confirm_search_dialog(action_type, market, stock_count):
+    """Show confirmation dialog before executing search"""
+    st.write("選択した条件で検索を実行しますか？" if st.session_state.language == 'ja' else "Do you want to execute search with the selected criteria?")
+    
+    col1, col2 = st.columns(2)
+    with col1:
+        if st.button("はい" if st.session_state.language == 'ja' else "Yes", use_container_width=True, type="primary"):
+            st.session_state.confirmed_action = action_type
+            st.session_state.confirmed_market = market
+            st.session_state.confirmed_stock_count = stock_count
+            st.rerun()
+    with col2:
+        if st.button("キャンセル" if st.session_state.language == 'ja' else "Cancel", use_container_width=True):
+            st.session_state.pending_action = None
+            st.rerun()
+
 def handle_action_buttons(popularity_button, dividend_button, theme_button, random_button, market, stock_count=20):
     """Handle action button clicks and return selected symbols"""
     import random
     
+    # Initialize session state for action confirmation
+    if 'pending_action' not in st.session_state:
+        st.session_state.pending_action = None
+    if 'confirmed_action' not in st.session_state:
+        st.session_state.confirmed_action = None
+    
     selected_symbols = None
     
+    # Check for button clicks and show confirmation dialog
     if popularity_button:
+        st.session_state.pending_action = 'popularity'
+        confirm_search_dialog('popularity', market, stock_count)
+        return None
+    elif dividend_button:
+        st.session_state.pending_action = 'dividend'
+        confirm_search_dialog('dividend', market, stock_count)
+        return None
+    elif random_button:
+        st.session_state.pending_action = 'random'
+        confirm_search_dialog('random', market, stock_count)
+        return None
+    
+    # Execute confirmed action
+    if st.session_state.confirmed_action == 'popularity':
+        # Retrieve confirmed parameters
+        market = st.session_state.get('confirmed_market', market)
+        stock_count = st.session_state.get('confirmed_stock_count', stock_count)
+        
+        # Clear confirmation state
+        st.session_state.confirmed_action = None
+        
         # Popular/high market cap stocks by market
         if market == get_text('all_markets'):
             # Combine stocks from all markets to support larger counts
@@ -322,7 +368,13 @@ def handle_action_buttons(popularity_button, dividend_button, theme_button, rand
         
         st.success("人気ランキング上位銘柄を選択しました" if st.session_state.language == 'ja' else "Selected top popular stocks")
         
-    elif dividend_button:
+    elif st.session_state.confirmed_action == 'dividend':
+        # Retrieve confirmed parameters
+        market = st.session_state.get('confirmed_market', market)
+        stock_count = st.session_state.get('confirmed_stock_count', stock_count)
+        
+        # Clear confirmation state
+        st.session_state.confirmed_action = None
         # High dividend yield stocks by market
         if market == get_text('all_markets'):
             # Combine high dividend stocks from all markets
@@ -379,7 +431,13 @@ def handle_action_buttons(popularity_button, dividend_button, theme_button, rand
                 selected_symbols = theme_stocks[:stock_count]  # Use user-selected stock count
                 st.success(f"テーマ「{selected_theme}」から{len(selected_symbols)}銘柄を選択しました" if st.session_state.language == 'ja' else f"Selected {len(selected_symbols)} stocks for theme: {selected_theme}")
                 
-    elif random_button:
+    elif st.session_state.confirmed_action == 'random':
+        # Retrieve confirmed parameters
+        market = st.session_state.get('confirmed_market', market)
+        stock_count = st.session_state.get('confirmed_stock_count', stock_count)
+        
+        # Clear confirmation state
+        st.session_state.confirmed_action = None
         # Random selection from all available stocks using the expanded lists
         if market == get_text('all_markets'):
             # Use the same expanded lists from popularity search
