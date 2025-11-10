@@ -688,6 +688,11 @@ def main():
     # Modern header design with clean flat styling - optimized spacing
     st.markdown("""
     <style>
+    /* Remove default Streamlit top padding */
+    .block-container {
+        padding-top: 1rem !important;
+        padding-bottom: 0rem;
+    }
     .main-header {
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         padding: 1.5rem 2rem;
