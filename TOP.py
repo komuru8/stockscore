@@ -239,10 +239,11 @@ def confirm_search_dialog(action_type, market, stock_count):
             st.session_state.confirmed_action = action_type
             st.session_state.confirmed_market = market
             st.session_state.confirmed_stock_count = stock_count
+            st.session_state.pending_action = None  # Clear to close dialog
             st.rerun()
     with col2:
         if st.button("キャンセル" if st.session_state.language == 'ja' else "Cancel", use_container_width=True):
-            st.session_state.pending_action = None
+            st.session_state.pending_action = None  # Clear to close dialog
             st.rerun()
 
 def handle_action_buttons(popularity_button, dividend_button, theme_button, random_button, market, stock_count=20):
@@ -257,19 +258,30 @@ def handle_action_buttons(popularity_button, dividend_button, theme_button, rand
     
     selected_symbols = None
     
-    # Check for button clicks and show confirmation dialog
+    # Check for button clicks and set pending action
     if popularity_button:
         st.session_state.pending_action = 'popularity'
-        confirm_search_dialog('popularity', market, stock_count)
-        return None
+        st.session_state.pending_market = market
+        st.session_state.pending_stock_count = stock_count
+        st.rerun()
     elif dividend_button:
         st.session_state.pending_action = 'dividend'
-        confirm_search_dialog('dividend', market, stock_count)
-        return None
+        st.session_state.pending_market = market
+        st.session_state.pending_stock_count = stock_count
+        st.rerun()
     elif random_button:
         st.session_state.pending_action = 'random'
-        confirm_search_dialog('random', market, stock_count)
-        return None
+        st.session_state.pending_market = market
+        st.session_state.pending_stock_count = stock_count
+        st.rerun()
+    
+    # Show confirmation dialog if pending action exists
+    if st.session_state.pending_action and st.session_state.pending_action in ['popularity', 'dividend', 'random']:
+        confirm_search_dialog(
+            st.session_state.pending_action,
+            st.session_state.get('pending_market', market),
+            st.session_state.get('pending_stock_count', stock_count)
+        )
     
     # Execute confirmed action
     if st.session_state.confirmed_action == 'popularity':
