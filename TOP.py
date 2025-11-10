@@ -729,9 +729,9 @@ def main():
     # Modern header design with clean flat styling - optimized spacing
     st.markdown("""
     <style>
-    /* Add padding to position below Replit menu bar */
+    /* Minimal padding to position just below Replit menu bar */
     .block-container {
-        padding-top: 4.5rem !important;
+        padding-top: 3rem !important;
         padding-bottom: 0rem;
         margin-top: 0rem !important;
     }
@@ -740,6 +740,17 @@ def main():
     }
     .main > div {
         padding-top: 0rem !important;
+    }
+    /* Hide iframe component completely to prevent layout issues */
+    iframe[title*="streamlit"] {
+        display: none !important;
+        height: 0px !important;
+        width: 0px !important;
+        margin: 0px !important;
+        padding: 0px !important;
+        position: absolute !important;
+        top: -9999px !important;
+        left: -9999px !important;
     }
     .main-header {
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
