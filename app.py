@@ -275,13 +275,14 @@ def handle_action_buttons(popularity_button, dividend_button, theme_button, rand
         st.session_state.pending_stock_count = stock_count
         st.rerun()
     
-    # Show confirmation dialog if pending action exists
-    if st.session_state.pending_action and st.session_state.pending_action in ['popularity', 'dividend', 'random']:
+    # Show confirmation dialog if pending action exists and no confirmed action yet
+    if st.session_state.pending_action and st.session_state.pending_action in ['popularity', 'dividend', 'random'] and not st.session_state.confirmed_action:
         confirm_search_dialog(
             st.session_state.pending_action,
             st.session_state.get('pending_market', market),
             st.session_state.get('pending_stock_count', stock_count)
         )
+        return None  # Don't execute any actions while dialog is shown
     
     # Execute confirmed action
     if st.session_state.confirmed_action == 'popularity':
@@ -291,6 +292,7 @@ def handle_action_buttons(popularity_button, dividend_button, theme_button, rand
         
         # Clear confirmation state
         st.session_state.confirmed_action = None
+        st.session_state.pending_action = None
         
         # Popular/high market cap stocks by market
         if market == get_text('all_markets'):
@@ -387,6 +389,7 @@ def handle_action_buttons(popularity_button, dividend_button, theme_button, rand
         
         # Clear confirmation state
         st.session_state.confirmed_action = None
+        st.session_state.pending_action = None
         # High dividend yield stocks by market
         if market == get_text('all_markets'):
             # Combine high dividend stocks from all markets
@@ -450,6 +453,7 @@ def handle_action_buttons(popularity_button, dividend_button, theme_button, rand
         
         # Clear confirmation state
         st.session_state.confirmed_action = None
+        st.session_state.pending_action = None
         # Random selection from all available stocks using the expanded lists
         if market == get_text('all_markets'):
             # Use the same expanded lists from popularity search
