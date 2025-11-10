@@ -41,67 +41,9 @@ st.set_page_config(
     initial_sidebar_state="auto"
 )
 
-# Add PWA and iOS icon meta tags with proper Streamlit static paths
-# Static files are served at /app/static/ when enableStaticServing=true
-import streamlit.components.v1 as components
-
-components.html("""
-<script>
-// Dynamically inject PWA manifest and icon links
-(function() {
-    // Add manifest link
-    const manifest = document.createElement('link');
-    manifest.rel = 'manifest';
-    manifest.href = '/app/static/manifest.json';
-    document.head.appendChild(manifest);
-    
-    // Add favicon
-    const favicon32 = document.createElement('link');
-    favicon32.rel = 'icon';
-    favicon32.type = 'image/png';
-    favicon32.sizes = '32x32';
-    favicon32.href = '/app/static/icons/favicon-32.png';
-    document.head.appendChild(favicon32);
-    
-    const favicon16 = document.createElement('link');
-    favicon16.rel = 'icon';
-    favicon16.type = 'image/png';
-    favicon16.sizes = '16x16';
-    favicon16.href = '/app/static/icons/favicon-16.png';
-    document.head.appendChild(favicon16);
-    
-    // Add Apple Touch Icons
-    const appleTouchIcon = document.createElement('link');
-    appleTouchIcon.rel = 'apple-touch-icon';
-    appleTouchIcon.sizes = '180x180';
-    appleTouchIcon.href = '/app/static/icons/apple-touch-icon.png';
-    document.head.appendChild(appleTouchIcon);
-    
-    // Add meta tags
-    const themeColor = document.createElement('meta');
-    themeColor.name = 'theme-color';
-    themeColor.content = '#667eea';
-    document.head.appendChild(themeColor);
-    
-    const appleCapable = document.createElement('meta');
-    appleCapable.name = 'apple-mobile-web-app-capable';
-    appleCapable.content = 'yes';
-    document.head.appendChild(appleCapable);
-    
-    const appleStatus = document.createElement('meta');
-    appleStatus.name = 'apple-mobile-web-app-status-bar-style';
-    appleStatus.content = 'black-translucent';
-    document.head.appendChild(appleStatus);
-    
-    const appleTitle = document.createElement('meta');
-    appleTitle.name = 'apple-mobile-web-app-title';
-    appleTitle.content = 'StockScore';
-    document.head.appendChild(appleTitle);
-    
-    console.log('✅ PWA manifest and icons injected successfully');
-})();
-</script>
-""", height=0)
+# PWA and iOS icon configuration
+# Icons are served from /app/static/ when enableStaticServing=true
+# Note: Removed iframe injection to prevent layout issues
 
 # Enhanced caching configuration
 @st.cache_data(ttl=1800)  # 30 minutes cache for static data
