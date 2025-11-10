@@ -20,11 +20,30 @@ import os
 
 # Set page configuration
 st.set_page_config(
-    page_title="TOP - StockScore",
+    page_title="StockScore - 株式分析アプリ",
     page_icon="📈",
     layout="wide",
     initial_sidebar_state="auto"
 )
+
+# Add PWA and iOS icon meta tags
+st.markdown("""
+<head>
+    <link rel="icon" type="image/x-icon" href="/static/icons/favicon.ico">
+    <link rel="icon" type="image/png" sizes="32x32" href="/static/icons/favicon-32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/static/icons/favicon-16.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/static/icons/apple-touch-icon.png">
+    <link rel="apple-touch-icon" sizes="167x167" href="/static/icons/icon-167.png">
+    <link rel="apple-touch-icon" sizes="152x152" href="/static/icons/icon-152.png">
+    <link rel="apple-touch-icon" sizes="120x120" href="/static/icons/icon-120.png">
+    <link rel="manifest" href="/static/manifest.json">
+    <meta name="theme-color" content="#667eea">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="StockScore">
+    <meta name="description" content="AI搭載の日本株・米国株・新興国株分析ツール - StockScore">
+</head>
+""", unsafe_allow_html=True)
 
 # Enhanced caching configuration
 @st.cache_data(ttl=1800)  # 30 minutes cache for static data

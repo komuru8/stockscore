@@ -2,7 +2,7 @@ modules = ["python-3.11"]
 
 [nix]
 channel = "stable-25_05"
-packages = ["glibcLocales"]
+packages = ["glibcLocales", "imagemagick"]
 
 [deployment]
 deploymentTarget = "autoscale"
@@ -48,3 +48,7 @@ externalPort = 80
 [[ports]]
 localPort = 5001
 externalPort = 3000
+
+[[ports]]
+localPort = 40421
+externalPort = 3001
