@@ -18,32 +18,90 @@ except ImportError as e:
 from data_fetcher import DataFetcher
 import os
 
-# Set page configuration
+# Set page configuration with local icon
+import base64
+from pathlib import Path
+
+# Try to load favicon from local file
+try:
+    favicon_path = Path("static/icons/favicon-32.png")
+    if favicon_path.exists():
+        with open(favicon_path, "rb") as f:
+            favicon_data = base64.b64encode(f.read()).decode()
+            page_icon = f"data:image/png;base64,{favicon_data}"
+    else:
+        page_icon = "📈"
+except:
+    page_icon = "📈"
+
 st.set_page_config(
     page_title="StockScore - 株式分析アプリ",
-    page_icon="📈",
+    page_icon=page_icon,
     layout="wide",
     initial_sidebar_state="auto"
 )
 
-# Add PWA and iOS icon meta tags
-st.markdown("""
-<head>
-    <link rel="icon" type="image/x-icon" href="/static/icons/favicon.ico">
-    <link rel="icon" type="image/png" sizes="32x32" href="/static/icons/favicon-32.png">
-    <link rel="icon" type="image/png" sizes="16x16" href="/static/icons/favicon-16.png">
-    <link rel="apple-touch-icon" sizes="180x180" href="/static/icons/apple-touch-icon.png">
-    <link rel="apple-touch-icon" sizes="167x167" href="/static/icons/icon-167.png">
-    <link rel="apple-touch-icon" sizes="152x152" href="/static/icons/icon-152.png">
-    <link rel="apple-touch-icon" sizes="120x120" href="/static/icons/icon-120.png">
-    <link rel="manifest" href="/static/manifest.json">
-    <meta name="theme-color" content="#667eea">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="StockScore">
-    <meta name="description" content="AI搭載の日本株・米国株・新興国株分析ツール - StockScore">
-</head>
-""", unsafe_allow_html=True)
+# Add PWA and iOS icon meta tags with proper Streamlit static paths
+# Static files are served at /app/static/ when enableStaticServing=true
+import streamlit.components.v1 as components
+
+components.html("""
+<script>
+// Dynamically inject PWA manifest and icon links
+(function() {
+    // Add manifest link
+    const manifest = document.createElement('link');
+    manifest.rel = 'manifest';
+    manifest.href = '/app/static/manifest.json';
+    document.head.appendChild(manifest);
+    
+    // Add favicon
+    const favicon32 = document.createElement('link');
+    favicon32.rel = 'icon';
+    favicon32.type = 'image/png';
+    favicon32.sizes = '32x32';
+    favicon32.href = '/app/static/icons/favicon-32.png';
+    document.head.appendChild(favicon32);
+    
+    const favicon16 = document.createElement('link');
+    favicon16.rel = 'icon';
+    favicon16.type = 'image/png';
+    favicon16.sizes = '16x16';
+    favicon16.href = '/app/static/icons/favicon-16.png';
+    document.head.appendChild(favicon16);
+    
+    // Add Apple Touch Icons
+    const appleTouchIcon = document.createElement('link');
+    appleTouchIcon.rel = 'apple-touch-icon';
+    appleTouchIcon.sizes = '180x180';
+    appleTouchIcon.href = '/app/static/icons/apple-touch-icon.png';
+    document.head.appendChild(appleTouchIcon);
+    
+    // Add meta tags
+    const themeColor = document.createElement('meta');
+    themeColor.name = 'theme-color';
+    themeColor.content = '#667eea';
+    document.head.appendChild(themeColor);
+    
+    const appleCapable = document.createElement('meta');
+    appleCapable.name = 'apple-mobile-web-app-capable';
+    appleCapable.content = 'yes';
+    document.head.appendChild(appleCapable);
+    
+    const appleStatus = document.createElement('meta');
+    appleStatus.name = 'apple-mobile-web-app-status-bar-style';
+    appleStatus.content = 'black-translucent';
+    document.head.appendChild(appleStatus);
+    
+    const appleTitle = document.createElement('meta');
+    appleTitle.name = 'apple-mobile-web-app-title';
+    appleTitle.content = 'StockScore';
+    document.head.appendChild(appleTitle);
+    
+    console.log('✅ PWA manifest and icons injected successfully');
+})();
+</script>
+""", height=0)
 
 # Enhanced caching configuration
 @st.cache_data(ttl=1800)  # 30 minutes cache for static data
