@@ -630,9 +630,9 @@ def main():
     # Modern header design with clean flat styling - optimized spacing
     st.markdown("""
     <style>
-    /* Minimal top padding to avoid overlap with Replit menu */
+    /* Add padding to position below Replit menu bar */
     .block-container {
-        padding-top: 0.75rem !important;
+        padding-top: 2.5rem !important;
         padding-bottom: 0rem;
         margin-top: 0rem !important;
     }
