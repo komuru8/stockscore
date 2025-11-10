@@ -688,18 +688,22 @@ def main():
     # Modern header design with clean flat styling - optimized spacing
     st.markdown("""
     <style>
-    /* Remove default Streamlit top padding */
+    /* Remove all top padding and margin to place header at the very top */
     .block-container {
-        padding-top: 0.5rem !important;
+        padding-top: 0rem !important;
         padding-bottom: 0rem;
+        margin-top: 0rem !important;
     }
     section.main > div {
+        padding-top: 0rem !important;
+    }
+    .main > div {
         padding-top: 0rem !important;
     }
     .main-header {
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         padding: 1.5rem 2rem;
-        border-radius: 12px;
+        border-radius: 0px 0px 12px 12px;
         margin: 0 0 1.5rem 0;
         box-shadow: 0 4px 20px rgba(0,0,0,0.08);
     }
