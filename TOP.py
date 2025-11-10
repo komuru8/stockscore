@@ -236,17 +236,20 @@ def confirm_search_dialog(action_type, market, stock_count):
     col1, col2 = st.columns(2)
     with col1:
         if st.button("はい" if st.session_state.language == 'ja' else "Yes", use_container_width=True, type="primary", key=f"confirm_yes_{action_type}"):
-            # Close dialog and store confirmed action
-            st.session_state.show_confirm_dialog = False
+            # Store confirmed action and close dialog
             st.session_state.confirmed_action = action_type
             st.session_state.confirmed_market = market
             st.session_state.confirmed_stock_count = stock_count
+            st.session_state.show_confirm_dialog = False
             st.rerun()
+            return  # Exit dialog function immediately
     with col2:
         if st.button("キャンセル" if st.session_state.language == 'ja' else "Cancel", use_container_width=True, key=f"confirm_cancel_{action_type}"):
             # Close dialog without action
             st.session_state.show_confirm_dialog = False
+            st.session_state.confirmed_action = ""
             st.rerun()
+            return  # Exit dialog function immediately
 
 def handle_action_buttons(popularity_button, dividend_button, theme_button, random_button, market, stock_count=20):
     """Handle action button clicks and return selected symbols"""
