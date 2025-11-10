@@ -1,0 +1,98 @@
+
+index.DKN5MVff.js:773 WebSocket onclose
+(anonymous) @ index.DKN5MVff.js:773Understand this warning
+index.DKN5MVff.js:766  GET https://749d7406-f7fb-4e86-b3c5-0e0c69203e9c-00-izb5363fk4oa.worf.replit.dev/_stcore/health 502 (Bad Gateway)
+(anonymous) @ index.DKN5MVff.js:766
+xhr @ index.DKN5MVff.js:766
+dispatchRequest @ index.DKN5MVff.js:768
+_request @ index.DKN5MVff.js:769
+request @ index.DKN5MVff.js:768
+Axios$1.<computed> @ index.DKN5MVff.js:769
+(anonymous) @ index.DKN5MVff.js:764
+Z @ index.DKN5MVff.js:771
+doInitPings @ index.DKN5MVff.js:771
+pingServer @ index.DKN5MVff.js:773
+setFsmState @ index.DKN5MVff.js:771
+stepFsm @ index.DKN5MVff.js:771
+(anonymous) @ index.DKN5MVff.js:773Understand this error
+index.DKN5MVff.js:766  GET https://749d7406-f7fb-4e86-b3c5-0e0c69203e9c-00-izb5363fk4oa.worf.replit.dev/_stcore/host-config 502 (Bad Gateway)
+(anonymous) @ index.DKN5MVff.js:766
+xhr @ index.DKN5MVff.js:766
+dispatchRequest @ index.DKN5MVff.js:768
+_request @ index.DKN5MVff.js:769
+request @ index.DKN5MVff.js:768
+Axios$1.<computed> @ index.DKN5MVff.js:769
+(anonymous) @ index.DKN5MVff.js:764
+Z @ index.DKN5MVff.js:771
+doInitPings @ index.DKN5MVff.js:771
+pingServer @ index.DKN5MVff.js:773
+setFsmState @ index.DKN5MVff.js:771
+stepFsm @ index.DKN5MVff.js:771
+(anonymous) @ index.DKN5MVff.js:773Understand this error
+index.DKN5MVff.js:766  GET https://749d7406-f7fb-4e86-b3c5-0e0c69203e9c-00-izb5363fk4oa.worf.replit.dev/_stcore/host-config 502 (Bad Gateway)
+(anonymous) @ index.DKN5MVff.js:766
+xhr @ index.DKN5MVff.js:766
+dispatchRequest @ index.DKN5MVff.js:768
+_request @ index.DKN5MVff.js:769
+request @ index.DKN5MVff.js:768
+Axios$1.<computed> @ index.DKN5MVff.js:769
+(anonymous) @ index.DKN5MVff.js:764
+Z @ index.DKN5MVff.js:771
+ye @ index.DKN5MVff.js:769
+setTimeout
+ze @ index.DKN5MVff.js:769
+(anonymous) @ index.DKN5MVff.js:771
+Promise.catch
+Z @ index.DKN5MVff.js:771
+doInitPings @ index.DKN5MVff.js:771
+pingServer @ index.DKN5MVff.js:773
+setFsmState @ index.DKN5MVff.js:771
+stepFsm @ index.DKN5MVff.js:771
+(anonymous) @ index.DKN5MVff.js:773Understand this error
+index.DKN5MVff.js:766  GET https://749d7406-f7fb-4e86-b3c5-0e0c69203e9c-00-izb5363fk4oa.worf.replit.dev/_stcore/health 502 (Bad Gateway)
+(anonymous) @ index.DKN5MVff.js:766
+xhr @ index.DKN5MVff.js:766
+dispatchRequest @ index.DKN5MVff.js:768
+_request @ index.DKN5MVff.js:769
+request @ index.DKN5MVff.js:768
+Axios$1.<computed> @ index.DKN5MVff.js:769
+(anonymous) @ index.DKN5MVff.js:764
+Z @ index.DKN5MVff.js:771
+ye @ index.DKN5MVff.js:769
+setTimeout
+ze @ index.DKN5MVff.js:769
+(anonymous) @ index.DKN5MVff.js:771
+Promise.catch
+Z @ index.DKN5MVff.js:771
+doInitPings @ index.DKN5MVff.js:771
+pingServer @ index.DKN5MVff.js:773
+setFsmState @ index.DKN5MVff.js:771
+stepFsm @ index.DKN5MVff.js:771
+(anonymous) @ index.DKN5MVff.js:773Understand this error
+index.DKN5MVff.js:766  GET https://749d7406-f7fb-4e86-b3c5-0e0c69203e9c-00-izb5363fk4oa.worf.replit.dev/_stcore/health 502 (Bad Gateway)
+(anonymous) @ index.DKN5MVff.js:766
+xhr @ index.DKN5MVff.js:766
+dispatchRequest @ index.DKN5MVff.js:768
+_request @ index.DKN5MVff.js:769
+request @ index.DKN5MVff.js:768
+Axios$1.<computed> @ index.DKN5MVff.js:769
+(anonymous) @ index.DKN5MVff.js:764
+Z @ index.DKN5MVff.js:771
+ye @ index.DKN5MVff.js:769
+setTimeout
+ze @ index.DKN5MVff.js:769
+(anonymous) @ index.DKN5MVff.js:771
+Promise.catch
+Z @ index.DKN5MVff.js:771
+ye @ index.DKN5MVff.js:769
+setTimeout
+ze @ index.DKN5MVff.js:769
+(anonymous) @ index.DKN5MVff.js:771
+Promise.catch
+Z @ index.DKN5MVff.js:771
+doInitPings @ index.DKN5MVff.js:771
+pingServer @ index.DKN5MVff.js:773
+setFsmState @ index.DKN5MVff.js:771
+stepFsm @ index.DKN5MVff.js:771
+(anonymous) @ index.DKN5MVff.js:773Understand this error
+index.DKN5MVff.js:766  GET https://749d7406-f7fb-4e86-b3c5-0e0c69203e9c-00-izb5363fk4oa.worf.replit.dev/_stcore/host-config 502 (Bad Gateway)

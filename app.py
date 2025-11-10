@@ -236,15 +236,16 @@ def confirm_search_dialog(action_type, market, stock_count):
     col1, col2 = st.columns(2)
     with col1:
         if st.button("はい" if st.session_state.language == 'ja' else "Yes", use_container_width=True, type="primary", key=f"confirm_yes_{action_type}"):
+            # Close dialog and store confirmed action
+            st.session_state.show_confirm_dialog = False
             st.session_state.confirmed_action = action_type
             st.session_state.confirmed_market = market
             st.session_state.confirmed_stock_count = stock_count
-            st.session_state.pending_action = ""  # Set to empty string to close dialog
             st.rerun()
     with col2:
         if st.button("キャンセル" if st.session_state.language == 'ja' else "Cancel", use_container_width=True, key=f"confirm_cancel_{action_type}"):
-            st.session_state.pending_action = ""  # Set to empty string to close dialog
-            st.session_state.confirmed_action = ""  # Clear confirmed action too
+            # Close dialog without action
+            st.session_state.show_confirm_dialog = False
             st.rerun()
 
 def handle_action_buttons(popularity_button, dividend_button, theme_button, random_button, market, stock_count=20):
@@ -252,34 +253,37 @@ def handle_action_buttons(popularity_button, dividend_button, theme_button, rand
     import random
     
     # Initialize session state for action confirmation
-    if 'pending_action' not in st.session_state:
-        st.session_state.pending_action = ""
+    if 'show_confirm_dialog' not in st.session_state:
+        st.session_state.show_confirm_dialog = False
     if 'confirmed_action' not in st.session_state:
         st.session_state.confirmed_action = ""
     
     selected_symbols = None
     
-    # Check for button clicks and set pending action
+    # Check for button clicks and show dialog
     if popularity_button:
+        st.session_state.show_confirm_dialog = True
         st.session_state.pending_action = 'popularity'
         st.session_state.pending_market = market
         st.session_state.pending_stock_count = stock_count
         st.rerun()
     elif dividend_button:
+        st.session_state.show_confirm_dialog = True
         st.session_state.pending_action = 'dividend'
         st.session_state.pending_market = market
         st.session_state.pending_stock_count = stock_count
         st.rerun()
     elif random_button:
+        st.session_state.show_confirm_dialog = True
         st.session_state.pending_action = 'random'
         st.session_state.pending_market = market
         st.session_state.pending_stock_count = stock_count
         st.rerun()
     
-    # Show confirmation dialog if pending action exists and no confirmed action yet
-    if st.session_state.pending_action in ['popularity', 'dividend', 'random'] and not st.session_state.confirmed_action:
+    # Show confirmation dialog only when flag is True
+    if st.session_state.show_confirm_dialog:
         confirm_search_dialog(
-            st.session_state.pending_action,
+            st.session_state.get('pending_action', ''),
             st.session_state.get('pending_market', market),
             st.session_state.get('pending_stock_count', stock_count)
         )
@@ -291,9 +295,14 @@ def handle_action_buttons(popularity_button, dividend_button, theme_button, rand
         market = st.session_state.get('confirmed_market', market)
         stock_count = st.session_state.get('confirmed_stock_count', stock_count)
         
-        # Clear confirmation state
+        # Clear confirmation state after execution
         st.session_state.confirmed_action = ""
-        st.session_state.pending_action = ""
+        if 'pending_action' in st.session_state:
+            del st.session_state.pending_action
+        if 'confirmed_market' in st.session_state:
+            del st.session_state.confirmed_market
+        if 'confirmed_stock_count' in st.session_state:
+            del st.session_state.confirmed_stock_count
         
         # Popular/high market cap stocks by market
         if market == get_text('all_markets'):
@@ -388,9 +397,14 @@ def handle_action_buttons(popularity_button, dividend_button, theme_button, rand
         market = st.session_state.get('confirmed_market', market)
         stock_count = st.session_state.get('confirmed_stock_count', stock_count)
         
-        # Clear confirmation state
+        # Clear confirmation state after execution
         st.session_state.confirmed_action = ""
-        st.session_state.pending_action = ""
+        if 'pending_action' in st.session_state:
+            del st.session_state.pending_action
+        if 'confirmed_market' in st.session_state:
+            del st.session_state.confirmed_market
+        if 'confirmed_stock_count' in st.session_state:
+            del st.session_state.confirmed_stock_count
         # High dividend yield stocks by market
         if market == get_text('all_markets'):
             # Combine high dividend stocks from all markets
@@ -452,9 +466,14 @@ def handle_action_buttons(popularity_button, dividend_button, theme_button, rand
         market = st.session_state.get('confirmed_market', market)
         stock_count = st.session_state.get('confirmed_stock_count', stock_count)
         
-        # Clear confirmation state
+        # Clear confirmation state after execution
         st.session_state.confirmed_action = ""
-        st.session_state.pending_action = ""
+        if 'pending_action' in st.session_state:
+            del st.session_state.pending_action
+        if 'confirmed_market' in st.session_state:
+            del st.session_state.confirmed_market
+        if 'confirmed_stock_count' in st.session_state:
+            del st.session_state.confirmed_stock_count
         # Random selection from all available stocks using the expanded lists
         if market == get_text('all_markets'):
             # Use the same expanded lists from popularity search
