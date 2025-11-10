@@ -690,8 +690,11 @@ def main():
     <style>
     /* Remove default Streamlit top padding */
     .block-container {
-        padding-top: 1rem !important;
+        padding-top: 0.5rem !important;
         padding-bottom: 0rem;
+    }
+    section.main > div {
+        padding-top: 0rem !important;
     }
     .main-header {
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
