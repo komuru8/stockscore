@@ -131,9 +131,12 @@ def get_analyzer_instance():
         analyzer = StockAnalyzer()
         return analyzer, False
 
-# Initialize session state with caching
+# Lazy initialization for faster page load
+# Analyzer will be initialized only when needed (on first analysis)
 if 'analyzer' not in st.session_state:
-    st.session_state.analyzer, st.session_state.using_enhanced = get_analyzer_instance()
+    st.session_state.analyzer = None
+    st.session_state.using_enhanced = False
+    st.session_state.analyzer_initialized = False
 
 # Initialize with caching optimization
 @st.cache_resource
@@ -142,7 +145,15 @@ def get_relative_scorer():
     return RelativeScoringEngine()
 
 if 'relative_scorer' not in st.session_state:
-    st.session_state.relative_scorer = get_relative_scorer()
+    st.session_state.relative_scorer = None
+
+def lazy_init_analyzer():
+    """Initialize analyzer only when needed"""
+    if not st.session_state.analyzer_initialized:
+        with st.spinner("🚀 " + ("分析エンジン初期化中..." if st.session_state.language == 'ja' else "Initializing analysis engine...")):
+            st.session_state.analyzer, st.session_state.using_enhanced = get_analyzer_instance()
+            st.session_state.relative_scorer = get_relative_scorer()
+            st.session_state.analyzer_initialized = True
     
 # Initialize session state with memory optimization
 session_defaults = {
@@ -674,27 +685,27 @@ def get_theme_options(market):
         }
 
 def main():
-    # Modern header design with clean flat styling
+    # Modern header design with clean flat styling - optimized spacing
     st.markdown("""
     <style>
     .main-header {
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        padding: 2rem;
-        border-radius: 16px;
-        margin: -1rem 0 2rem 0;
+        padding: 1.5rem 2rem;
+        border-radius: 12px;
+        margin: 0 0 1.5rem 0;
         box-shadow: 0 4px 20px rgba(0,0,0,0.08);
     }
     .header-title {
         color: white;
-        font-size: 3rem;
+        font-size: 2.5rem;
         font-weight: 800;
         margin: 0;
         letter-spacing: -1px;
     }
     .header-subtitle {
         color: rgba(255,255,255,0.9);
-        font-size: 1.1rem;
-        margin: 0.5rem 0 0 0;
+        font-size: 1rem;
+        margin: 0.3rem 0 0 0;
         font-weight: 400;
     }
     </style>
@@ -706,8 +717,6 @@ def main():
         </div>
     </div>
     """, unsafe_allow_html=True)
-    
-
     
     # Sidebar configuration
     st.sidebar.header("" if st.session_state.language == 'ja' else "")
@@ -835,10 +844,9 @@ def main():
         )
     
     # Stock discovery section with market selection - modern flat design
-    st.markdown("---")
     st.markdown("""
-    <div style="padding: 1.5rem; background: #f8f9fa; border-radius: 12px; margin: 1rem 0;">
-        <h3 style="margin: 0 0 0.5rem 0; color: #1a202c; font-weight: 700;">
+    <div style="padding: 1.2rem; background: #f8f9fa; border-radius: 12px; margin: 0.5rem 0 1rem 0;">
+        <h3 style="margin: 0 0 0.3rem 0; color: #1a202c; font-weight: 700;">
     """ + ("株式検索" if st.session_state.language == 'ja' else "Stock Discovery") + """
         </h3>
         <p style="margin: 0; color: #4a5568; font-size: 0.95rem;">
@@ -846,8 +854,6 @@ def main():
         </p>
     </div>
     """, unsafe_allow_html=True)
-    
-
     
     # Market selection integrated into discovery section
     col1, col2, col3 = st.columns([2, 2, 2])
@@ -932,7 +938,6 @@ def main():
     """, unsafe_allow_html=True)
     
     # Create action buttons with SVG flat icons
-    st.markdown("") # Add some spacing
     col1, col2, col3, col4 = st.columns(4, gap="medium")
     
     # SVG Icons
@@ -1082,14 +1087,15 @@ def main():
     
     # Manual update button for additional control (optional)
     if symbols and not selected_method:  # Only show manual button if no auto-execution happened
-        # Show analyzer status
-        st.info("🔧 Basic Analyzer使用中: 安定性重視でシンプル処理 / Using Basic Analyzer with stability focus")
-        
-        # Show cache status if available  
-        if hasattr(st.session_state.analyzer, 'data_fetcher') and hasattr(st.session_state.analyzer.data_fetcher, 'cache'):
-            cache_size = len(st.session_state.analyzer.data_fetcher.cache)
-            if cache_size > 0:
-                st.success(f"📊 キャッシュ済み: {cache_size} 銘柄 / Cached: {cache_size} stocks")
+        # Show analyzer status (only if initialized)
+        if st.session_state.analyzer_initialized:
+            st.info("🔧 Basic Analyzer使用中: 安定性重視でシンプル処理 / Using Basic Analyzer with stability focus")
+            
+            # Show cache status if available  
+            if st.session_state.analyzer and hasattr(st.session_state.analyzer, 'data_fetcher') and hasattr(st.session_state.analyzer.data_fetcher, 'cache'):
+                cache_size = len(st.session_state.analyzer.data_fetcher.cache)
+                if cache_size > 0:
+                    st.success(f"📊 キャッシュ済み: {cache_size} 銘柄 / Cached: {cache_size} stocks")
         
         col1, col2 = st.columns(2)
         with col1:
@@ -1098,7 +1104,7 @@ def main():
                     
         with col2:
             if st.button(("キャッシュクリア" if st.session_state.language == 'ja' else "Clear Cache"), type="secondary"):
-                if hasattr(st.session_state.analyzer, 'clear_cache'):
+                if st.session_state.analyzer and hasattr(st.session_state.analyzer, 'clear_cache'):
                     st.session_state.analyzer.clear_cache()
                     st.success("キャッシュをクリアしました / Cache cleared")
                 else:
@@ -1112,7 +1118,7 @@ def main():
                 update_stock_data(symbols, per_threshold, pbr_threshold, roe_threshold, dividend_multiplier)
         with col2:
             if st.button(("キャッシュクリア" if st.session_state.language == 'ja' else "Clear Cache"), type="secondary"):
-                if hasattr(st.session_state.analyzer, 'clear_cache'):
+                if st.session_state.analyzer and hasattr(st.session_state.analyzer, 'clear_cache'):
                     st.session_state.analyzer.clear_cache()
                     st.success("キャッシュをクリアしました / Cache cleared")
                 else:
@@ -1156,6 +1162,9 @@ def update_stock_data(symbols, per_threshold, pbr_threshold, roe_threshold, divi
     """Update stock data and scores with intelligent caching and batch processing"""
     progress_bar = None
     status_text = None
+    
+    # Initialize analyzer on first use (lazy loading for faster initial page load)
+    lazy_init_analyzer()
     
     try:
         # Check cache first for exact same request
